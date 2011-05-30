@@ -1,0 +1,27 @@
+from django.conf.urls.defaults import *
+from piston.resource import Resource
+from api.handlers import *
+
+registeragent_handler = Resource(RegisterAgentHandler)
+getpeerlist_handler = Resource(GetPeerListHandler)
+getsuperpeerlist_handler = Resource(GetSuperPeerListHandler)
+getevents_handler = Resource(GetEventsHandler)
+sendwebsitereport_handler = Resource(SendWebsiteReportHandler)
+sendservicereport_handler = Resource(SendServiceReportHandler)
+checkversion_handler = Resource(CheckNewVersionHandler)
+checktests_handler = Resource(CheckNewTestHandler)
+websitesuggestion_handler = Resource(CheckNewTestHandler)
+servicesuggestion_handler = Resource(CheckNewTestHandler)
+
+urlpatterns = patterns('',
+   url(r'^registeragent/', registeragent_handler),
+   url(r'^getpeerlist/(?P<msg>.*)/', getpeerlist_handler),
+   url(r'^getsuperpeerlist/(?P<msg>.*)/', getsuperpeerlist_handler),
+   url(r'^getevents/(?P<msg>.*)/', getevents_handler),
+   url(r'^sendwebsitereport/', sendwebsitereport_handler),
+   url(r'^sendservicereport/', sendservicereport_handler),
+   url(r'^checkversion/(?P<msg>.*)/', checkversion_handler),
+   url(r'^checktests/(?P<msg>.*)/', checktests_handler),
+   url(r'^websitesuggestion/', websitesuggestion_handler),
+   url(r'^servicesuggestion/', servicesuggestion_handler),
+)

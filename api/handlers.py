@@ -1,4 +1,6 @@
 from piston.handler import BaseHandler
+from google.protobuf import descriptor
+from messages import messages_pb2
 
 
 class RegisterAgentHandler(BaseHandler):
@@ -61,6 +63,8 @@ class WebsiteSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, ):
+        websiteSuggestion = messages_pb2.WebsiteReport()
+        websiteSuggestion.ParseFromString(request.POST['data'])
         return "WebsiteSuggestionHandler"
 
 

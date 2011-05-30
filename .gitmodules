@@ -1,0 +1,3 @@
+[submodule "icm-common"]
+	path = icm-common
+	url = umitgit@git.umitproject.org:/icm-common.git

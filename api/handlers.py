@@ -7,28 +7,28 @@ class RegisterAgentHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
-        return msg
+        return "RegisterAgentHandler"
 
 
 class GetPeerListHandler(BaseHandler):
-    allowed_methods = ('GET',)
+    allowed_methods = ('POST',)
 
-    def read(self, request, msg=None):
-        return msg
+    def create(self, request):
+        return "GetPeerListHandler"
 
 
 class GetSuperPeerListHandler(BaseHandler):
-    allowed_methods = ('GET',)
+    allowed_methods = ('POST',)
 
-    def read(self, request, msg=None):
-        return msg
+    def create(self, request):
+        return "GetSuperPeerListHandler"
 
 
 class GetEventsHandler(BaseHandler):
-    allowed_methods = ('GET',)
+    allowed_methods = ('POST',)
 
-    def read(self, request, msg=None):
-        return msg
+    def create(self, request):
+        return "GetEventsHandler"
 
 
 class SendWebsiteReportHandler(BaseHandler):
@@ -46,17 +46,17 @@ class SendServiceReportHandler(BaseHandler):
 
 
 class CheckNewVersionHandler(BaseHandler):
-    allowed_methods = ('GET',)
+    allowed_methods = ('POST',)
 
-    def read(self, request, msg=None):
-        return msg
+    def create(self, request):
+        return "CheckNewVersionHandler"
 
 
 class CheckNewTestHandler(BaseHandler):
-    allowed_methods = ('GET',)
+    allowed_methods = ('POST',)
 
-    def read(self, request, msg=None):
-        return msg
+    def create(self, request):
+        return "CheckNewTestHandler"
 
 
 class WebsiteSuggestionHandler(BaseHandler):

@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import get_model
 
 
 class Event(models.Model):
@@ -9,10 +8,14 @@ class Event(models.Model):
     lastDetectionUTC  = models.DateTimeField()
     activated         = models.BooleanField()    # indicate if the event is still happening
 
-    
+    def getActiveEvents(self):
+        return self.activated==True
+
+
 class EventLocation(models.Model):
     event    = models.ForeignKey('Event')
-    location = models.CharField(max_length=100)
+    city     = models.CharField(max_length=100)
+    country  = models.CharField(max_length=100)
 
 
 class EventISP(models.Model):

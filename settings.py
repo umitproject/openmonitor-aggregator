@@ -12,6 +12,8 @@ AUTOLOAD_SITECONF = 'indexes'
 
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
+DEBUG = True
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.contenttypes',
@@ -21,7 +23,10 @@ INSTALLED_APPS = (
     'autoload',
     'dbindexer',
     'mediagenerator',
+    'djangologging',
     'piston',
+    'messages',
+    'api',
     'reports',
     'suggestions',
     'events',
@@ -38,6 +43,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'djangologging.middleware.LoggingMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -61,3 +67,6 @@ DEV_MEDIA_URL = '/devmedia/'
 PRODUCTION_MEDIA_URL = '/media/'
 
 GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
+
+INTERNAL_IPS = ('127.0.0.1', 'localhost',)
+LOGGING_OUTPUT_ENABLED = True

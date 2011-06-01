@@ -10,8 +10,8 @@ sendwebsitereport_handler = Resource(SendWebsiteReportHandler)
 sendservicereport_handler = Resource(SendServiceReportHandler)
 checkversion_handler = Resource(CheckNewVersionHandler)
 checktests_handler = Resource(CheckNewTestHandler)
-websitesuggestion_handler = Resource(CheckNewTestHandler)
-servicesuggestion_handler = Resource(CheckNewTestHandler)
+websitesuggestion_handler = Resource(WebsiteSuggestionHandler)
+servicesuggestion_handler = Resource(ServiceSuggestionHandler)
 
 urlpatterns = patterns('',
    url(r'^registeragent/', registeragent_handler),

@@ -1,6 +1,7 @@
 from piston.handler import BaseHandler
-from google.protobuf import descriptor
 from messages import messages_pb2
+from suggestions.models import WebsiteSuggestion, ServiceSuggestion
+import base64
 
 
 class RegisterAgentHandler(BaseHandler):
@@ -63,13 +64,17 @@ class WebsiteSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, ):
-        websiteSuggestion = messages_pb2.WebsiteReport()
-        websiteSuggestion.ParseFromString(request.POST['data'])
-        return "WebsiteSuggestionHandler"
+        msg = base64.urlsafe_b64decode(request.POST['msg'])
+
+        receivedWebsiteSuggestion = messages_pb2.WebsiteSuggestion()
+        receivedWebsiteSuggestion.ParseFromString(msg)
+
+        #webSiteSuggestion = WebsiteSuggestion(receivedWebsiteSuggestion)
+        return receivedWebsiteSuggestion.websiteURL
 
 
 class ServiceSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, ):
-        return "WebsiteSuggestionHandler"
+        return "ServiceSuggestionHandler"

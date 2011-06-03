@@ -88,7 +88,24 @@ class ServiceSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, ):
-        return "ServiceSuggestionHandler"
+        msg = base64.b64decode(request.POST['msg'])
+
+        receivedServiceSuggestion = messages_pb2.ServiceSuggestion()
+        receivedServiceSuggestion.ParseFromString(msg)
+
+        # create the suggestion
+        serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion)
+        serviceSuggestion.save()
+
+        # create the response
+        response = messages_pb2.TestSuggestionResponse()
+        response.currentVersionNo = 1
+        response.currentTestVersionNo = 1
+        response_str = base64.b32encode(response.SerializeToString())
+
+        # send back response
+        return response_str
+
 
 
 class TestsHandler(BaseHandler):
@@ -103,3 +120,13 @@ class TestsHandler(BaseHandler):
         suggestion.emailAddress = "teste@domain.com"
         sug_str = base64.b64encode(suggestion.SerializeToString())
         response = c.post('/api/websitesuggestion/', {'msg': sug_str})
+
+        suggestion = messages_pb2.ServiceSuggestion()
+        suggestion.header.token = "token"
+        suggestion.header.agentID = 5
+        suggestion.serviceName = "p2p"
+        suggestion.emailAddress = "teste@domain.com"
+        suggestion.ip = "192.168.2.1"
+        suggestion.hostName = "newtestpc"
+        sug_str = base64.b64encode(suggestion.SerializeToString())
+        response = c.post('/api/servicesuggestion/', {'msg': sug_str})

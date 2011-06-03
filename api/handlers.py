@@ -1,6 +1,7 @@
 from piston.handler import BaseHandler
 from messages import messages_pb2
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
+from django.test.client import Client
 import base64
 
 
@@ -70,12 +71,17 @@ class WebsiteSuggestionHandler(BaseHandler):
         receivedWebsiteSuggestion.ParseFromString(msg)
 
         # create the suggestion
-        webSiteSuggestion = WebsiteSuggestion(receivedWebsiteSuggestion)
+        webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion)
         webSiteSuggestion.save()
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
-        return receivedWebsiteSuggestion.websiteURL
+        response.currentVersionNo = 1
+        response.currentTestVersionNo = 1
+        response_str = base64.b32encode(response.SerializeToString())
+
+        # send back response
+        return response_str
 
 
 class ServiceSuggestionHandler(BaseHandler):
@@ -83,3 +89,17 @@ class ServiceSuggestionHandler(BaseHandler):
 
     def create(self, request, ):
         return "ServiceSuggestionHandler"
+
+
+class TestsHandler(BaseHandler):
+    allowed_methods = ('GET',)
+
+    def read(self, request, ):
+        c = Client()
+        suggestion = messages_pb2.WebsiteSuggestion()
+        suggestion.header.token = "token"
+        suggestion.header.agentID = 5
+        suggestion.websiteURL = "www.example.com"
+        suggestion.emailAddress = "teste@domain.com"
+        sug_str = base64.b64encode(suggestion.SerializeToString())
+        response = c.post('/api/websitesuggestion/', {'msg': sug_str})

@@ -12,6 +12,7 @@ checkversion_handler = Resource(CheckNewVersionHandler)
 checktests_handler = Resource(CheckNewTestHandler)
 websitesuggestion_handler = Resource(WebsiteSuggestionHandler)
 servicesuggestion_handler = Resource(ServiceSuggestionHandler)
+test_handler = Resource(TestsHandler)
 
 urlpatterns = patterns('',
    url(r'^registeragent/', registeragent_handler),
@@ -24,4 +25,5 @@ urlpatterns = patterns('',
    url(r'^checktests/', checktests_handler),
    url(r'^websitesuggestion/', websitesuggestion_handler),
    url(r'^servicesuggestion/', servicesuggestion_handler),
+   url(r'^tests/', test_handler),
 )

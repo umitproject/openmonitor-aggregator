@@ -64,12 +64,17 @@ class WebsiteSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, ):
-        msg = base64.urlsafe_b64decode(request.POST['msg'])
+        msg = base64.b64decode(request.POST['msg'])
 
         receivedWebsiteSuggestion = messages_pb2.WebsiteSuggestion()
         receivedWebsiteSuggestion.ParseFromString(msg)
 
-        #webSiteSuggestion = WebsiteSuggestion(receivedWebsiteSuggestion)
+        # create the suggestion
+        webSiteSuggestion = WebsiteSuggestion(receivedWebsiteSuggestion)
+        webSiteSuggestion.save()
+
+        # create the response
+        response = messages_pb2.TestSuggestionResponse()
         return receivedWebsiteSuggestion.websiteURL
 
 

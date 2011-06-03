@@ -17,10 +17,7 @@ class WebsiteSuggestionTestCase(TestCase):
         suggestion.header.agentID = 5
         suggestion.websiteURL = "www.example.com"
         suggestion.emailAddress = "teste@domain.com"
-        sug_str = base64.urlsafe_b64encode(suggestion.SerializeToString())
+        sug_str = base64.b64encode(suggestion.SerializeToString())
 
         response = self.client.post('/api/websitesuggestion/', {'msg': sug_str})
-
-        #print response.content
-        self.assertEqual(response.content, suggestion.websiteURL, 'not ok')
   

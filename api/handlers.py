@@ -119,7 +119,7 @@ class GetEventsHandler(BaseHandler):
 class SendWebsiteReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request, ):
+    def create(self, request):
         msg = base64.b64decode(request.POST['msg'])
 
         receivedWebsiteReport = messages_pb2.SendWebsiteReport()

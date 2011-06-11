@@ -18,7 +18,8 @@ class WebsiteReport(Report):
     statusCode   = models.PositiveSmallIntegerField()
     redirectLink = models.URLField(max_length=255, blank=True)
     htmlResponse = models.TextField(blank=True)
-    # TODO: missing htmlMEdia. Where to store that info ? bd or harddisk
+    htmlMedia    = models.FileField(upload_to='reports/')
+    # TODO: this is the correct path ?
 
     def create(websiteReportMsg):
         report = WebsiteReport()
@@ -35,6 +36,9 @@ class WebsiteReport(Report):
             report.redirectLink = websiteReportMsg.redirectLink
         if websiteReportMsg.HasField('htmlResponse'):
             report.htmlResponse = websiteReportMsg.htmlResponse
+        if websiteReportMsg.HasField('htmlMedia'):
+            # TODO: which name it should have ?
+            report.htmlMedia.save(websiteReportMsg.report.websiteURL, websiteReportMsg.htmlResponse)
 
         # read ICMReport
         report.reportId = websiteReportMsg.header.reportID
@@ -75,7 +79,7 @@ class WebsiteReport(Report):
             # associate traceroute with report
             traceRoute.report_set.add(report)
         
-        # TODO: missing htmlMEdia. Where to store that info ? bd or harddisk
+
         return report
 
     create = staticmethod(create)

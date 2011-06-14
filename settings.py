@@ -24,6 +24,7 @@ INSTALLED_APPS = (
     'dbindexer',
     'mediagenerator',
     'djangologging',
+    'protobuf',
     'piston',
     'messages',
     'api',

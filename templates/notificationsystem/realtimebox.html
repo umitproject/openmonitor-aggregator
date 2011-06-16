@@ -6,16 +6,17 @@
         <script type="text/javascript">
 
             onOpened = function() {
-                alert("opened");
+                alert("opened2");
                 //sendMessage('/opened');
             };
 
             onMessage = function(m) {
-                alert(m);
+                received = JSON.parse(m.data)
+                alert(received.msg);
             }
 
             openChannel = function() {
-                var token = 'map';
+                var token = '{{ token }}';
                 var channel = new goog.appengine.Channel(token);
                 var handler = {
                   'onopen': onOpened,

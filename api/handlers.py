@@ -181,7 +181,7 @@ class CheckNewVersionHandler(BaseHandler):
         response = messages_pb2.NewVersionResponse()
         response.header.currentVersionNo = 1
         response.header.currentTestVersionNo = 1
-        response.downloadURL = 2;
+        response.downloadURL = "www.icm.com/newver"
         response.versionNo = 4
 
         # send back response

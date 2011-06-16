@@ -1,40 +1,62 @@
-<html>
-    <head>
-        <script type="text/javascript" src="/_ah/channel/jsapi"></script>
-    </head>
-    <body>
-        <script type="text/javascript">
+<link type="text/css" rel="stylesheet" href="/css/realtimebox.css" />
 
-            onOpened = function() {
-                alert("opened2");
-                //sendMessage('/opened');
-            };
+<script type="text/javascript" src="/_ah/channel/jsapi"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 
-            onMessage = function(m) {
-                received = JSON.parse(m.data)
-                alert(received.msg);
-            }
+  <script type="text/javascript">
 
-            openChannel = function() {
-                var token = '{{ token }}';
-                var channel = new goog.appengine.Channel(token);
-                var handler = {
-                  'onopen': onOpened,
-                  'onmessage': onMessage,
-                  'onerror': function() {},
-                  'onclose': function() {}
-                };
-                var socket = channel.open(handler);
-                socket.onopen = onOpened;
-                socket.onmessage = onMessage;
-              }
+    function addEventToList(event)
+    {
+        eventdiv = $( document.createElement('div') )
+        eventdiv.addClass("event").html(event.msg).hide()
+        $("#realtime_content").prepend(eventdiv)
+        eventdiv.slideDown("slow")
 
-            initialize = function() {
-                openChannel();
-            }
+        // TODO: format information; show all information
+    }
 
-            setTimeout(initialize, 100);
-            
-        </script>
-    </body>
-</html>
+    onOpened = function() {
+        $("#realtime_status").html("Loading...")
+    };
+
+    onMessage = function(m) {
+        event = JSON.parse(m.data)
+        $("#realtime_status").html("updated")
+        addEventToList(event)
+    }
+
+    onError = function() {
+        $("#realtime_status").html("Error loading events")
+    }
+
+    openChannel = function() {
+        var token = '{{ token }}';
+        var channel = new goog.appengine.Channel(token);
+        var handler = {
+          'onopen': onOpened,
+          'onmessage': onMessage,
+          'onerror': onError,
+          'onclose': function() {}
+        };
+        var socket = channel.open(handler);
+        socket.onopen = onOpened;
+        socket.onmessage = onMessage;
+        socket.onerror = onError;
+      }
+
+    initialize = function() {
+        openChannel();
+    }
+
+    setTimeout(initialize, 100);
+
+</script>
+
+
+<div id="realtime_status">
+
+</div>
+<div id="realtime_content">
+
+</div>

@@ -17,12 +17,12 @@
     }
 
     onOpened = function() {
-        $("#realtime_status").html("Loading...")
+        $("#realtime_status").html("Waiting for new events")
     };
 
     onMessage = function(m) {
         event = JSON.parse(m.data)
-        $("#realtime_status").html("updated")
+        $("#realtime_status").html("New event")
         addEventToList(event)
     }
 

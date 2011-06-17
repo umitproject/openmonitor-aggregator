@@ -1,40 +1,162 @@
+<!DOCTYPE html>
+<!--<link type="text/css" rel="stylesheet" href="/css/realtimebox.css" />-->
+
 <html>
-    <head>
-        <script type="text/javascript" src="/_ah/channel/jsapi"></script>
-    </head>
-    <body>
-        <script type="text/javascript">
+<head>
 
-            onOpened = function() {
-                alert("opened2");
-                //sendMessage('/opened');
-            };
+<style type="text/css">
+  body, html { width: 100%; height: 100%; margin: 0; padding: 0; }
+</style>
 
-            onMessage = function(m) {
-                received = JSON.parse(m.data)
-                alert(received.msg);
-            }
+<script type="text/javascript" src="/_ah/channel/jsapi"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 
-            openChannel = function() {
-                var token = '{{ token }}';
-                var channel = new goog.appengine.Channel(token);
-                var handler = {
-                  'onopen': onOpened,
-                  'onmessage': onMessage,
-                  'onerror': function() {},
-                  'onclose': function() {}
-                };
-                var socket = channel.open(handler);
-                socket.onopen = onOpened;
-                socket.onmessage = onMessage;
-              }
+<script type="text/javascript">
 
-            initialize = function() {
-                openChannel();
-            }
+    var map
+    var i = 1
+    var eventLvl1 = "/images/alert1.png"
+    var eventLvl2 = "/images/alert2.png"
+    var eventLvl3 = "/images/alert3.png"
+    var newevent  = "/images/newevent.gif"
+    var newEventTime = 2000
 
-            setTimeout(initialize, 100);
-            
-        </script>
-    </body>
+    function initializeMap()
+    {
+        var latlng = new google.maps.LatLng(0, 0);
+        var myOptions = {
+            zoom: 2,
+            center: latlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    }
+
+
+    function placeNewEvent(type, event, latitude, longitude)
+    {
+        var icon;
+
+        /* get the correct icon */
+        switch(type)
+        {
+            case 1:
+                icon = eventLvl1
+                break
+            case 2:
+                icon = eventLvl2
+                break
+            case 3:
+                icon = eventLvl3
+                break
+        }
+
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(latitude, longitude),
+            title:"Shutdown!",
+            icon: icon
+        });
+
+        /* set icon animation */
+        marker.setAnimation(google.maps.Animation.BOUNCE)
+
+        /* cancel icon animation after newEventTime */
+        setInterval(function(){ marker.setAnimation(); }, newEventTime);
+
+        /*
+        var notificationMarker = new google.maps.Marker({
+            position: new google.maps.LatLng(latitude, longitude),
+            icon: newevent
+        });
+
+        //notificationMarker.setMap(map);*/
+
+        /* create info window */
+        var infowindow = new google.maps.InfoWindow({
+            content: event
+        });
+
+        /* configure click to show info window */
+        google.maps.event.addListener(marker, 'click', function() {
+            infowindow.open(map, marker);
+        });
+
+        /* put marker on map */
+        marker.setMap(map);
+    }
+
+    function addEventToMap(event)
+    {
+        var lat = new Array();
+        var lng = new Array();
+        lat[0] = 26.431228;
+        lat[1] = 31.728167;
+        lat[2] = 39.759185;
+        lng[0] = 29.794922;
+        lng[1] = 103.183594;
+        lng[2] = -8.846811;
+
+        placeNewEvent(i, 'Blackout on China<br />Detected by 5 agents<br />First Detection: 15:29:39 UTC', lat[i], lng[i])
+        i++
+
+        // TODO: format information; show all information
+    }
+
+    onOpened = function() {
+        $("#map_status").html("Waiting for events...")
+    };
+
+    onMessage = function(m) {
+        //alert("message received")
+        event = JSON.parse(m.data)
+        //$("#map_status").html("New event")
+        addEventToMap('treste')
+    }
+
+    onError = function() {
+        alert("error")
+        $("#map_status").html("Error loading events")
+    }
+
+    openChannel = function() {
+        var token = '{{ token }}';
+        var channel = new goog.appengine.Channel(token);
+        var handler = {
+          'onopen': onOpened,
+          'onmessage': onMessage,
+          'onerror': onError,
+          'onclose': function() {}
+        };
+        var socket = channel.open(handler);
+        socket.onopen = onOpened;
+        socket.onmessage = onMessage;
+        socket.onerror = onError;
+      }
+
+    initialize = function() {
+        initializeMap();
+        //openChannel();
+    }
+
+    setTimeout(initialize, 100);
+
+
+    $(document).ready(function(){
+       $("#but").click(function(){ addEventToMap('teste'); });
+    });
+
+</script>
+
+</head>
+<body>
+
+<div id="map_status">
+    teste
+    <input type="button" id="but" value="add" />
+</div>
+<div id="map_canvas" style="width:100%; height:100%;"></div>
+
+</body>
 </html>

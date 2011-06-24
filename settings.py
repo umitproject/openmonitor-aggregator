@@ -23,7 +23,8 @@ INSTALLED_APPS = (
     'autoload',
     'dbindexer',
     'mediagenerator',
-    'djangologging',
+    #'djangologging',
+    'geopy',
     'protobuf',
     'piston',
     'messages',
@@ -44,7 +45,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'djangologging.middleware.LoggingMiddleware',
+    #'djangologging.middleware.LoggingMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

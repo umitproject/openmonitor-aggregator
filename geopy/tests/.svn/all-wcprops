@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/149/trunk/geopy/tests
+END
+test_backends.py
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/143/trunk/geopy/tests/test_backends.py
+END
+test_distance.py
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/105/trunk/geopy/tests/test_distance.py
+END
+test_gpx.py
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/139/trunk/geopy/tests/test_gpx.py
+END
+test_geohash.py
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/92/trunk/geopy/tests/test_geohash.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/92/trunk/geopy/tests/__init__.py
+END
+fells_loop.gpx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/92/trunk/geopy/tests/fells_loop.gpx
+END
+test_microformats.py
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/139/trunk/geopy/tests/test_microformats.py
+END
+run_tests.py
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/149/trunk/geopy/tests/run_tests.py
+END

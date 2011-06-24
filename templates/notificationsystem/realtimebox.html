@@ -3,15 +3,39 @@
 <script type="text/javascript" src="/_ah/channel/jsapi"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script type="text/javascript" src="/js/date.format.js"></script>
 
   <script type="text/javascript">
 
-    function addEventToList(event)
+    function formatDate(dateStr)
+    {
+        date = new Date(dateStr);
+        return date.format("dd/mm/yyyy HH:MM:ss");
+    }
+
+    function addEventToList(event, appear)
     {
         eventdiv = $( document.createElement('div') )
-        eventdiv.addClass("event").html(event.msg).hide()
+        content = "<a href='" + event.url + "'>" + event.targetType + " " + event.type + " " + event.target + "</a><br />First Detection: " + formatDate(event.firstdetection) + "<br />Last Detection: " + formatDate(event.lastdetection) + "<br />Location: ";
+        for(i=0; i<event.locations.length; i++)
+        {
+            if(event.locations[i].city!="")
+                content += event.locations[i].city + ", ";
+            content += event.locations[i].country;
+            if(i!=event.locations.length-1)
+                content += "; ";
+        }
+        eventdiv.addClass("event").html(content)
+
+        if(event.active)
+            eventdiv.addClass("active")
         $("#realtime_content").prepend(eventdiv)
-        eventdiv.slideDown("slow")
+
+        if(appear)
+        {
+            eventdiv.hide()
+            eventdiv.slideDown("slow")
+        }
 
         // TODO: format information; show all information
     }
@@ -23,7 +47,7 @@
     onMessage = function(m) {
         event = JSON.parse(m.data)
         $("#realtime_status").html("New event")
-        addEventToList(event)
+        addEventToList(event, true)
     }
 
     onError = function() {
@@ -43,10 +67,20 @@
         socket.onopen = onOpened;
         socket.onmessage = onMessage;
         socket.onerror = onError;
-      }
+    }
+
+    updateInitialEvents = function(m)
+    {
+        events = JSON.parse(m.data)
+        for(var i=0; i<events.length; i++)
+        {
+            addEventToList(events[i], false)
+        }
+    }
 
     initialize = function() {
         openChannel();
+        updateInitialEvents({data: '{{ initial_events|safe }}'});
     }
 
     setTimeout(initialize, 100);
@@ -55,7 +89,7 @@
 
 
 <div id="realtime_status">
-
+    Loading...
 </div>
 <div id="realtime_content">
 

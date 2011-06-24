@@ -12,11 +12,19 @@
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script type="text/javascript" src="/js/date.format.js"></script>
+<script type="text/javascript" src="/js/markerclusterer.js"></script>
 
 <script type="text/javascript">
 
+    function formatDate(dateStr)
+    {
+        date = new Date(dateStr);
+        return date.format("dd/mm/yyyy HH:MM:ss");
+    }
+
     var map
-    var i = 1
+    var mapCluster
     var eventLvl1 = "/images/alert1.png"
     var eventLvl2 = "/images/alert2.png"
     var eventLvl3 = "/images/alert3.png"
@@ -32,6 +40,7 @@
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
         map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+        mapCluster = new MarkerClusterer(map);
     }
 
 
@@ -65,14 +74,6 @@
         /* cancel icon animation after newEventTime */
         setInterval(function(){ marker.setAnimation(); }, newEventTime);
 
-        /*
-        var notificationMarker = new google.maps.Marker({
-            position: new google.maps.LatLng(latitude, longitude),
-            icon: newevent
-        });
-
-        //notificationMarker.setMap(map);*/
-
         /* create info window */
         var infowindow = new google.maps.InfoWindow({
             content: event
@@ -83,24 +84,27 @@
             infowindow.open(map, marker);
         });
 
+        mapCluster.addMarker(marker);
+
         /* put marker on map */
-        marker.setMap(map);
+        //marker.setMap(map);
     }
 
-    function addEventToMap(event)
+    function addEventToMap(event, appear)
     {
-        var lat = new Array();
-        var lng = new Array();
-        lat[0] = 26.431228;
-        lat[1] = 31.728167;
-        lat[2] = 39.759185;
-        lng[0] = 29.794922;
-        lng[1] = 103.183594;
-        lng[2] = -8.846811;
+        baseInfo = "<a href='" + event.url + "'>" + event.targetType + " " + event.type + " " + event.target + "</a><br />First Detection: " + formatDate(event.firstdetection) + "<br />Last Detection: " + formatDate(event.lastdetection) + "<br />Location: ";
 
-        placeNewEvent(i, 'Blackout on China<br />Detected by 5 agents<br />First Detection: 15:29:39 UTC', lat[i], lng[i])
-        i++
+        for(i=0; i<event.locations.length; i++)
+        {
+            localInfo = "";
+            if(event.locations[i].city!="")
+                localInfo = event.locations[i].city + ", ";
+            localInfo += event.locations[i].country;
 
+            eventInfo = baseInfo + localInfo;
+
+            placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lng)
+        }
         // TODO: format information; show all information
     }
 
@@ -109,10 +113,9 @@
     };
 
     onMessage = function(m) {
-        //alert("message received")
         event = JSON.parse(m.data)
         //$("#map_status").html("New event")
-        addEventToMap('treste')
+        addEventToMap(event, true)
     }
 
     onError = function() {
@@ -133,28 +136,33 @@
         socket.onopen = onOpened;
         socket.onmessage = onMessage;
         socket.onerror = onError;
-      }
+    }
+
+    updateInitialEvents = function(m)
+    {
+        events = JSON.parse(m.data)
+        for(var i=0; i<events.length; i++)
+        {
+            addEventToMap(events[i], false)
+        }
+    }
 
     initialize = function() {
         initializeMap();
-        //openChannel();
+        openChannel();
+        updateInitialEvents({data: '{{ initial_events|safe }}'});
     }
 
-    setTimeout(initialize, 100);
+    //setTimeout(initialize, 100);
 
-
-    $(document).ready(function(){
-       $("#but").click(function(){ addEventToMap('teste'); });
-    });
 
 </script>
 
 </head>
-<body>
+<body onload="initialize()">
 
 <div id="map_status">
-    teste
-    <input type="button" id="but" value="add" />
+    
 </div>
 <div id="map_canvas" style="width:100%; height:100%;"></div>
 

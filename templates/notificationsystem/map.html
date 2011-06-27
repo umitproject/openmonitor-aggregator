@@ -46,7 +46,7 @@
     }
 
 
-    function placeNewEvent(type, event, latitude, longitude)
+    function placeNewEvent(type, event, latitude, longitude, alertEvent)
     {
         var icon;
 
@@ -90,8 +90,21 @@
 
         mapCluster.addMarker(marker);
 
-        /* put marker on map */
-        //marker.setMap(map);
+        if(alertEvent)
+        {
+            var alertMarker = new google.maps.Marker({
+                position: new google.maps.LatLng(latitude, longitude),
+                icon: newevent,
+                optimized: false
+            });
+            
+            /* put marker on map */
+            alertMarker.setMap(map);
+
+            /* hide event alert after newEventTime */
+            setInterval(function(){ alertMarker.setMap(); }, newEventTime);
+        }
+
     }
 
     function addEventToMap(event, appear)
@@ -107,7 +120,7 @@
 
             eventInfo = baseInfo + localInfo;
 
-            placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lng)
+            placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lng, appear)
         }
         // TODO: format information; show all information
     }
@@ -168,7 +181,4 @@
 <div id="map_status">
     
 </div>
-<div id="map_canvas" style="width:100%; height:100%;"></div>
-
-</body>
-</html>
+<div id="map_canvas" style="width:100%; height:100%;">

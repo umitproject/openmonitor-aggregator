@@ -26,7 +26,7 @@ class RegisterAgentHandler(BaseHandler):
         # create the response
         response = messages_pb2.RegisterAgentResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
         response.token = token
         response.privateKey = privateKey
         response.publicKey = publicKey
@@ -53,7 +53,7 @@ class GetPeerListHandler(BaseHandler):
         # create the response
         response = messages_pb2.GetPeerListResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
         knownPeer = response.knownPeers.add()
         knownPeer.token = "token"
         knownPeer.publicKey = "publickey"
@@ -81,7 +81,7 @@ class GetSuperPeerListHandler(BaseHandler):
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
         knownSuperPeer = response.knownSuperPeers.add()
         knownSuperPeer.token = "token"
         knownSuperPeer.publicKey = "publickey"
@@ -109,7 +109,7 @@ class GetEventsHandler(BaseHandler):
          # create the response
         response = messages_pb2.GetEventsResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
         event = response.events.add()
         event.testType = "WEB"
         event.eventType = "CENSOR"
@@ -136,7 +136,7 @@ class SendWebsiteReportHandler(BaseHandler):
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -158,7 +158,7 @@ class SendServiceReportHandler(BaseHandler):
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -180,7 +180,7 @@ class CheckNewVersionHandler(BaseHandler):
         # create the response
         response = messages_pb2.NewVersionResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
         response.downloadURL = "www.icm.com/newver"
         response.versionNo = 4
 
@@ -204,8 +204,8 @@ class CheckNewTestHandler(BaseHandler):
         # create the response
         response = messages_pb2.NewTestsResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
-        response.testVersionNo = 1
+        response.header.currentTestVersionNo = 2
+        response.testVersionNo = 70
         test = response.tests.add()
         test.testID = 1;
         test.websiteURL = "www.example.com";
@@ -233,7 +233,7 @@ class WebsiteSuggestionHandler(BaseHandler):
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -257,7 +257,7 @@ class ServiceSuggestionHandler(BaseHandler):
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = 1
-        response.header.currentTestVersionNo = 1
+        response.header.currentTestVersionNo = 2
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())

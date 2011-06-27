@@ -40,7 +40,9 @@
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
         map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-        mapCluster = new MarkerClusterer(map);
+
+        var mcOptions = {gridSize: 50, maxZoom: 14};
+        mapCluster = new MarkerClusterer(map, [], mcOptions);
     }
 
 
@@ -51,15 +53,17 @@
         /* get the correct icon */
         switch(type)
         {
-            case 1:
+            case "Offline":
                 icon = eventLvl1
                 break
-            case 2:
+            case "Throttling":
                 icon = eventLvl2
                 break
-            case 3:
+            case "Censor":
                 icon = eventLvl3
                 break
+            default:
+                icon = eventLvl3
         }
 
         var marker = new google.maps.Marker({

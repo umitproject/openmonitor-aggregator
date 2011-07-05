@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 from google.appengine.api import channel
-from events.models import Event, EventType, EventLocation, TargetType
+from events.models import Event, EventType, EventLocation, TargetType, EventISP, EventServiceReport, EventWebsiteReport
 import datetime
 from geopy import geocoders
 
@@ -24,6 +24,13 @@ def realtimebox(request):
     initialEvents = simplejson.dumps(events_dict)
     return render_to_response('notificationsystem/realtimebox.html', {'token': token, 'initial_events': initialEvents})
 
+def event(request, event_id):
+    try:
+        event = Event.objects.get(pk=event_id)
+    except Event.DoesNotExist:
+        raise Http404
+    return render_to_response('events/event.html', event.getFullDict())
+
 def send(request):
     g = geocoders.Google("ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw")
     event = Event()
@@ -44,14 +51,24 @@ def send(request):
     location1.longitude = point[1]
     location1.save()
 
-    location2 = EventLocation()
-    location2.city = "Leiria"
-    location2.country = "Portugal"
-    location2.event = event
-    (place, point) = g.geocode(location2.city + ", " + location2.country)
-    location2.latitude = point[0]
-    location2.longitude = point[1]
-    location2.save()
+    isp1 = EventISP()
+    isp1.isp = "ZON"
+    isp1.event = event
+    isp1.save()
+
+    isp2 = EventISP()
+    isp2.isp = "Sapo PT"
+    isp2.event = event
+    isp2.save()
+
+#    location2 = EventLocation()
+#    location2.city = "Leiria"
+#    location2.country = "Portugal"
+#    location2.event = event
+#    (place, point) = g.geocode(location2.city + ", " + location2.country)
+#    location2.latitude = point[0]
+#    location2.longitude = point[1]
+#    location2.save()
     
     message = simplejson.dumps(event.getDict())
     channel.send_message('realtimebox', message)

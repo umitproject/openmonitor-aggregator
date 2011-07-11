@@ -10,6 +10,7 @@ class WebsiteSuggestion(models.Model):
         suggestion = WebsiteSuggestion()
         suggestion.websiteUrl = websiteSuggestionMsg.websiteURL
         suggestion.email = websiteSuggestionMsg.emailAddress
+        suggestion.save()
         return suggestion
 
     create = staticmethod(create)
@@ -27,6 +28,7 @@ class ServiceSuggestion(models.Model):
         suggestion.hostName = serviceSuggestionMsg.hostName
         suggestion.ip = serviceSuggestionMsg.ip
         suggestion.email = serviceSuggestionMsg.emailAddress
+        suggestion.save()
         return suggestion
 
     create = staticmethod(create)

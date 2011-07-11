@@ -1,10 +1,13 @@
 from django.db import models
+import logging
+import datetime
 
 class Report(models.Model):
-    reportId     = models.BigIntegerField()
-    agentId     = models.BigIntegerField()
+    reportId     = models.TextField()
+    agentId      = models.BigIntegerField()
     testId       = models.PositiveIntegerField()
     time         = models.DateTimeField()
+    timeZone     = models.SmallIntegerField()
     responseTime = models.PositiveIntegerField(null=True)
     bandwidth    = models.FloatField(null=True)
     traceRoute   = models.ForeignKey('TraceRoute', null=True)
@@ -24,66 +27,84 @@ class WebsiteReport(Report):
     def create(websiteReportMsg):
         report = WebsiteReport()
 
-        # read WebsiteReportDetail
-        report.url = websiteReportMsg.report.websiteURL
-        report.statusCode = websiteReportMsg.report.statusCode
-        if websiteReportMsg.report.HasField('responseTime'):
-            report.responseTime = websiteReportMsg.report.responseTime
-        if websiteReportMsg.report.HasField('bandwidth'):
-            report.bandwidth = websiteReportMsg.report.bandwidth
+        logging.info(websiteReportMsg)
 
-        if websiteReportMsg.HasField('redirectLink'):
-            report.redirectLink = websiteReportMsg.redirectLink
-        if websiteReportMsg.HasField('htmlResponse'):
-            report.htmlResponse = websiteReportMsg.htmlResponse
-        if websiteReportMsg.HasField('htmlMedia'):
+        websiteReport = websiteReportMsg.report
+        icmReport     = websiteReport.header
+        websiteReportDetail = websiteReport.report
+
+        # read WebsiteReportDetail
+        report.url = websiteReportDetail.websiteURL
+        report.statusCode = websiteReportDetail.statusCode
+
+        if websiteReportDetail.HasField('responseTime'):
+            report.responseTime = websiteReportDetail.responseTime
+        if websiteReportDetail.HasField('bandwidth'):
+            report.bandwidth = websiteReportDetail.bandwidth
+
+        if websiteReportDetail.HasField('redirectLink'):
+            report.redirectLink = websiteReportDetail.redirectLink
+        if websiteReportDetail.HasField('htmlResponse'):
+            report.htmlResponse = websiteReportDetail.htmlResponse
+        if websiteReportDetail.HasField('htmlMedia'):
             # TODO: which name it should have ?
-            report.htmlMedia.save(websiteReportMsg.report.websiteURL, websiteReportMsg.htmlResponse)
+            report.htmlMedia.save(websiteReportDetail.websiteURL, websiteReportDetail.htmlResponse)
 
         # read ICMReport
-        report.reportId = websiteReportMsg.header.reportID
-        report.agentId = websiteReportMsg.header.agentID
-        report.testId = websiteReportMsg.header.testID
-        report.time = websiteReportMsg.header.timeUTC
-        # TODO: why we need timeZone ?
+        report.reportId = icmReport.reportID
+        report.agentId = icmReport.agentID
+        report.testId = icmReport.testID
+        report.time = datetime.datetime.utcfromtimestamp(icmReport.timeUTC)
+        report.timeZone = icmReport.timeZone
+
+        report.save()
 
         # read ICMReport passedNodes
-        for node in websiteReportMsg.header.passedNode:
-            reportNode = WebsiteReportNode()
-            reportNode.node = node
-            report.websitereportnode_set.add(reportNode)
+        for node in icmReport.passedNode:
+            report.websitereportnode_set.create(node=node)
 
         # read ICMReport TraceRoute
-        if websiteReportMsg.header.HasField('traceroute'):
-            traceRoute = TraceRoute()
-            traceRoute.target = websiteReportMsg.header.traceroute.target
-            traceRoute.hops = websiteReportMsg.header.traceroute.hops
-            traceRoute.packetSize = websiteReportMsg.header.traceroute.packetSize
+        if icmReport.HasField('traceroute'):
 
-            # read ICMReport TraceRoute Traces
-            for rcvTrace in websiteReportMsg.header.traceroute.traces:
-                trace = Trace()
-                trace.hop = rcvTrace.hop
-                trace.ip = rcvTrace.ip
+            try:
+                traceRoute = TraceRoute()
+                traceRoute.target = icmReport.traceroute.target
+                traceRoute.hops = icmReport.traceroute.hops
+                traceRoute.packetSize = icmReport.traceroute.packetSize
+                traceRoute.save()
 
-                # read ICMReport TraceRoute Traces PacketsTiming
-                for rcvPacketTime in rcvTrace.packetsTiming:
-                    packetTime = PacketTime()
-                    packetTime.packetTiming = rcvPacketTime
-                    # add packetTime to trace
-                    trace.packettime_set.add(packetTime)
-                 
-                # add trace to traceroute
-                traceRoute.trace_set.add(trace)
+                logging.info("traceroute created")
 
-            # associate traceroute with report
-            traceRoute.report_set.add(report)
-        
+                # read ICMReport TraceRoute Traces
+                for rcvTrace in icmReport.traceroute.traces:
+                    trace = Trace()
+                    trace.traceRoute = traceRoute
+                    trace.hop = rcvTrace.hop
+                    trace.ip = rcvTrace.ip
+                    trace.save()
 
+                    logging.info("trace created")
+
+                    # read ICMReport TraceRoute Traces PacketsTiming
+                    for rcvPacketTime in rcvTrace.packetsTiming:
+                        packetTime = PacketTime()
+                        packetTime.packetTiming = rcvPacketTime
+                        # add packetTime to trace
+                        trace.packettime_set.add(packetTime)
+
+                    # add trace to traceroute
+                    traceRoute.trace_set.add(trace)
+
+                # associate traceroute with report
+                report.traceRoute = traceRoute
+            except Exception,ex:
+                logging.error(ex)
+
+        report.save()
         return report
 
     create = staticmethod(create)
-
+    
 
 class ServiceReport(Report):
     serviceName  = models.CharField(max_length=50)
@@ -92,39 +113,49 @@ class ServiceReport(Report):
     def create(serviceReportMsg):
         report = ServiceReport()
 
+        serviceReport = serviceReportMsg.report
+        icmReport     = serviceReport.header
+        serviceReportDetail = serviceReport.report
+
         # read ServiceReportDetail
-        report.serviceName = serviceReportMsg.serviceName
-        report.statusCode = serviceReportMsg.statusCode
-        if serviceReportMsg.report.HasField('responseTime'):
-            report.responseTime = serviceReportMsg.report.responseTime
-        if serviceReportMsg.report.HasField('bandwidth'):
-            report.bandwidth = serviceReportMsg.report.bandwidth
+        report.serviceName = serviceReportDetail.serviceName
+        report.statusCode = serviceReportDetail.statusCode
+        if serviceReportDetail.HasField('responseTime'):
+            report.responseTime = serviceReportDetail.responseTime
+        if serviceReportDetail.HasField('bandwidth'):
+            report.bandwidth = serviceReportDetail.bandwidth
 
         # read ICMReport
-        report.reportId = serviceReportMsg.header.reportID
-        report.agentId = serviceReportMsg.header.agentID
-        report.testId = serviceReportMsg.header.testID
-        report.time = serviceReportMsg.header.timeUTC
-        # TODO: why we need timeZone ?
+        try:
+            report.reportId = icmReport.reportID
+            report.agentId = icmReport.agentID
+            report.testId = icmReport.testID
+            report.time = datetime.datetime.utcfromtimestamp(icmReport.timeUTC)
+            report.timeZone = icmReport.timeZone
+        except Exception,ex:
+            logging.error(ex)
+
+        report.save()
 
         # read ICMReport passedNodes
-        for node in serviceReportMsg.header.passedNode:
-            reportNode = ServiceReportNode()
-            reportNode.node = node
-            report.servicereportnode_set.add(reportNode)
+        for node in icmReport.passedNode:
+            report.servicereportnode_set.create(node=node)
 
         # read ICMReport TraceRoute
-        if serviceReportMsg.header.HasField('traceroute'):
+        if icmReport.HasField('traceroute'):
             traceRoute = TraceRoute()
-            traceRoute.target = serviceReportMsg.header.traceroute.target
-            traceRoute.hops = serviceReportMsg.header.traceroute.hops
-            traceRoute.packetSize = serviceReportMsg.header.traceroute.packetSize
+            traceRoute.target = icmReport.traceroute.target
+            traceRoute.hops = icmReport.traceroute.hops
+            traceRoute.packetSize = icmReport.traceroute.packetSize
+            traceRoute.save()
 
             # read ICMReport TraceRoute Traces
-            for rcvTrace in serviceReportMsg.header.traceroute.traces:
+            for rcvTrace in icmReport.traceroute.traces:
                 trace = Trace()
+                trace.traceRoute = traceRoute
                 trace.hop = rcvTrace.hop
                 trace.ip = rcvTrace.ip
+                trace.save()
 
                 # read ICMReport TraceRoute Traces PacketsTiming
                 for rcvPacketTime in rcvTrace.packetsTiming:
@@ -137,9 +168,9 @@ class ServiceReport(Report):
                 traceRoute.trace_set.add(trace)
 
             # associate traceroute with report
-            traceRoute.report_set.add(report)
+            report.traceRoute = traceRoute
 
-        
+        report.save()
         return report
 
     create = staticmethod(create)
@@ -154,7 +185,6 @@ class ServiceReportNode(models.Model):
     report = models.ForeignKey('ServiceReport')
     node   = models.CharField(max_length=255)
 
-
 class TraceRoute(models.Model):
     target     = models.CharField(max_length=255)
     hops       = models.PositiveSmallIntegerField()
@@ -165,6 +195,11 @@ class Trace(models.Model):
     traceRoute = models.ForeignKey('TraceRoute')
     hop        = models.PositiveSmallIntegerField()
     ip         = models.CharField(max_length=255)
+    #city       = models.CharField(max_length=100)
+    #country    = models.CharField(max_length=100)
+    #latitude   = models.FloatField()
+    #longitude  = models.FloatField()
+    #isp        = models.CharField(max_length=100)
 
 
 class PacketTime(models.Model):

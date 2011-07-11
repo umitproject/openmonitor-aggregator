@@ -3,6 +3,7 @@ from messages import messages_pb2
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
 from reports.models import WebsiteReport, ServiceReport
 from django.test.client import Client
+from versions.models import DesktopAgentVersion, MobileAgentVersion
 import logging
 import base64
 
@@ -24,9 +25,13 @@ class RegisterAgentHandler(BaseHandler):
         cipheredPublicKey = "cpublickey"
         agentId = 5
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.RegisterAgentResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
         response.token = token
         response.privateKey = privateKey
@@ -51,9 +56,13 @@ class GetPeerListHandler(BaseHandler):
 
         # TODO: get peer list
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.GetPeerListResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
         knownPeer = response.knownPeers.add()
         knownPeer.token = "token"
@@ -79,9 +88,13 @@ class GetSuperPeerListHandler(BaseHandler):
 
         # TODO: get super peer list
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
         knownSuperPeer = response.knownSuperPeers.add()
         knownSuperPeer.token = "token"
@@ -107,9 +120,13 @@ class GetEventsHandler(BaseHandler):
 
         # TODO: get events
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
          # create the response
         response = messages_pb2.GetEventsResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
         event = response.events.add()
         event.testType = "WEB"
@@ -135,9 +152,13 @@ class SendWebsiteReportHandler(BaseHandler):
         # add website report
         webSiteReport = WebsiteReport.create(receivedWebsiteReport)
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.SendReportResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
 
         # send back response
@@ -158,9 +179,13 @@ class SendServiceReportHandler(BaseHandler):
         # add service report
         serviceReport = ServiceReport.create(receivedServiceReport)
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.SendReportResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
 
         # send back response
@@ -178,14 +203,16 @@ class CheckNewVersionHandler(BaseHandler):
         receivedMsg = messages_pb2.NewVersion()
         receivedMsg.ParseFromString(msg)
 
-        # TODO: check for last software version
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
         # create the response
         response = messages_pb2.NewVersionResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
-        response.downloadURL = "www.icm.com/newver"
-        response.versionNo = 4
+        response.downloadURL = softwareVersion.url
+        response.versionNo = softwareVersion.version
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -204,9 +231,13 @@ class CheckNewTestHandler(BaseHandler):
 
         # TODO: check for last tests
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.NewTestsResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
         response.testVersionNo = 70
         test = response.tests.add()
@@ -232,9 +263,13 @@ class WebsiteSuggestionHandler(BaseHandler):
         # create the suggestion
         webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion)
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.TestSuggestionResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
 
         # send back response
@@ -255,9 +290,13 @@ class ServiceSuggestionHandler(BaseHandler):
         # create the suggestion
         serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion)
 
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
         # create the response
         response = messages_pb2.TestSuggestionResponse()
-        response.header.currentVersionNo = 1
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = 2
 
         # send back response
@@ -271,17 +310,17 @@ class TestsHandler(BaseHandler):
 
     def read(self, request):
 
-#        try:
-#            c = Client()
-#            suggestion = messages_pb2.WebsiteSuggestion()
-#            suggestion.header.token = "token"
-#            suggestion.header.agentID = 5
-#            suggestion.websiteURL = "www.facebook.com"
-#            suggestion.emailAddress = "diogopinheiro@ua.pt"
-#            sug_str = base64.b64encode(suggestion.SerializeToString())
-#            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
-#        except Exception, inst:
-#            logging.error(inst)
+        try:
+            c = Client()
+            suggestion = messages_pb2.WebsiteSuggestion()
+            suggestion.header.token = "token"
+            suggestion.header.agentID = 5
+            suggestion.websiteURL = "www.facebook.com"
+            suggestion.emailAddress = "diogopinheiro@ua.pt"
+            sug_str = base64.b64encode(suggestion.SerializeToString())
+            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
+        except Exception, inst:
+            logging.error(inst)
 #
 #        try:
 #            suggestion = messages_pb2.ServiceSuggestion()
@@ -333,37 +372,37 @@ class TestsHandler(BaseHandler):
 
 
         # create website report
-        try:
-            c = Client()
-            sreport = messages_pb2.SendServiceReport()
-            sreport.header.token = "token"
-            sreport.header.agentID = 3
-            sreport.report.header.reportID = 45457
-            sreport.report.header.agentID = 5
-            sreport.report.header.testID = 100
-            sreport.report.header.timeZone = -5
-            sreport.report.header.timeUTC = 1310396214
-            sreport.report.report.serviceName = "p2p"
-            sreport.report.report.statusCode = 100
-            sreport.report.report.responseTime = 53
-            sreport.report.report.bandwidth = 9456
-
-            sreport.report.header.passedNode.append("node1")
-            sreport.report.header.passedNode.append("node2")
-
-            sreport.report.header.traceroute.target = "78.43.34.120"
-            sreport.report.header.traceroute.hops = 2
-            sreport.report.header.traceroute.packetSize = 200
-
-            trace = sreport.report.header.traceroute.traces.add()
-            trace.ip = "214.23.54.34"
-            trace.hop = 1
-            trace.packetsTiming.append(120)
-            trace.packetsTiming.append(129)
-
-            sreport_str = base64.b64encode(sreport.SerializeToString())
-            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
-        except Exception, inst:
-            logging.error(inst)
+#        try:
+#            c = Client()
+#            sreport = messages_pb2.SendServiceReport()
+#            sreport.header.token = "token"
+#            sreport.header.agentID = 3
+#            sreport.report.header.reportID = 45457
+#            sreport.report.header.agentID = 5
+#            sreport.report.header.testID = 100
+#            sreport.report.header.timeZone = -5
+#            sreport.report.header.timeUTC = 1310396214
+#            sreport.report.report.serviceName = "p2p"
+#            sreport.report.report.statusCode = 100
+#            sreport.report.report.responseTime = 53
+#            sreport.report.report.bandwidth = 9456
+#
+#            sreport.report.header.passedNode.append("node1")
+#            sreport.report.header.passedNode.append("node2")
+#
+#            sreport.report.header.traceroute.target = "78.43.34.120"
+#            sreport.report.header.traceroute.hops = 2
+#            sreport.report.header.traceroute.packetSize = 200
+#
+#            trace = sreport.report.header.traceroute.traces.add()
+#            trace.ip = "214.23.54.34"
+#            trace.hop = 1
+#            trace.packetsTiming.append(120)
+#            trace.packetsTiming.append(129)
+#
+#            sreport_str = base64.b64encode(sreport.SerializeToString())
+#            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
+#        except Exception, inst:
+#            logging.error(inst)
 
         return 'test1'

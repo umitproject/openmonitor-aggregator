@@ -67,6 +67,12 @@ class Event(models.Model):
     #def __str__(self):
     #    return '%s %s %s' % (self.targetType, self.eventType, self.firstDetectionUTC)
 
+    def getTargetType(self):
+        return TargetType.getTargetType(self.targetType)
+
+    def getEventType(self):
+        return EventType.getEventType(self.eventType)
+
     def getDict(self):
 
         locations = []
@@ -75,14 +81,24 @@ class Event(models.Model):
 
         event = {
           'url': "/events/" + str(self.id),
-          'targetType': TargetType.getTargetType(self.targetType),
+          'targetType': self.getTargetType(),
           'target': self.target,
-          'type': EventType.getEventType(self.eventType),
+          'type': self.getEventType(),
           'firstdetection': self.firstDetectionUTC.ctime(),
           'lastdetection': self.lastDetectionUTC.ctime(),
           'active': self.active,
           'locations': locations
         }
+        return event
+
+    def getFullDict(self):
+        event = self.getDict()
+
+        isps = []
+        for isp in self.eventisp_set.all():
+            isps.append(isp.isp)
+
+        event['isps'] = isps
         return event
 
 

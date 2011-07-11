@@ -4,6 +4,7 @@ from suggestions.models import WebsiteSuggestion, ServiceSuggestion
 from reports.models import WebsiteReport, ServiceReport
 from django.test.client import Client
 from versions.models import DesktopAgentVersion, MobileAgentVersion
+from ICMtests.models import Test, WebsiteTest, ServiceTest
 import logging
 import base64
 
@@ -29,10 +30,13 @@ class RegisterAgentHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.RegisterAgentResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
         response.token = token
         response.privateKey = privateKey
         response.publicKey = publicKey
@@ -60,10 +64,13 @@ class GetPeerListHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.GetPeerListResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
         knownPeer = response.knownPeers.add()
         knownPeer.token = "token"
         knownPeer.publicKey = "publickey"
@@ -92,10 +99,13 @@ class GetSuperPeerListHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
         knownSuperPeer = response.knownSuperPeers.add()
         knownSuperPeer.token = "token"
         knownSuperPeer.publicKey = "publickey"
@@ -124,10 +134,13 @@ class GetEventsHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
          # create the response
         response = messages_pb2.GetEventsResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
         event = response.events.add()
         event.testType = "WEB"
         event.eventType = "CENSOR"
@@ -156,10 +169,13 @@ class SendWebsiteReportHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -183,10 +199,13 @@ class SendServiceReportHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -207,10 +226,13 @@ class CheckNewVersionHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.NewVersionResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
         response.downloadURL = softwareVersion.url
         response.versionNo = softwareVersion.version
 
@@ -229,21 +251,33 @@ class CheckNewTestHandler(BaseHandler):
         receivedMsg = messages_pb2.NewTests()
         receivedMsg.ParseFromString(msg)
 
-        # TODO: check for last tests
+        newTests = Test.getUpdatedTests(receivedMsg.currentTestVersionNo)
 
         # get software version information
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.NewTestsResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
-        response.testVersionNo = 70
-        test = response.tests.add()
-        test.testID = 1;
-        test.websiteURL = "www.example.com";
-        test.executeAtTimeUTC = 4000;
+        response.header.currentTestVersionNo = testVersion.testID
+        response.testVersionNo = testVersion.testID
+
+        for newTest in newTests:
+            test = response.tests.add()
+            test.testID = newTest.test.testID
+            # TODO: get execution time
+            test.executeAtTimeUTC = 4000
+
+            if isinstance(newTest, WebsiteTest):
+                test.testType = "WEB"
+                test.websiteURL = newTest.websiteURL
+            else:
+                test.testType = "SERVICE"
+                test.serviceCode = newTest.serviceCode
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -267,10 +301,13 @@ class WebsiteSuggestionHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -294,10 +331,13 @@ class ServiceSuggestionHandler(BaseHandler):
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = 2
+        response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -310,17 +350,19 @@ class TestsHandler(BaseHandler):
 
     def read(self, request):
 
-        try:
-            c = Client()
-            suggestion = messages_pb2.WebsiteSuggestion()
-            suggestion.header.token = "token"
-            suggestion.header.agentID = 5
-            suggestion.websiteURL = "www.facebook.com"
-            suggestion.emailAddress = "diogopinheiro@ua.pt"
-            sug_str = base64.b64encode(suggestion.SerializeToString())
-            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
-        except Exception, inst:
-            logging.error(inst)
+#        try:
+#            c = Client()
+#            suggestion = messages_pb2.WebsiteSuggestion()
+#            suggestion.header.token = "token"
+#            suggestion.header.agentID = 5
+#            suggestion.websiteURL = "www.facebook.com"
+#            suggestion.emailAddress = "diogopinheiro@ua.pt"
+#            sug_str = base64.b64encode(suggestion.SerializeToString())
+#            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
+#        except Exception, inst:
+#            logging.error(inst)
+
+
 #
 #        try:
 #            suggestion = messages_pb2.ServiceSuggestion()
@@ -334,6 +376,19 @@ class TestsHandler(BaseHandler):
 #            response = c.post('/api/servicesuggestion/', {'msg': sug_str})
 #        except Exception, inst:
 #            logging.error(inst)
+
+
+        try:
+            c = Client()
+            newtests = messages_pb2.NewTests()
+            newtests.header.token = "token"
+            newtests.header.agentID = 5
+            newtests.currentTestVersionNo = 0
+            newt_str = base64.b64encode(newtests.SerializeToString())
+            response = c.post('/api/checktests/', {'msg': newt_str})
+            logging.info(response)
+        except Exception, inst:
+            logging.error(inst)
 
 
         # create website report

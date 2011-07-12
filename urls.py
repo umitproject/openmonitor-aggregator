@@ -11,7 +11,6 @@ urlpatterns = patterns('',
     (r'^map/$', 'gui.views.map'),
     (r'^realtimebox/$', 'gui.views.realtimebox'),
     (r'^events/(?P<event_id>\d+)/$', 'gui.views.event'),
-    (r'^send/$', 'gui.views.send'),
     (r'^admin/', include(admin.site.urls)),
     (r'^api/', include('api.urls')),
 )

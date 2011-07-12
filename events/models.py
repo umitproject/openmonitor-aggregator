@@ -98,16 +98,27 @@ class Event(models.Model):
         for isp in self.eventisp_set.all():
             isps.append(isp.isp)
 
+        blockedNodes = []
+        for blockedNode in self.eventblockednode_set.all():
+            blockedNodes.append({'city': blockedNode.city, 'country': blockedNode.country, 'lat': blockedNode.latitude, 'lng': blockedNode.longitude, 'ip': blockedNode.ip})
+
         event['isps'] = isps
+        event['blockedNodes'] = blockedNodes
         return event
 
 
-class EventLocation(models.Model):
-    event    = models.ForeignKey('Event')
+class Location(models.Model):
     city     = models.CharField(max_length=100)
     country  = models.CharField(max_length=100)
     latitude = models.FloatField()
     longitude= models.FloatField()
+
+    class Meta:
+        abstract = True
+
+
+class EventLocation(Location):
+    event    = models.ForeignKey('Event')
 
 
 class EventISP(models.Model):
@@ -123,3 +134,8 @@ class EventWebsiteReport(models.Model):
 class EventServiceReport(models.Model):
     event  = models.ForeignKey('Event')
     report = models.ForeignKey('reports.WebsiteReport')
+
+    
+class EventBlockedNode(Location):
+    event = models.ForeignKey('Event')
+    ip    = models.CharField(max_length=255)

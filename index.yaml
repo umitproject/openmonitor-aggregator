@@ -21,7 +21,17 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: ICMtests_servicetest
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: ICMtests_test
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: ICMtests_websitetest
   properties:
   - name: __key__
     direction: desc
@@ -50,4 +60,19 @@ indexes:
   properties:
   - name: traceRoute_id
   - name: hop
+    direction: desc
+
+- kind: suggestions_websitesuggestion
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: versions_desktopagentversion
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: versions_mobileagentversion
+  properties:
+  - name: __key__
     direction: desc

@@ -5,6 +5,7 @@ from reports.models import WebsiteReport, ServiceReport
 from django.test.client import Client
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from ICMtests.models import Test, WebsiteTest, ServiceTest
+from decision.decisionSystem import DecisionSystem
 import logging
 import base64
 
@@ -164,6 +165,9 @@ class SendWebsiteReportHandler(BaseHandler):
 
         # add website report
         webSiteReport = WebsiteReport.create(receivedWebsiteReport)
+        # send report to decision system
+        DecisionSystem.newReport(webSiteReport)
+
 
         # get software version information
         # TODO: filter type of agent
@@ -194,6 +198,8 @@ class SendServiceReportHandler(BaseHandler):
 
         # add service report
         serviceReport = ServiceReport.create(receivedServiceReport)
+        # send report to decision system
+        DecisionSystem.newReport(serviceReport)
 
         # get software version information
         # TODO: filter type of agent
@@ -378,55 +384,60 @@ class TestsHandler(BaseHandler):
 #            logging.error(inst)
 
 
-        try:
-            c = Client()
-            newtests = messages_pb2.NewTests()
-            newtests.header.token = "token"
-            newtests.header.agentID = 5
-            newtests.currentTestVersionNo = 0
-            newt_str = base64.b64encode(newtests.SerializeToString())
-            response = c.post('/api/checktests/', {'msg': newt_str})
-            logging.info(response)
-        except Exception, inst:
-            logging.error(inst)
-
-
-        # create website report
 #        try:
 #            c = Client()
-#            wreport = messages_pb2.SendWebsiteReport()
-#            wreport.header.token = "token"
-#            wreport.header.agentID = 3
-#            wreport.report.header.reportID = 45457
-#            wreport.report.header.agentID = 5
-#            wreport.report.header.testID = 100
-#            wreport.report.header.timeZone = -5
-#            wreport.report.header.timeUTC = 1310396214
-#            wreport.report.report.websiteURL = "www.facebook.com"
-#            wreport.report.report.statusCode = 200
-#            wreport.report.report.responseTime = 129
-#            wreport.report.report.bandwidth = 2300
-#
-#            wreport.report.header.passedNode.append("node1")
-#            wreport.report.header.passedNode.append("node2")
-#
-#            wreport.report.header.traceroute.target = "78.43.34.120"
-#            wreport.report.header.traceroute.hops = 2
-#            wreport.report.header.traceroute.packetSize = 200
-#
-#            trace = wreport.report.header.traceroute.traces.add()
-#            trace.ip = "214.23.54.34"
-#            trace.hop = 1
-#            trace.packetsTiming.append(120)
-#            trace.packetsTiming.append(129)
-#
-#            wreport_str = base64.b64encode(wreport.SerializeToString())
-#            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
+#            newtests = messages_pb2.NewTests()
+#            newtests.header.token = "token"
+#            newtests.header.agentID = 5
+#            newtests.currentTestVersionNo = 0
+#            newt_str = base64.b64encode(newtests.SerializeToString())
+#            response = c.post('/api/checktests/', {'msg': newt_str})
+#            logging.info(response)
 #        except Exception, inst:
 #            logging.error(inst)
 
 
         # create website report
+        try:
+            c = Client()
+            wreport = messages_pb2.SendWebsiteReport()
+            wreport.header.token = "token"
+            wreport.header.agentID = 3
+            wreport.report.header.reportID = 45457
+            wreport.report.header.agentID = 5
+            wreport.report.header.testID = 100
+            wreport.report.header.timeZone = -5
+            wreport.report.header.timeUTC = 1310396214
+            wreport.report.report.websiteURL = "www.google.com"
+            wreport.report.report.statusCode = 200
+            wreport.report.report.responseTime = 129
+            wreport.report.report.bandwidth = 2300
+
+            wreport.report.header.passedNode.append("node1")
+            wreport.report.header.passedNode.append("node2")
+
+            wreport.report.header.traceroute.target = "78.43.34.120"
+            wreport.report.header.traceroute.hops = 2
+            wreport.report.header.traceroute.packetSize = 200
+
+            trace = wreport.report.header.traceroute.traces.add()
+            trace.ip = "214.23.54.34"
+            trace.hop = 1
+            trace.packetsTiming.append(120)
+            trace.packetsTiming.append(129)
+
+            trace = wreport.report.header.traceroute.traces.add()
+            trace.ip = "24.63.54.128"
+            trace.hop = 2
+            trace.packetsTiming.append(120)
+
+            wreport_str = base64.b64encode(wreport.SerializeToString())
+            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
+        except Exception, inst:
+            logging.error(inst)
+
+
+        # create service report
 #        try:
 #            c = Client()
 #            sreport = messages_pb2.SendServiceReport()

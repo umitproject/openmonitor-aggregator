@@ -23,7 +23,13 @@ class WebsiteTest(models.Model):
     test       = models.ForeignKey('Test')
     websiteURL = models.URLField()
 
+    def __unicode__(self):
+        return "%s (%s)" % (self.test.description, self.websiteURL)
+
 
 class ServiceTest(models.Model):
     test        = models.ForeignKey('Test')
     serviceCode = models.PositiveIntegerField()
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.test.description, self.serviceCode)

@@ -5,11 +5,17 @@
     <title></title>
     <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
     <script type="text/javascript" src="/js/markerclusterer.js"></script>
 
     <script type="text/javascript">
 
         var map;
+        var bounds;
+        var flagIcon = "/images/pin.png";
+        var blockingIcon = "/images/red-x.gif";
+        //var agentFlag = "/images/greenflag.png";
+        //var targetFlag = "/images/redflag.png";
 
         function initializeMap()
         {
@@ -22,21 +28,98 @@
             map = new google.maps.Map(document.getElementById("locationMap"), myOptions);
 
             var mcOptions = {gridSize: 50, maxZoom: 14};
-            mapCluster = new MarkerClusterer(map, [], mcOptions);
+            //mapCluster = new MarkerClusterer(map, [], mcOptions);
 
-            locationsJson = "[{'lat': 40.6411848, 'city': '', 'lng': -8.6536169, 'country': 'Portugal'}, {'lat': 39.7443404, 'city': 'Leiria', 'lng': -8.8072495, 'country': 'Portugal'}]"
-            locations = eval('(' + locationsJson + ')');
+            /* create poly line */
+            /*
+            var polyOptions = {
+                strokeColor: '#000000',
+                strokeOpacity: 1.0,
+                strokeWeight: 3
+              }
+            poly = new google.maps.Polyline(polyOptions);
+            poly.setMap(map);
+            */
 
+            bounds = new google.maps.LatLngBounds();
+
+            eventLocations = {{ locations|safe }}
+            blockingNodes  = {{ blockingNodes|safe }}
+
+            drawEventLocations(eventLocations);
+            drawBlockingNodes(blockingNodes)
+
+            map.fitBounds(bounds);
+        }
+
+        function drawEventLocations(locations)
+        {
+            drawMarker(locations, null);
+        }
+
+        function drawBlockingNodes(locations)
+        {
+            drawMarker(locations, blockingIcon);
+        }
+
+        function drawMarker(locations, icon)
+        {
             for(i=0; i<locations.length; i++)
             {
+                pos = new google.maps.LatLng(locations[i].lat, locations[i].lng);
+
                 var marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(locations[i].lat, locations[i].lng)
+                    position: pos,
+                    icon: icon
                 });
 
-                mapCluster.addMarker(marker);
-                //marker.setMap(map);
+                bounds.extend(pos);
+                marker.setMap(map);
+                //mapCluster.addMarker(marker);
             }
         }
+
+        /*
+        function drawTraceRoute(traceroute)
+        {
+            points = new Array();
+
+            test = "[{'lat': 40.6411848, 'lng': -8.6536169}, {'lat': 39.9443404, 'lng': -8.8972495}, {'lat': 39.7443404, 'lng': -8.8072495}]"
+            traceroute = eval('(' + test + ')');
+            
+            for(i=0; i<traceroute.length; i++)
+            {
+                trace = traceroute[i];
+                pos = new google.maps.LatLng(trace.lat, trace.lng);
+                points.push(new google.maps.LatLng(trace.lat, trace.lng));
+
+                if(i>0)
+                {
+                    if(i==traceroute.length-1)
+                        icon = targetFlag;
+                    else
+                        icon = flagIcon;
+
+                    var marker = new google.maps.Marker({
+                        position: pos,
+                        icon: icon
+                    });
+
+                    marker.setMap(map);
+                }
+
+                bounds.extend(pos);
+            }
+
+            var path = new google.maps.Polyline({
+                path: points,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+
+            path.setMap(map);
+        }*/
 
     </script>
 
@@ -46,32 +129,32 @@
 <table>
     <tr>
         <td>Target Type</td>
-        <td>{{ targetType }}</td>
+        <td>{{ eventInfo.targetType }}</td>
     </tr>
     <tr>
         <td>Event Type</td>
-        <td>{{ type }}</td>
+        <td>{{ eventInfo.type }}</td>
     </tr>
     <tr>
         <td>Event Target</td>
-        <td>{{ target }}</td>
+        <td>{{ eventInfo.target }}</td>
     </tr>
     <tr>
         <td>First Detection</td>
-        <td>{{ firstdetection }}</td>
+        <td>{{ eventInfo.firstdetection }}</td>
     </tr>
     <tr>
         <td>Last Detection</td>
-        <td>{{ lastdetection }}</td>
+        <td>{{ eventInfo.lastdetection }}</td>
     </tr>
     <tr>
         <td>Active</td>
-        <td>{{ active }}</td>
+        <td>{{ eventInfo.active }}</td>
     </tr>
     <tr>
         <td>Locations</td>
         <td>
-            {% for location in locations %}
+            {% for location in eventInfo.locations %}
                 {% if location.city %}
                     {{ location.city }},
                 {% endif %}
@@ -82,7 +165,7 @@
     <tr>
         <td>ISP</td>
         <td>
-            {% for isp in isps %}
+            {% for isp in eventInfo.isps %}
                 {{ isp }}<br />
             {% endfor %}
         </td>

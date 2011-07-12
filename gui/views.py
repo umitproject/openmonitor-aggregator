@@ -26,4 +26,8 @@ def event(request, event_id):
         event = Event.objects.get(pk=event_id)
     except Event.DoesNotExist:
         raise Http404
-    return render_to_response('events/event.html', event.getFullDict())
+    eventDict = event.getFullDict()
+    locations = simplejson.dumps(eventDict['locations'])
+    blockingNodes = simplejson.dumps(eventDict['blockingNodes'])
+
+    return render_to_response('events/event.html', {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes})

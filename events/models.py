@@ -103,7 +103,7 @@ class Event(models.Model):
             blockedNodes.append({'city': blockedNode.city, 'country': blockedNode.country, 'lat': blockedNode.latitude, 'lng': blockedNode.longitude, 'ip': blockedNode.ip})
 
         event['isps'] = isps
-        event['blockedNodes'] = blockedNodes
+        event['blockingNodes'] = blockedNodes
         return event
 
 

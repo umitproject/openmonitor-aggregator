@@ -27,8 +27,6 @@ class WebsiteReport(Report):
     def create(websiteReportMsg):
         report = WebsiteReport()
 
-        logging.info(websiteReportMsg)
-
         websiteReport = websiteReportMsg.report
         icmReport     = websiteReport.header
         websiteReportDetail = websiteReport.report
@@ -73,8 +71,6 @@ class WebsiteReport(Report):
                 traceRoute.packetSize = icmReport.traceroute.packetSize
                 traceRoute.save()
 
-                logging.info("traceroute created")
-
                 # read ICMReport TraceRoute Traces
                 for rcvTrace in icmReport.traceroute.traces:
                     trace = Trace()
@@ -82,8 +78,6 @@ class WebsiteReport(Report):
                     trace.hop = rcvTrace.hop
                     trace.ip = rcvTrace.ip
                     trace.save()
-
-                    logging.info("trace created")
 
                     # read ICMReport TraceRoute Traces PacketsTiming
                     for rcvPacketTime in rcvTrace.packetsTiming:
@@ -189,6 +183,10 @@ class TraceRoute(models.Model):
     target     = models.CharField(max_length=255)
     hops       = models.PositiveSmallIntegerField()
     packetSize = models.PositiveIntegerField()
+
+    # return the trace of the blocked node
+    def getBlockedNode(self):
+        return self.trace_set.order_by('-hop')[0:1].get()
 
 
 class Trace(models.Model):

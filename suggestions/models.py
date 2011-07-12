@@ -13,6 +13,9 @@ class WebsiteSuggestion(models.Model):
         suggestion.save()
         return suggestion
 
+    def __unicode__(self):
+        return self.websiteUrl
+
     create = staticmethod(create)
 
 
@@ -30,6 +33,9 @@ class ServiceSuggestion(models.Model):
         suggestion.email = serviceSuggestionMsg.emailAddress
         suggestion.save()
         return suggestion
+
+    def __unicode__(self):
+        return self.serviceName
 
     create = staticmethod(create)
     

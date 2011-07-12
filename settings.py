@@ -32,6 +32,7 @@ INSTALLED_APPS = (
     'reports',
     'suggestions',
     'events',
+    'versions',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
@@ -72,3 +73,5 @@ GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 LOGGING_OUTPUT_ENABLED = True
+
+GEOIP_PATH = '/geoip/GeoLiteCity.dat'

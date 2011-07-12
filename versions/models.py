@@ -14,6 +14,9 @@ class DesktopAgentVersion(SoftwareVersion):
     def getLastVersionNo():
         return DesktopAgentVersion.objects.order_by('-version')[0:1].get()
 
+    def __unicode__(self):
+        return "Desktop Agent v" + str(self.version)
+
     getLastVersionNo = staticmethod(getLastVersionNo)
 
 
@@ -21,5 +24,8 @@ class MobileAgentVersion(SoftwareVersion):
 
     def getLastVersionNo():
         return MobileAgentVersion.objects.order_by('-version')[0:1].get()
+
+    def __unicode__(self):
+        return "Mobile Agent v" + str(self.version)
 
     getLastVersionNo = staticmethod(getLastVersionNo)

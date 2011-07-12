@@ -20,3 +20,34 @@ indexes:
 # manually, move them above the marker line.  The index.yaml file is
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
+
+- kind: ICMtests_test
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: piston_consumer
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: piston_nonce
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: piston_resource
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: piston_token
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: reports_trace
+  properties:
+  - name: traceRoute_id
+  - name: hop
+    direction: desc

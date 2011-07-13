@@ -3,6 +3,12 @@ import logging
 import datetime
 
 class Report(models.Model):
+    # TODO (Adriano): There may be a difference in time between the time you
+    # receive a report and the time the report gets to the aggregator. It is
+    # a nice idea to keep track of that since it can help us understand if
+    # we're being censored in a given region.
+    # Remove this comment once you've read it.
+    # received_at = models.DateTimeField(auto_now_add=True)
     reportId     = models.TextField()
     agentId      = models.BigIntegerField()
     testId       = models.PositiveIntegerField()

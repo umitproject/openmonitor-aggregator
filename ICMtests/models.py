@@ -1,6 +1,11 @@
 from django.db import models
 
 class Test(models.Model):
+    # TODO (Adriano): Keeping track of test's creation and update date in
+    # our side is a good idea, so we can order and sort more easily.
+    # Remove this comment once you've read it.
+    # created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
     testID       = models.IntegerField(primary_key=True)
     description  = models.TextField(blank=True)
 

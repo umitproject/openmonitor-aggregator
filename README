@@ -1,0 +1,19 @@
+Links available to test the app:
+ - http://icm-dev.appspot.com/map (show events on map)
+ - http://icm-dev.appspot.com/realtimebox (show events on realtime box)
+
+Everytime that a report is received in aggregator, a new event will be created, and both map and realtimebox are updated.
+To test that functionality without agent, access the url http://icm-dev.appspot.com/api/tests - this method will send a "fake" report just for tests purpose.
+
+
+Agent API:
+   - /api/registeragent
+   - /api/getpeerlist
+   - /api/getsuperpeerlist
+   - /api/getevents
+   - /api/sendwebsitereport
+   - /api/sendservicereport
+   - /api/checkversion
+   - /api/checktests
+   - /api/websitesuggestion
+   - /api/servicesuggestion

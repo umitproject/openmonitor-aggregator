@@ -159,12 +159,21 @@ class SendWebsiteReportHandler(BaseHandler):
     def create(self, request):
         logging.info("sendWebsiteReport received")
         msg = base64.b64decode(request.POST['msg'])
+        logging.info("sendWebsiteReport base64 decoded")
 
         receivedWebsiteReport = messages_pb2.SendWebsiteReport()
-        receivedWebsiteReport.ParseFromString(msg)
+        logging.info("sendWebsiteReport message constructed")
+        try:
+            receivedWebsiteReport.ParseFromString(msg)
+        except Exception,e:
+            logging.error(e)
+            return "error"
+
+        logging.info("sendWebsiteReport message parsed")
 
         # add website report
         webSiteReport = WebsiteReport.create(receivedWebsiteReport)
+        logging.info("sendWebsiteReport report created")
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
 
@@ -303,12 +312,21 @@ class WebsiteSuggestionHandler(BaseHandler):
         # create the suggestion
         webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion)
 
+        logging.info("Getting software version")
+
         # get software version information
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        logging.info("Getting last test no")
+
         # get last test id
-        testVersion = Test.getLastTestNo()
+        try:
+            testVersion = Test.getLastTestNo()
+        except Exception, e:
+            logging.error(e)
+
+        logging.info("Creating response")
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
@@ -349,6 +367,33 @@ class ServiceSuggestionHandler(BaseHandler):
         response_str = base64.b64encode(response.SerializeToString())
         return response_str
 
+
+class CheckAggregator(BaseHandler):
+    allowed_methods = ('POST',)
+
+    def create(self, request):
+        logging.info("CheckAggregator received")
+        msg = base64.b64decode(request.POST['msg'])
+
+        checkAggregator = messages_pb2.CheckAggregator()
+        checkAggregator.ParseFromString(msg)
+
+        # get software version information
+        # TODO: filter type of agent
+        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+
+        # get last test id
+        testVersion = Test.getLastTestNo()
+
+        # create the response
+        response = messages_pb2.CheckAggregatorResponse()
+        response.status = "ON"
+        response.header.currentVersionNo = softwareVersion.version
+        response.header.currentTestVersionNo = testVersion.testID
+
+        # send back response
+        response_str = base64.b64encode(response.SerializeToString())
+        return response_str
 
 
 class TestsHandler(BaseHandler):
@@ -398,43 +443,43 @@ class TestsHandler(BaseHandler):
 
 
         # create website report
-        try:
-            c = Client()
-            wreport = messages_pb2.SendWebsiteReport()
-            wreport.header.token = "token"
-            wreport.header.agentID = 3
-            wreport.report.header.reportID = 45457
-            wreport.report.header.agentID = 5
-            wreport.report.header.testID = 100
-            wreport.report.header.timeZone = -5
-            wreport.report.header.timeUTC = 1310396214
-            wreport.report.report.websiteURL = "www.google.com"
-            wreport.report.report.statusCode = 200
-            wreport.report.report.responseTime = 129
-            wreport.report.report.bandwidth = 2300
-
-            wreport.report.header.passedNode.append("node1")
-            wreport.report.header.passedNode.append("node2")
-
-            wreport.report.header.traceroute.target = "78.43.34.120"
-            wreport.report.header.traceroute.hops = 2
-            wreport.report.header.traceroute.packetSize = 200
-
-            trace = wreport.report.header.traceroute.traces.add()
-            trace.ip = "214.23.54.34"
-            trace.hop = 1
-            trace.packetsTiming.append(120)
-            trace.packetsTiming.append(129)
-
-            trace = wreport.report.header.traceroute.traces.add()
-            trace.ip = "24.63.54.128"
-            trace.hop = 2
-            trace.packetsTiming.append(120)
-
-            wreport_str = base64.b64encode(wreport.SerializeToString())
-            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
-        except Exception, inst:
-            logging.error(inst)
+#        try:
+#            c = Client()
+#            wreport = messages_pb2.SendWebsiteReport()
+#            wreport.header.token = "token"
+#            wreport.header.agentID = 3
+#            wreport.report.header.reportID = "45457"
+#            wreport.report.header.agentID = 5
+#            wreport.report.header.testID = 100
+#            wreport.report.header.timeZone = -5
+#            wreport.report.header.timeUTC = 1310396214
+#            wreport.report.report.websiteURL = "www.google.com"
+#            wreport.report.report.statusCode = 200
+#            wreport.report.report.responseTime = 129
+#            wreport.report.report.bandwidth = 2300
+#
+#            wreport.report.header.passedNode.append("node1")
+#            wreport.report.header.passedNode.append("node2")
+#
+#            wreport.report.header.traceroute.target = "78.43.34.120"
+#            wreport.report.header.traceroute.hops = 2
+#            wreport.report.header.traceroute.packetSize = 200
+#
+#            trace = wreport.report.header.traceroute.traces.add()
+#            trace.ip = "214.23.54.34"
+#            trace.hop = 1
+#            trace.packetsTiming.append(120)
+#            trace.packetsTiming.append(129)
+#
+#            trace = wreport.report.header.traceroute.traces.add()
+#            trace.ip = "24.63.54.128"
+#            trace.hop = 2
+#            trace.packetsTiming.append(120)
+#
+#            wreport_str = base64.b64encode(wreport.SerializeToString())
+#            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
+#        except Exception, inst:
+#            logging.error(inst)
 
 
         # create service report
@@ -470,5 +515,25 @@ class TestsHandler(BaseHandler):
 #            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
 #        except Exception, inst:
 #            logging.error(inst)
+
+       # check aggregator
+        try:
+            c = Client()
+            wreport = messages_pb2.CheckAggregator()
+            wreport.header.token = "token"
+            wreport.header.agentID = 3
+
+            wreport_str = base64.b64encode(wreport.SerializeToString())
+            response = c.post('/api/checkaggregator/', {'msg': wreport_str})
+
+            msg = base64.b64decode(response.content)
+
+            checkAggregator = messages_pb2.CheckAggregatorResponse()
+            checkAggregator.ParseFromString(msg)
+
+            logging.info("Aggregator is " + checkAggregator.status)
+
+        except Exception, inst:
+            logging.error(inst)
 
         return 'test1'

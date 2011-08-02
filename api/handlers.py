@@ -24,6 +24,7 @@ class RegisterAgentHandler(BaseHandler):
         token = "token"
         privateKey = "privatekey"
         publicKey = "publickey"
+        aggPK = "aggPublicKey"
         cipheredPublicKey = "cpublickey"
         agentId = 5
 
@@ -43,6 +44,7 @@ class RegisterAgentHandler(BaseHandler):
         response.publicKey = publicKey
         response.agentID = agentId
         response.cipheredPublicKey = cipheredPublicKey
+        response.aggregatorPublicKey = aggPK
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -73,14 +75,25 @@ class GetPeerListHandler(BaseHandler):
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
         knownPeer = response.knownPeers.add()
-        knownPeer.token = "token"
-        knownPeer.publicKey = "publickey"
+        knownPeer.agentID = 1
+        knownPeer.token = "tokenpeer1"
+        knownPeer.publicKey = "publickeypeer1"
         knownPeer.peerStatus = "ON"
         knownPeer.agentIP = "80.10.20.30"
         knownPeer.agentPort = 50
+        knownPeer1 = response.knownPeers.add()
+        knownPeer1.agentID = 2
+        knownPeer1.token = "tokenpeer2"
+        knownPeer1.publicKey = "publickeypeer2"
+        knownPeer1.peerStatus = "ON"
+        knownPeer1.agentIP = "48.17.25.86"
+        knownPeer1.agentPort = 472
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        try:
+            response_str = base64.b64encode(response.SerializeToString())
+        except Exception,e:
+            logging.error(e)
         return response_str
 
 
@@ -108,10 +121,11 @@ class GetSuperPeerListHandler(BaseHandler):
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
         knownSuperPeer = response.knownSuperPeers.add()
-        knownSuperPeer.token = "token"
-        knownSuperPeer.publicKey = "publickey"
+        knownSuperPeer.agentID = 12
+        knownSuperPeer.token = "tokenSuper1"
+        knownSuperPeer.publicKey = "publickeySuper1"
         knownSuperPeer.peerStatus = "ON"
-        knownSuperPeer.agentIP = "80.10.20.30"
+        knownSuperPeer.agentIP = "210.80.195.30"
         knownSuperPeer.agentPort = 50
 
         # send back response
@@ -207,6 +221,7 @@ class SendServiceReportHandler(BaseHandler):
 
         # add service report
         serviceReport = ServiceReport.create(receivedServiceReport)
+
         # send report to decision system
         DecisionSystem.newReport(serviceReport)
 
@@ -238,8 +253,11 @@ class CheckNewVersionHandler(BaseHandler):
         receivedMsg.ParseFromString(msg)
 
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if receivedMsg.agentType == "DESKTOP":
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        elif receivedMsg.agentType == "MOBILE":
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
+        # TODO: throw exception if not desktop neither mobile
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -248,8 +266,11 @@ class CheckNewVersionHandler(BaseHandler):
         response = messages_pb2.NewVersionResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
-        response.downloadURL = softwareVersion.url
         response.versionNo = softwareVersion.version
+
+        if response.versionNo > receivedMsg.agentVersionNo:
+            response.downloadURL = softwareVersion.url
+            # TODO: send in bzip ?
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -437,7 +458,30 @@ class TestsHandler(BaseHandler):
 #            newtests.currentTestVersionNo = 0
 #            newt_str = base64.b64encode(newtests.SerializeToString())
 #            response = c.post('/api/checktests/', {'msg': newt_str})
-#            logging.info(response)
+#
+#            msg = base64.b64decode(response.content)
+#            tests = messages_pb2.NewTestsResponse()
+#            tests.ParseFromString(msg)
+#
+#            logging.info(tests)
+#        except Exception, inst:
+#            logging.error(inst)
+
+#        try:
+#            c = Client()
+#            newversion = messages_pb2.NewVersion()
+#            newversion.header.token = "token"
+#            newversion.header.agentID = 5
+#            newversion.agentVersionNo = 1
+#            newversion.agentType = "MOBILE"
+#            newt_str = base64.b64encode(newversion.SerializeToString())
+#            response = c.post('http://icm-dev.appspot.com/api/checkversion/', {'msg': newt_str})
+#
+#            msg = base64.b64decode(response.content)
+#            nv = messages_pb2.NewVersionResponse()
+#            nv.ParseFromString(msg)
+#
+#            logging.info(nv)
 #        except Exception, inst:
 #            logging.error(inst)
 
@@ -483,57 +527,57 @@ class TestsHandler(BaseHandler):
 
 
         # create service report
-#        try:
-#            c = Client()
-#            sreport = messages_pb2.SendServiceReport()
-#            sreport.header.token = "token"
-#            sreport.header.agentID = 3
-#            sreport.report.header.reportID = 45457
-#            sreport.report.header.agentID = 5
-#            sreport.report.header.testID = 100
-#            sreport.report.header.timeZone = -5
-#            sreport.report.header.timeUTC = 1310396214
-#            sreport.report.report.serviceName = "p2p"
-#            sreport.report.report.statusCode = 100
-#            sreport.report.report.responseTime = 53
-#            sreport.report.report.bandwidth = 9456
-#
-#            sreport.report.header.passedNode.append("node1")
-#            sreport.report.header.passedNode.append("node2")
-#
-#            sreport.report.header.traceroute.target = "78.43.34.120"
-#            sreport.report.header.traceroute.hops = 2
-#            sreport.report.header.traceroute.packetSize = 200
-#
-#            trace = sreport.report.header.traceroute.traces.add()
-#            trace.ip = "214.23.54.34"
-#            trace.hop = 1
-#            trace.packetsTiming.append(120)
-#            trace.packetsTiming.append(129)
-#
-#            sreport_str = base64.b64encode(sreport.SerializeToString())
-#            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
-#        except Exception, inst:
-#            logging.error(inst)
-
-       # check aggregator
         try:
             c = Client()
-            wreport = messages_pb2.CheckAggregator()
-            wreport.header.token = "token"
-            wreport.header.agentID = 3
+            sreport = messages_pb2.SendServiceReport()
+            sreport.header.token = "token"
+            sreport.header.agentID = 3
+            sreport.report.header.reportID = "newrep45457"
+            sreport.report.header.agentID = 5
+            sreport.report.header.testID = 100
+            sreport.report.header.timeZone = -5
+            sreport.report.header.timeUTC = 1310396214
+            sreport.report.report.serviceName = "p2p"
+            sreport.report.report.statusCode = 100
+            sreport.report.report.responseTime = 53
+            sreport.report.report.bandwidth = 9456
 
-            wreport_str = base64.b64encode(wreport.SerializeToString())
-            response = c.post('/api/checkaggregator/', {'msg': wreport_str})
+            sreport.report.header.passedNode.append("node1")
+            sreport.report.header.passedNode.append("node2")
 
-            msg = base64.b64decode(response.content)
+            sreport.report.header.traceroute.target = "78.43.34.120"
+            sreport.report.header.traceroute.hops = 2
+            sreport.report.header.traceroute.packetSize = 200
 
-            checkAggregator = messages_pb2.CheckAggregatorResponse()
-            checkAggregator.ParseFromString(msg)
+            trace = sreport.report.header.traceroute.traces.add()
+            trace.ip = "214.23.54.34"
+            trace.hop = 1
+            trace.packetsTiming.append(120)
+            trace.packetsTiming.append(129)
 
-            logging.info("Aggregator is " + checkAggregator.status)
-
+            sreport_str = base64.b64encode(sreport.SerializeToString())
+            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
         except Exception, inst:
             logging.error(inst)
+
+       # check aggregator
+#        try:
+#            c = Client()
+#            wreport = messages_pb2.CheckAggregator()
+#            wreport.header.token = "token"
+#            wreport.header.agentID = 3
+#
+#            wreport_str = base64.b64encode(wreport.SerializeToString())
+#            response = c.post('/api/checkaggregator/', {'msg': wreport_str})
+#
+#            msg = base64.b64decode(response.content)
+#
+#            checkAggregator = messages_pb2.CheckAggregatorResponse()
+#            checkAggregator.ParseFromString(msg)
+#
+#            logging.info("Aggregator is " + checkAggregator.status)
+#
+#        except Exception, inst:
+#            logging.error(inst)
 
         return 'test1'

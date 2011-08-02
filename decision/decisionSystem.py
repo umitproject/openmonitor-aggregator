@@ -20,7 +20,7 @@ class DecisionSystem:
             event.targetType = TargetType.Website
         elif isinstance(report, ServiceReport):
             event.target = report.serviceName
-            event.targetType = targetType.Service
+            event.targetType = TargetType.Service
         else:
             raise TypeError, 'report not supported'
 

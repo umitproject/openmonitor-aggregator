@@ -133,7 +133,7 @@ class EventWebsiteReport(models.Model):
 
 class EventServiceReport(models.Model):
     event  = models.ForeignKey('Event')
-    report = models.ForeignKey('reports.WebsiteReport')
+    report = models.ForeignKey('reports.ServiceReport')
 
     
 class EventBlockedNode(Location):

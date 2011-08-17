@@ -6,6 +6,7 @@ from django.test.client import Client
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from ICMtests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
+from agents.models import Agent
 import logging
 import base64
 
@@ -20,17 +21,33 @@ class RegisterAgentHandler(BaseHandler):
         receivedAgentRegister = messages_pb2.RegisterAgent()
         receivedAgentRegister.ParseFromString(msg)
 
+        # create agent
+        if receivedAgentRegister.HasField('ip'):
+            agentIp = receivedAgentRegister.ip
+        else:
+            agentIp = request.META['REMOTE_ADDR']
+
+        logging.debug("Agent ip is " + agentIp)
+
+        #k = Agent.generateKeyPair()
+        #logging.debug(k)
+
+        agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp, publicKey)
+
+        logging.info(agent.agentID)
+
         # TODO: register the agent
         token = "token"
         privateKey = "privatekey"
         publicKey = "publickey"
         aggPK = "aggPublicKey"
         cipheredPublicKey = "cpublickey"
-        agentId = 5
 
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if receivedAgentRegister.agentType=="DESKTOP":
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        elif receivedAgentRegister.agentType=="MOBILE":
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -42,13 +59,29 @@ class RegisterAgentHandler(BaseHandler):
         response.token = token
         response.privateKey = privateKey
         response.publicKey = publicKey
-        response.agentID = agentId
+        response.agentID = agent.agentID
         response.cipheredPublicKey = cipheredPublicKey
         response.aggregatorPublicKey = aggPK
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
         return response_str
+
+
+class LoginHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    def create(self, request):
+        #TODO: implement
+        pass
+
+
+class LogoutHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    def create(self, request):
+        #TODO: implement
+        pass
 
 
 class GetPeerListHandler(BaseHandler):
@@ -171,26 +204,21 @@ class SendWebsiteReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
-        logging.info("sendWebsiteReport received")
+        logging.info("sendWebsiteReport received2")
         msg = base64.b64decode(request.POST['msg'])
+
         logging.info("sendWebsiteReport base64 decoded")
 
         receivedWebsiteReport = messages_pb2.SendWebsiteReport()
-        logging.info("sendWebsiteReport message constructed")
-        try:
-            receivedWebsiteReport.ParseFromString(msg)
-        except Exception,e:
-            logging.error(e)
-            return "error"
+        logging.info("sendWebsiteReport message created")
+        receivedWebsiteReport.ParseFromString(msg)
 
         logging.info("sendWebsiteReport message parsed")
 
         # add website report
         webSiteReport = WebsiteReport.create(receivedWebsiteReport)
-        logging.info("sendWebsiteReport report created")
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
-
 
         # get software version information
         # TODO: filter type of agent
@@ -199,6 +227,8 @@ class SendWebsiteReportHandler(BaseHandler):
         # get last test id
         testVersion = Test.getLastTestNo()
 
+        logging.info("sendWebsiteReport sending response")
+
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = softwareVersion.version
@@ -206,6 +236,7 @@ class SendWebsiteReportHandler(BaseHandler):
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
+        logging.info("sendWebsiteReport msg encoded")
         return response_str
 
 
@@ -311,7 +342,7 @@ class CheckNewTestHandler(BaseHandler):
             if isinstance(newTest, WebsiteTest):
                 test.testType = "WEB"
                 test.websiteURL = newTest.websiteURL
-            else:
+            elif isinstance(newTest, ServiceTest):
                 test.testType = "SERVICE"
                 test.serviceCode = newTest.serviceCode
 
@@ -369,20 +400,30 @@ class ServiceSuggestionHandler(BaseHandler):
         receivedServiceSuggestion = messages_pb2.ServiceSuggestion()
         receivedServiceSuggestion.ParseFromString(msg)
 
+        logging.info("serviceSuggestion msg parsed")
+
         # create the suggestion
         serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion)
+
+        logging.info("serviceSuggestion suggestion created")
 
         # get software version information
         # TODO: filter type of agent
         softwareVersion = DesktopAgentVersion.getLastVersionNo()
 
+        logging.info("serviceSuggestion agent version ok")
+
         # get last test id
         testVersion = Test.getLastTestNo()
+
+        logging.info("serviceSuggestion test version ok")
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
+
+        logging.info("serviceSuggestion msg constructed")
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -487,78 +528,78 @@ class TestsHandler(BaseHandler):
 
 
         # create website report
-#        try:
-#            c = Client()
-#            wreport = messages_pb2.SendWebsiteReport()
-#            wreport.header.token = "token"
-#            wreport.header.agentID = 3
-#            wreport.report.header.reportID = "45457"
-#            wreport.report.header.agentID = 5
-#            wreport.report.header.testID = 100
-#            wreport.report.header.timeZone = -5
-#            wreport.report.header.timeUTC = 1310396214
-#            wreport.report.report.websiteURL = "www.google.com"
-#            wreport.report.report.statusCode = 200
-#            wreport.report.report.responseTime = 129
-#            wreport.report.report.bandwidth = 2300
-#
-#            wreport.report.header.passedNode.append("node1")
-#            wreport.report.header.passedNode.append("node2")
-#
-#            wreport.report.header.traceroute.target = "78.43.34.120"
-#            wreport.report.header.traceroute.hops = 2
-#            wreport.report.header.traceroute.packetSize = 200
-#
-#            trace = wreport.report.header.traceroute.traces.add()
-#            trace.ip = "214.23.54.34"
-#            trace.hop = 1
-#            trace.packetsTiming.append(120)
-#            trace.packetsTiming.append(129)
-#
-#            trace = wreport.report.header.traceroute.traces.add()
-#            trace.ip = "24.63.54.128"
-#            trace.hop = 2
-#            trace.packetsTiming.append(120)
-#
-#            wreport_str = base64.b64encode(wreport.SerializeToString())
-#            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
-#        except Exception, inst:
-#            logging.error(inst)
-
-
-        # create service report
         try:
             c = Client()
-            sreport = messages_pb2.SendServiceReport()
-            sreport.header.token = "token"
-            sreport.header.agentID = 3
-            sreport.report.header.reportID = "newrep45457"
-            sreport.report.header.agentID = 5
-            sreport.report.header.testID = 100
-            sreport.report.header.timeZone = -5
-            sreport.report.header.timeUTC = 1310396214
-            sreport.report.report.serviceName = "p2p"
-            sreport.report.report.statusCode = 100
-            sreport.report.report.responseTime = 53
-            sreport.report.report.bandwidth = 9456
+            wreport = messages_pb2.SendWebsiteReport()
+            wreport.header.token = "token"
+            wreport.header.agentID = 3
+            wreport.report.header.reportID = "45457"
+            wreport.report.header.agentID = 5
+            wreport.report.header.testID = 100
+            wreport.report.header.timeZone = -5
+            wreport.report.header.timeUTC = 1310396214
+            wreport.report.report.websiteURL = "www.google.com"
+            wreport.report.report.statusCode = 200
+            wreport.report.report.responseTime = 129
+            wreport.report.report.bandwidth = 2300
 
-            sreport.report.header.passedNode.append("node1")
-            sreport.report.header.passedNode.append("node2")
+            wreport.report.header.passedNode.append("node1")
+            wreport.report.header.passedNode.append("node2")
 
-            sreport.report.header.traceroute.target = "78.43.34.120"
-            sreport.report.header.traceroute.hops = 2
-            sreport.report.header.traceroute.packetSize = 200
+            wreport.report.header.traceroute.target = "78.43.34.120"
+            wreport.report.header.traceroute.hops = 2
+            wreport.report.header.traceroute.packetSize = 200
 
-            trace = sreport.report.header.traceroute.traces.add()
+            trace = wreport.report.header.traceroute.traces.add()
             trace.ip = "214.23.54.34"
             trace.hop = 1
             trace.packetsTiming.append(120)
             trace.packetsTiming.append(129)
 
-            sreport_str = base64.b64encode(sreport.SerializeToString())
-            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
+            trace = wreport.report.header.traceroute.traces.add()
+            trace.ip = "24.63.54.128"
+            trace.hop = 2
+            trace.packetsTiming.append(120)
+
+            wreport_str = base64.b64encode(wreport.SerializeToString())
+            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
         except Exception, inst:
             logging.error(inst)
+
+
+        # create service report
+#        try:
+#            c = Client()
+#            sreport = messages_pb2.SendServiceReport()
+#            sreport.header.token = "token"
+#            sreport.header.agentID = 3
+#            sreport.report.header.reportID = "newrep45457"
+#            sreport.report.header.agentID = 5
+#            sreport.report.header.testID = 100
+#            sreport.report.header.timeZone = -5
+#            sreport.report.header.timeUTC = 1310396214
+#            sreport.report.report.serviceName = "p2p"
+#            sreport.report.report.statusCode = 100
+#            sreport.report.report.responseTime = 53
+#            sreport.report.report.bandwidth = 9456
+#
+#            sreport.report.header.passedNode.append("node1")
+#            sreport.report.header.passedNode.append("node2")
+#
+#            sreport.report.header.traceroute.target = "78.43.34.120"
+#            sreport.report.header.traceroute.hops = 2
+#            sreport.report.header.traceroute.packetSize = 200
+#
+#            trace = sreport.report.header.traceroute.traces.add()
+#            trace.ip = "214.23.54.34"
+#            trace.hop = 1
+#            trace.packetsTiming.append(120)
+#            trace.packetsTiming.append(129)
+#
+#            sreport_str = base64.b64encode(sreport.SerializeToString())
+#            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
+#        except Exception, inst:
+#            logging.error(inst)
 
        # check aggregator
 #        try:
@@ -580,4 +621,30 @@ class TestsHandler(BaseHandler):
 #        except Exception, inst:
 #            logging.error(inst)
 
-        return 'test1'
+
+       # register agent
+#        try:
+#            c = Client()
+#            register = messages_pb2.RegisterAgent()
+#            register.versionNo = 1
+#            register.agentType = "DESKTOP"
+#            #register.ip = "43.54.65.239"
+#
+#            register_str = base64.b64encode(register.SerializeToString())
+#            response = c.post('/api/registeragent/', {'msg': register_str})
+#
+#            msg = base64.b64decode(response.content)
+#
+#            registerres = messages_pb2.RegisterAgentResponse()
+#            registerres.ParseFromString(msg)
+#
+#            logging.info("Register Response " + registerres)
+#
+#        except Exception, inst:
+#            logging.error(inst)
+
+        #from geoip import geoip
+        #service = geoip.GeoIp()
+        #return service.getIPLocation('209.85.146.106')
+
+        return 'test'

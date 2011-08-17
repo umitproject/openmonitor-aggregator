@@ -14,9 +14,13 @@ websitesuggestion_handler = Resource(WebsiteSuggestionHandler)
 servicesuggestion_handler = Resource(ServiceSuggestionHandler)
 test_handler = Resource(TestsHandler)
 checkaggregator_handler = Resource(CheckAggregator)
+login_handler = Resource(LoginHandler)
+logout_handler = Resource(LogoutHandler)
 
 urlpatterns = patterns('',
    url(r'^registeragent/$', registeragent_handler),
+   url(r'^loginagent/$', login_handler),
+   url(r'^logoutagent/$', logout_handler),
    url(r'^getpeerlist/$', getpeerlist_handler),
    url(r'^getsuperpeerlist/$', getsuperpeerlist_handler),
    url(r'^getevents/$', getevents_handler),

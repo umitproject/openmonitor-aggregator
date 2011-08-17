@@ -2,11 +2,7 @@ from django.db import models
 
 
 class SoftwareVersion(models.Model):
-    # TODO (Adriano): We need a release date. This is useful to inform user
-    # about since when the update is available, and also useful for us to
-    # keep track of release dates. Just uncomment the line bellow and
-    # remove my comments once you've read this.
-    # released_at = models.DateTimeField(auto_now_add=True)
+    released_at = models.DateTimeField(auto_now_add=True)
     version  = models.IntegerField()
     url      = models.URLField(max_length=255)
 

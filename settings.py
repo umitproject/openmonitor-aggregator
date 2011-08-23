@@ -24,10 +24,10 @@ INSTALLED_APPS = (
     'dbindexer',
     'mediagenerator',
     #'djangologging',
-    'geopy',
     'protobuf',
     'piston',
     'messages',
+    'geoip',
     'api',
     'reports',
     'suggestions',
@@ -74,5 +74,3 @@ GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 LOGGING_OUTPUT_ENABLED = True
-
-GEOIP_PATH = '/geoip/GeoLiteCity.dat'

@@ -39,7 +39,10 @@ class GeoIp:
 
         # remove unused fields
         result = {}
-        result['city'] = location['city']
+        if 'city' in location:
+            result['city'] = location['city']
+        else:
+            result['city'] = ''
         result['country_name'] = location['country_name']
         result['country_code'] = location['country_code']
         result['latitude'] = location['latitude']

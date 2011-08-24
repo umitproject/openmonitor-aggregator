@@ -21,9 +21,10 @@
 ##
 
 from django.db import models
+from django.db.models import Q
 from agents.RSACrypto import *
 from geoip import geoip
-import logging
+import logging, random
 
 
 class Agent(models.Model):
@@ -80,10 +81,48 @@ class Agent(models.Model):
         self.superPeer = False
         self.save()
 
+    def _getPeers(country, superPeer, totalPeers):
+        selectedPeers = []
+        peers = list(Agent.objects.filter(country=country, superPeer=superPeer))
+
+        neededPeers = totalPeers-len(peers)
+        if neededPeers>0:
+            # create list with already selected agent ids
+            peersIDs = []
+            for peer in peers:
+                peersIDs.append(peer.agentID)
+
+            # select more peers
+            morePeers = list(Agent.objects.filter(~Q(agentID__in=peersIDs), Q(superPeer=superPeer)))
+            # shuffle peers
+            random.shuffle(morePeers)
+
+            if len(peers)>0:
+                selectedPeers.append(peers)
+            if len(morePeers)>0:
+                selectedPeers.append(morePeers[:neededPeers])
+
+        else:
+            # shuffle peers
+            random.shuffle(peers)
+            # just select totalPeers
+            selectedPeers = peers[:totalPeers]
+
+        return selectedPeers
+
+    def getPeers(country, totalPeers=100):
+        return Agent._getPeers(country, False, totalPeers)
+
+    def getSuperPeers(country, totalPeers=100):
+        return Agent._getPeers(country, True, totalPeers)
+
     def __unicode__(self):
         return "Agent %s (%s %s) - %s - %s" % (self.agentID, self.agentType, self.agentVersion, self.registered_at, self.registered_ip)
 
     create = staticmethod(create)
+    _getPeers = staticmethod(_getPeers)
+    getPeers = staticmethod(getPeers)
+    getSuperPeers = staticmethod(getSuperPeers)
 
 
 class AgentRSAKey(models.Model):

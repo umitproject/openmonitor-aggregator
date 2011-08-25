@@ -90,9 +90,14 @@ class LoginHandler(BaseHandler):
         # login stuff
         # TODO: login
 
+        # get agent info
+        agent = Agent.getAgent(loginAgent.header.agentID)
+
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -131,39 +136,47 @@ class GetPeerListHandler(BaseHandler):
         receivedMsg = messages_pb2.GetPeerList()
         receivedMsg.ParseFromString(msg)
 
-        # TODO: get peer list
+        # get agent info
+        agent = Agent.getAgent(receivedMsg.header.agentID)
 
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
+
+        if receivedMsg.HasField('count'):
+            totalPeers = receivedMsg.count
+        else:
+            totalPeers = 100
+
+        peers = Agent.getPeers(agent.getCurrentLocation(), totalPeers)
 
         # create the response
         response = messages_pb2.GetPeerListResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
-        knownPeer = response.knownPeers.add()
-        knownPeer.agentID = 1
-        knownPeer.token = "tokenpeer1"
-        knownPeer.publicKey = "publickeypeer1"
-        knownPeer.peerStatus = "ON"
-        knownPeer.agentIP = "80.10.20.30"
-        knownPeer.agentPort = 50
-        knownPeer1 = response.knownPeers.add()
-        knownPeer1.agentID = 2
-        knownPeer1.token = "tokenpeer2"
-        knownPeer1.publicKey = "publickeypeer2"
-        knownPeer1.peerStatus = "ON"
-        knownPeer1.agentIP = "48.17.25.86"
-        knownPeer1.agentPort = 472
+
+        for peer in peers:
+            logging.info(peer)
+            knownPeer = response.knownPeers.add()
+            knownPeer.agentID = peer.agentID
+            knownPeer.token = "tokenpeer1"
+            knownPeer.publicKey.mod = peer.publicKeyMod
+            knownPeer.publicKey.exp = peer.publicKeyExp
+            knownPeer.peerStatus = "ON"
+            knownPeer.agentIP = peer.current_ip
+            knownPeer.agentPort = peer.port
 
         # send back response
         try:
             response_str = base64.b64encode(response.SerializeToString())
         except Exception,e:
             logging.error(e)
+
         return response_str
 
 
@@ -177,26 +190,39 @@ class GetSuperPeerListHandler(BaseHandler):
         receivedMsg = messages_pb2.GetSuperPeerList()
         receivedMsg.ParseFromString(msg)
 
-        # TODO: get super peer list
+        # get agent info
+        agent = Agent.getAgent(receivedMsg.header.agentID)
 
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
+
+        if receivedMsg.HasField('count'):
+            totalPeers = receivedMsg.count
+        else:
+            totalPeers = 100
+
+        superpeers = Agent.getSuperPeers(agent.getCurrentLocation(), totalPeers)
 
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
-        knownSuperPeer = response.knownSuperPeers.add()
-        knownSuperPeer.agentID = 12
-        knownSuperPeer.token = "tokenSuper1"
-        knownSuperPeer.publicKey = "publickeySuper1"
-        knownSuperPeer.peerStatus = "ON"
-        knownSuperPeer.agentIP = "210.80.195.30"
-        knownSuperPeer.agentPort = 50
+
+        for peer in superpeers:
+            knownSuperPeer = response.knownSuperPeers.add()
+            knownSuperPeer.agentID = peer.agentID
+            knownSuperPeer.token = "tokenSuper1"
+            knownPeer.publicKey.mod = peer.publicKeyMod
+            knownPeer.publicKey.exp = peer.publicKeyExp
+            knownSuperPeer.peerStatus = "ON"
+            knownSuperPeer.agentIP = peer.current_ip
+            knownSuperPeer.agentPort = peer.port
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -215,9 +241,14 @@ class GetEventsHandler(BaseHandler):
 
         # TODO: get events
 
+        # get agent info
+        agent = Agent.getAgent(receivedMsg.header.agentID)
+
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -244,22 +275,22 @@ class SendWebsiteReportHandler(BaseHandler):
         logging.info("sendWebsiteReport received2")
         msg = base64.b64decode(request.POST['msg'])
 
-        logging.info("sendWebsiteReport base64 decoded")
-
         receivedWebsiteReport = messages_pb2.SendWebsiteReport()
-        logging.info("sendWebsiteReport message created")
         receivedWebsiteReport.ParseFromString(msg)
-
-        logging.info("sendWebsiteReport message parsed")
 
         # add website report
         webSiteReport = WebsiteReport.create(receivedWebsiteReport)
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
 
+        # get agent info
+        agent = Agent.getAgent(receivedWebsiteReport.header.agentID)
+
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -293,9 +324,14 @@ class SendServiceReportHandler(BaseHandler):
         # send report to decision system
         DecisionSystem.newReport(serviceReport)
 
+        # get agent info
+        agent = Agent.getAgent(receivedServiceReport.header.agentID)
+
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -357,9 +393,14 @@ class CheckNewTestHandler(BaseHandler):
 
         newTests = Test.getUpdatedTests(receivedMsg.currentTestVersionNo)
 
+        # get agent info
+        agent = Agent.getAgent(receivedMsg.header.agentID)
+
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -401,21 +442,20 @@ class WebsiteSuggestionHandler(BaseHandler):
         # create the suggestion
         webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion)
 
-        logging.info("Getting software version")
+        # get agent info
+        agent = Agent.getAgent(receivedWebsiteSuggestion.header.agentID)
 
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
-
-        logging.info("Getting last test no")
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         try:
             testVersion = Test.getLastTestNo()
         except Exception, e:
             logging.error(e)
-
-        logging.info("Creating response")
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
@@ -437,30 +477,25 @@ class ServiceSuggestionHandler(BaseHandler):
         receivedServiceSuggestion = messages_pb2.ServiceSuggestion()
         receivedServiceSuggestion.ParseFromString(msg)
 
-        logging.info("serviceSuggestion msg parsed")
-
         # create the suggestion
         serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion)
 
-        logging.info("serviceSuggestion suggestion created")
+        # get agent info
+        agent = Agent.getAgent(receivedServiceSuggestion.header.agentID)
 
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
-
-        logging.info("serviceSuggestion agent version ok")
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
-
-        logging.info("serviceSuggestion test version ok")
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
-
-        logging.info("serviceSuggestion msg constructed")
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -477,9 +512,14 @@ class CheckAggregator(BaseHandler):
         checkAggregator = messages_pb2.CheckAggregator()
         checkAggregator.ParseFromString(msg)
 
+        # get agent info
+        agent = Agent.getAgent(checkAggregator.header.agentID)
+
         # get software version information
-        # TODO: filter type of agent
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        if agent.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()
@@ -509,6 +549,8 @@ class TestsHandler(BaseHandler):
 #            suggestion.emailAddress = "diogopinheiro@ua.pt"
 #            sug_str = base64.b64encode(suggestion.SerializeToString())
 #            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
+#
+#
 #        except Exception, inst:
 #            logging.error(inst)
 
@@ -660,24 +702,46 @@ class TestsHandler(BaseHandler):
 
 
        # register agent
+#        try:
+#            c = Client()
+#            register = messages_pb2.RegisterAgent()
+#            register.versionNo = 1
+#            register.agentType = "DESKTOP"
+#            register.ip = "72.21.214.128"
+#
+#            register_str = base64.b64encode(register.SerializeToString())
+#            response = c.post('/api/registeragent/', {'msg': register_str})
+#
+#            logging.info("registration done")
+#
+#            #msg = base64.b64decode(response.content)
+#
+#            #registerres = messages_pb2.RegisterAgentResponse()
+#            #registerres.ParseFromString(msg)
+#
+#            #logging.info("Register Response " + registerres.)
+#
+#        except Exception, inst:
+#            logging.error(inst)
+
+
+       # get peers
         try:
             c = Client()
-            register = messages_pb2.RegisterAgent()
-            register.versionNo = 1
-            register.agentType = "DESKTOP"
-            register.ip = "72.21.214.128"
+            getpeer = messages_pb2.GetPeerList()
+            getpeer.header.token = "token"
+            getpeer.header.agentID = 103001
 
-            register_str = base64.b64encode(register.SerializeToString())
-            response = c.post('/api/registeragent/', {'msg': register_str})
+            getpeer_str = base64.b64encode(getpeer.SerializeToString())
+            response = c.post('/api/getpeerlist/', {'msg': getpeer_str})
 
-            logging.info("registration done")
+            msg = base64.b64decode(response.content)
 
-            #msg = base64.b64decode(response.content)
+            resp = messages_pb2.GetPeerListResponse()
+            resp.ParseFromString(msg)
 
-            #registerres = messages_pb2.RegisterAgentResponse()
-            #registerres.ParseFromString(msg)
-
-            #logging.info("Register Response " + registerres.)
+            for peer in resp.knownPeers:
+                logging.info("New peer" + str(peer.agentID))
 
         except Exception, inst:
             logging.error(inst)

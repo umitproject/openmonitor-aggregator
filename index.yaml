@@ -76,3 +76,8 @@ indexes:
   properties:
   - name: __key__
     direction: desc
+
+- kind: suggestions_servicesuggestion
+  properties:
+  - name: __key__
+    direction: desc

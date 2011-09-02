@@ -84,6 +84,11 @@ indexes:
   - name: hop
     direction: desc
 
+- kind: suggestions_servicesuggestion
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: suggestions_websitesuggestion
   properties:
   - name: __key__
@@ -95,11 +100,6 @@ indexes:
     direction: desc
 
 - kind: versions_mobileagentversion
-  properties:
-  - name: __key__
-    direction: desc
-
-- kind: suggestions_servicesuggestion
   properties:
   - name: __key__
     direction: desc

@@ -58,6 +58,12 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: agents_agent
+  properties:
+  - name: superPeer
+  - name: uptime
+    direction: desc
+
 - kind: piston_consumer
   properties:
   - name: __key__

@@ -42,34 +42,56 @@ class LoggedAgent(models.Model):
     def getAgent(agentID):
         return LoggedAgent.objects.get(agentID=agentID)
 
-    def _getPeers(country, superPeer, totalPeers):
+    def _getPeers(agentID, country, superPeer, totalPeers):
         selectedPeers = []
-        peers = list(LoggedAgent.objects.filter(country=country, superPeer=superPeer))
+        # create list with already selected agent ids
+        peersIDs = [agentID]
 
-        neededPeers = totalPeers-len(peers)
+        # select near peers
+        nearPeers = list(LoggedAgent.objects.filter(Q(country=country), Q(superPeer=superPeer), ~Q(agentID__in=peersIDs)))
+
+        # if more peers are needed, get far peers
+        neededPeers = totalPeers-len(nearPeers)
         if neededPeers>0:
-            # create list with already selected agent ids
-            peersIDs = []
-            for peer in peers:
+
+            # list of peer ids to exclude
+            for peer in nearPeers:
                 peersIDs.append(peer.agentID)
 
-            # select more peers
-            morePeers = list(LoggedAgent.objects.filter(~Q(agentID__in=peersIDs), Q(superPeer=superPeer)))
+            # select far peers
+            farPeers = list(LoggedAgent.objects.filter(~Q(agentID__in=peersIDs), Q(superPeer=superPeer)))
             # shuffle peers
-            random.shuffle(morePeers)
+            random.shuffle(farPeers)
 
-            if len(peers)>0:
-                selectedPeers.extend(peers)
-            if len(morePeers)>0:
-                selectedPeers.extend(morePeers[:neededPeers])
+            if len(nearPeers)>0:
+                selectedPeers.extend(nearPeers)
+            if len(farPeers)>0:
+                selectedPeers.extend(farPeers[:neededPeers])
+
+            # if more peers are needed, get offline peers with best uptime
+            neededPeers = totalPeers-len(nearPeers)-len(farPeers)
+            if neededPeers>0:
+
+                # list of peers ids to exclude
+                for peer in farPeers:
+                    peersIDs.append(peer.agentID)
+
+                # select offline peers sorted by uptime
+                offlinePeers = list(Agent.objects.filter(Q(superPeer=superPeer), ~Q(agentID__in=peersIDs), Q(uptime__gt=0)).order_by('-uptime'))
+
+                if len(offlinePeers)>0:
+                    selectedPeers.extend(offlinePeers[:neededPeers])
 
         else:
             # shuffle peers
-            random.shuffle(peers)
+            random.shuffle(nearPeers)
             # just select totalPeers
-            selectedPeers.extend(peers[:totalPeers])
+            selectedPeers.extend(nearPeers[:totalPeers])
 
         return selectedPeers
+
+    def __unicode__(self):
+        return "Agent %s at %s" % (self.agentID, self.country)
 
     getAgent = staticmethod(getAgent)
     _getPeers = staticmethod(_getPeers)
@@ -86,12 +108,19 @@ class Agent(models.Model):
     superPeer     = models.BooleanField(default=False)
     latitude      = models.FloatField()
     longitude     = models.FloatField()
+    uptime        = models.BigIntegerField()
+    lastKnownIP   = models.CharField(max_length=255, null=True)
+    lastKnownPort = models.PositiveIntegerField(null=True)
+    lastKnownCountry   = models.CharField(max_length=2, null=True)
+    lastKnownLatitude  = models.FloatField(null=True)
+    lastKnownLongitude = models.FloatField(null=True)
 
     def create(versionNo, agentType, ip):
         agent = Agent()
         agent.agentVersion = versionNo
         agent.agentType = agentType
         agent.registered_ip = ip
+        agent.uptime = random.randint(100, 10000)
 
         # get country by geoip
         service = geoip.GeoIp()
@@ -119,17 +148,6 @@ class Agent(models.Model):
         self.save()
 
         return keyPair
-
-#    def generateKeys(self):
-#        keyPair = {}
-#        pk = AgentRSAKey()
-#        pk.mod = str(4)
-#        pk.exp = str(5)
-#        pk.save()
-#        # associate key with agent
-#        self.publicKey = pk
-#        self.save()
-#        return keyPair
 
     def promoteToSuperPeer(self):
         self.superPeer = True
@@ -160,49 +178,25 @@ class Agent(models.Model):
 
         loggedAgent.save()
 
-        
-    def _getPeers(country, superPeer, totalPeers):
-        selectedPeers = []
-        try:
-            peers = list(Agent.objects.filter(country=country, superPeer=superPeer))
+        # update agent information
+        self.lastKnownCountry = location['country_code']
+        self.lastKnownLatitude = location['latitude']
+        self.lastKnownLongitude = location['longitude']
+        self.lastKnownIP = ip
+        self.lastKnownPort = port
+        self.save()
 
-            neededPeers = totalPeers-len(peers)
-            if neededPeers>0:
-                # create list with already selected agent ids
-                peersIDs = []
-                for peer in peers:
-                    peersIDs.append(peer.agentID)
+    def logout(self):
+        # TODO: update uptime
+        LoggedAgent.objects.filter(agentID=self.agentID).delete()
 
-                # select more peers
-                morePeers = list(Agent.objects.filter(~Q(agentID__in=peersIDs), Q(superPeer=superPeer)))
-                # shuffle peers
-                random.shuffle(morePeers)
-
-                if len(peers)>0:
-                    selectedPeers.extend(peers)
-                if len(morePeers)>0:
-                    selectedPeers.extend(morePeers[:neededPeers])
-
-            else:
-                # shuffle peers
-                random.shuffle(peers)
-                # just select totalPeers
-                selectedPeers.extend(peers[:totalPeers])
-
-        except Exception,e:
-            logging.error(e)
-
-        return selectedPeers
-
-    def getPeers(country, totalPeers=100):
+    def getPeers(agentID, country, totalPeers=100):
         #return Agent._getPeers(country, False, totalPeers)
-        # TODO: return offline peers
-        return LoggedAgent._getPeers(country, False, totalPeers)
+        return LoggedAgent._getPeers(agentID, country, False, totalPeers)
 
-    def getSuperPeers(country, totalPeers=100):
+    def getSuperPeers(agentID, country, totalPeers=100):
         #return Agent._getPeers(country, True, totalPeers)
-        # TODO: return offline peers
-        return LoggedAgent._getPeers(country, True, totalPeers)
+        return LoggedAgent._getPeers(agentID, country, True, totalPeers)
 
     def getAgent(agentID):
         return Agent.objects.get(agentID=agentID)
@@ -216,10 +210,9 @@ class Agent(models.Model):
         
 
     def __unicode__(self):
-        return "Agent %s (%s %s) - %s - %s" % (self.agentID, self.agentType, self.agentVersion, self.registered_at, self.registered_ip)
+        return "Agent %s (%s %s) - %s at %s - up %s" % (self.agentID, self.agentType, self.agentVersion, self.registered_ip, self.country, self.uptime)
 
     create = staticmethod(create)
-    _getPeers = staticmethod(_getPeers)
     getPeers = staticmethod(getPeers)
     getSuperPeers = staticmethod(getSuperPeers)
     getAgent = staticmethod(getAgent)

@@ -19,5 +19,25 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from twitter.models import *
+from twitter.views import send_tweet_task
+
 def send_event_tweet(event):
-    pass
+    tweet = TwitterMessage()
+    tweet.message = render_to_string("notificatonsystem/event_tweet.html", locals())
+    tweet.save()
+    
+    # The following is going to put the tweet sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_tweet_task(tweet)
+
+def send_tweet(message):
+    tweet = TwitterMessage()
+    tweet.message = message
+    tweet.save()
+    
+    # The following is going to put the tweet sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_tweet_task(tweet)

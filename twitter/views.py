@@ -31,7 +31,7 @@ import oauth2 as oauth
 from twitter.models import *
 
 
-def create_send_tweet_task(tweet):
+def send_tweet_task(tweet):
     """This is a non-blocking method safe to be called from anywhere in our
     views. If we need to suddenly send a tweet, use this method and it will
     send the task to background and continue processing. If sending fails,

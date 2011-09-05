@@ -20,19 +20,22 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.utils import simplejson
-from google.appengine.api import channel
 import logging
 
-     
-class NotificationInterface:
+from django.utils import simplejson
 
+from google.appengine.api import channel
+
+from twitter import send_event_tweet
+from notificationsystem import send_event_email
+
+
+class NotificationInterface:
     def eventReceived(self, event):
         return NotImplemented
 
 
 class NotificationSystem:
-
     subscribers = []
 
     def registerSubscriber(subscriber):
@@ -54,7 +57,6 @@ class NotificationSystem:
 
 
 class RealtimeBox(NotificationInterface):
-
     def eventReceived(self, event):
         logging.info("event received on realtimebox")
         try:
@@ -65,7 +67,6 @@ class RealtimeBox(NotificationInterface):
 
 
 class RealtimeMap(NotificationInterface):
-
     def eventReceived(self, event):
         logging.info("event received on realtimemap")
         try:
@@ -75,7 +76,24 @@ class RealtimeMap(NotificationInterface):
             logging.error(ex)
 
 
+class EmailNotification(NotificationInterface):
+    def eventReceived(self, event):
+        logging.info("event received on email notification")
+        send_event_email(event)
+
+
+class TwitterNotification(NotificationInterface):
+    def eventReceived(self, event):
+        logging.info("event received on twitter notification")
+        send_event_tweet(event)
+
+
 realtimeBox = RealtimeBox()
 realtimeMap = RealtimeMap()
+emailNotification = EmailNotification()
+twitterNotification = TwitterNotification()
+
 NotificationSystem.registerSubscriber(realtimeBox)
 NotificationSystem.registerSubscriber(realtimeMap)
+NotificationSystem.registerSubscriber(emailNotification)
+NotificationSystem.registerSubscriber(twitterNotification)

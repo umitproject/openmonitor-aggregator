@@ -20,8 +20,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import os
+
 from packages import pygeoip
-import os, splittedDat
+from geoip import splittedDat 
 
 class GeoIp:
     

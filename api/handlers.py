@@ -525,16 +525,11 @@ class CheckAggregator(BaseHandler):
         checkAggregator = messages_pb2.CheckAggregator()
         checkAggregator.ParseFromString(msg)
 
-        # get agent info
-        #agent = Agent.getAgent(checkAggregator.header.agentID)
-
-
-        # TODO: check agent type, maybe sending that info in checkAggregator message
         # get software version information
-        #if agent.agentType=='DESKTOP':
-        softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        #else:
-        #    softwareVersion = MobileAgentVersion.getLastVersionNo()
+        if checkAggregator.agentType=='DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
         testVersion = Test.getLastTestNo()

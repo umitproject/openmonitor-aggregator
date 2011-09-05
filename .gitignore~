@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 *.pyc
 .settings
 .settings/*
 .settings/org.eclipse.core.resources.prefs
+=======
 *.pyc/djangologging/.svn/all-wcprops
 /djangologging/*
 /.idea/*
+>>>>>>> 5199dfbf9bbfd8bc4654c513856364cc9167c40c

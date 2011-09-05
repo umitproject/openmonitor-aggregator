@@ -28,7 +28,7 @@ from django.test.client import Client
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from ICMtests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
-from agents.models import Agent
+from agents.models import Agent, LoggedAgent
 import logging
 import base64
 
@@ -153,7 +153,7 @@ class GetPeerListHandler(BaseHandler):
         else:
             totalPeers = 100
 
-        peers = Agent.getPeers(agent.getCurrentLocation(), totalPeers)
+        peers = Agent.getPeers(agent.agentID, agent.getCurrentLocation(), totalPeers)
 
         # create the response
         response = messages_pb2.GetPeerListResponse()
@@ -161,15 +161,19 @@ class GetPeerListHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion.testID
 
         for peer in peers:
-            logging.info(peer)
             knownPeer = response.knownPeers.add()
             knownPeer.agentID = peer.agentID
             knownPeer.token = "tokenpeer1"
             knownPeer.publicKey.mod = peer.publicKeyMod
             knownPeer.publicKey.exp = peer.publicKeyExp
-            knownPeer.peerStatus = "ON"
-            knownPeer.agentIP = peer.current_ip
-            knownPeer.agentPort = peer.port
+            if isinstance(peer, LoggedAgent):
+                knownPeer.agentIP = peer.current_ip
+                knownPeer.agentPort = peer.port
+                knownPeer.peerStatus = "ON"
+            else:
+                knownPeer.agentIP = peer.lastKnownIP
+                knownPeer.agentPort = peer.lastKnownPort
+                knownPeer.peerStatus = "OFF"
 
         # send back response
         try:
@@ -207,7 +211,7 @@ class GetSuperPeerListHandler(BaseHandler):
         else:
             totalPeers = 100
 
-        superpeers = Agent.getSuperPeers(agent.getCurrentLocation(), totalPeers)
+        superpeers = Agent.getSuperPeers(agent.agentID, agent.getCurrentLocation(), totalPeers)
 
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
@@ -218,11 +222,16 @@ class GetSuperPeerListHandler(BaseHandler):
             knownSuperPeer = response.knownSuperPeers.add()
             knownSuperPeer.agentID = peer.agentID
             knownSuperPeer.token = "tokenSuper1"
-            knownPeer.publicKey.mod = peer.publicKeyMod
-            knownPeer.publicKey.exp = peer.publicKeyExp
-            knownSuperPeer.peerStatus = "ON"
-            knownSuperPeer.agentIP = peer.current_ip
-            knownSuperPeer.agentPort = peer.port
+            knownSuperPeer.publicKey.mod = peer.publicKeyMod
+            knownSuperPeer.publicKey.exp = peer.publicKeyExp
+            if isinstance(peer, LoggedAgent):
+                knownSuperPeer.agentIP = peer.current_ip
+                knownSuperPeer.agentPort = peer.port
+                knownSuperPeer.peerStatus = "ON"
+            else:
+                knownSuperPeer.agentIP = peer.lastKnownIP
+                knownSuperPeer.agentPort = peer.lastKnownPort
+                knownSuperPeer.peerStatus = "OFF"
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -512,11 +521,8 @@ class CheckAggregator(BaseHandler):
         checkAggregator = messages_pb2.CheckAggregator()
         checkAggregator.ParseFromString(msg)
 
-        # get agent info
-        agent = Agent.getAgent(checkAggregator.header.agentID)
-
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if checkAggregator.agentType=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -730,7 +736,9 @@ class TestsHandler(BaseHandler):
             c = Client()
             getpeer = messages_pb2.GetPeerList()
             getpeer.header.token = "token"
-            getpeer.header.agentID = 103001
+            getpeer.header.agentID = 1309
+
+
 
             getpeer_str = base64.b64encode(getpeer.SerializeToString())
             response = c.post('/api/getpeerlist/', {'msg': getpeer_str})
@@ -741,10 +749,35 @@ class TestsHandler(BaseHandler):
             resp.ParseFromString(msg)
 
             for peer in resp.knownPeers:
-                logging.info("New peer" + str(peer.agentID))
+                str = "Peer %s - %s:%s - %s (%s,%s)" % (peer.agentID, peer.agentIP, peer.agentPort, peer.peerStatus, peer.publicKey.mod, peer.publicKey.exp)
+                logging.info(str)
 
         except Exception, inst:
             logging.error(inst)
+
+#        try:
+#            c = Client()
+#            getpeer = messages_pb2.GetSuperPeerList()
+#            getpeer.header.token = "token"
+#            getpeer.header.agentID = 103
+#            getpeer.count = 10
+#
+#
+#
+#            getpeer_str = base64.b64encode(getpeer.SerializeToString())
+#            logging.debug(getpeer_str)
+#            response = c.post('/api/getsuperpeerlist/', {'msg': getpeer_str})
+#
+#            msg = base64.b64decode(response.content)
+#
+#            resp = messages_pb2.GetSuperPeerListResponse()
+#            resp.ParseFromString(msg)
+#
+#            for peer in resp.knownPeers:
+#                logging.info("New peer" + str(peer.agentID))
+#
+#        except Exception, inst:
+#            logging.error(inst)
 
 #        from geoip import geoip
 #        service = geoip.GeoIp()

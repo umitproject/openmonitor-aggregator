@@ -24,6 +24,7 @@ from django.db import models
 from django.db.models import Q
 from agents.RSACrypto import *
 from geoip import geoip
+from django.contrib.auth.models import User
 import logging, random
 
 
@@ -103,17 +104,23 @@ class Agent(models.Model):
     agentVersion  = models.PositiveIntegerField()
     registered_at = models.DateTimeField(auto_now_add=True)
     registered_ip = models.CharField(max_length=255)
-    publicKey     = models.ForeignKey('AgentRSAKey', null=True)
+    publicKeyMod  = models.TextField()
+    publicKeyExp  = models.TextField()
     country       = models.CharField(max_length=2)
     superPeer     = models.BooleanField(default=False)
     latitude      = models.FloatField()
     longitude     = models.FloatField()
-    uptime        = models.BigIntegerField()
+    uptime        = models.BigIntegerField(default=0)
+    user          = models.ForeignKey('auth.user', null=True)
     lastKnownIP   = models.CharField(max_length=255, null=True)
     lastKnownPort = models.PositiveIntegerField(null=True)
     lastKnownCountry   = models.CharField(max_length=2, null=True)
     lastKnownLatitude  = models.FloatField(null=True)
     lastKnownLongitude = models.FloatField(null=True)
+    # flag to know if agent has finished the register process
+    activated     = models.BooleanField(default=False)
+    # flag to mark agent as blocked (if blocked agent will not be able to login)
+    blocked       = models.BooleanField(default=False)
 
     def create(versionNo, agentType, ip):
         agent = Agent()
@@ -137,14 +144,9 @@ class Agent(models.Model):
         crypto = RSACrypto()
         keyPair = crypto.getNewRSAKey()
 
-        # save public key to datastore
-        pk = AgentRSAKey()
-        pk.mod = str(keyPair['public'].mod)
-        pk.exp = str(keyPair['public'].exp)
-        pk.save()
-
-        # associate key with agent
-        self.publicKey = pk
+        # save public key
+        self.publicKeyMod = str(keyPair['public'].mod)
+        self.publicKeyExp = str(keyPair['public'].exp)
         self.save()
 
         return keyPair
@@ -216,8 +218,3 @@ class Agent(models.Model):
     getPeers = staticmethod(getPeers)
     getSuperPeers = staticmethod(getSuperPeers)
     getAgent = staticmethod(getAgent)
-
-
-class AgentRSAKey(models.Model):
-    mod = models.TextField()
-    exp = models.TextField()

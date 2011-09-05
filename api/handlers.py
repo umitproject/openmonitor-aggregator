@@ -164,15 +164,13 @@ class GetPeerListHandler(BaseHandler):
             knownPeer = response.knownPeers.add()
             knownPeer.agentID = peer.agentID
             knownPeer.token = "tokenpeer1"
+            knownPeer.publicKey.mod = peer.publicKeyMod
+            knownPeer.publicKey.exp = peer.publicKeyExp
             if isinstance(peer, LoggedAgent):
-                knownPeer.publicKey.mod = peer.publicKeyMod
-                knownPeer.publicKey.exp = peer.publicKeyExp
                 knownPeer.agentIP = peer.current_ip
                 knownPeer.agentPort = peer.port
                 knownPeer.peerStatus = "ON"
             else:
-                knownPeer.publicKey.mod = peer.publicKey.mod
-                knownPeer.publicKey.exp = peer.publicKey.exp
                 knownPeer.agentIP = peer.lastKnownIP
                 knownPeer.agentPort = peer.lastKnownPort
                 knownPeer.peerStatus = "OFF"
@@ -224,15 +222,13 @@ class GetSuperPeerListHandler(BaseHandler):
             knownSuperPeer = response.knownSuperPeers.add()
             knownSuperPeer.agentID = peer.agentID
             knownSuperPeer.token = "tokenSuper1"
+            knownSuperPeer.publicKey.mod = peer.publicKeyMod
+            knownSuperPeer.publicKey.exp = peer.publicKeyExp
             if isinstance(peer, LoggedAgent):
-                knownPeer.publicKey.mod = peer.publicKeyMod
-                knownPeer.publicKey.exp = peer.publicKeyExp
                 knownSuperPeer.agentIP = peer.current_ip
                 knownSuperPeer.agentPort = peer.port
                 knownSuperPeer.peerStatus = "ON"
             else:
-                knownPeer.publicKey.mod = peer.publicKey.mod
-                knownPeer.publicKey.exp = peer.publicKey.exp
                 knownSuperPeer.agentIP = peer.lastKnownIP
                 knownSuperPeer.agentPort = peer.lastKnownPort
                 knownSuperPeer.peerStatus = "OFF"

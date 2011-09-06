@@ -103,12 +103,11 @@ def media_url(key, refresh=False):
 
 def get_media_dirs():
     if not _media_dirs_cache:
-        media_dirs = [os.path.normcase(os.path.normpath(root))
-                      for root in GLOBAL_MEDIA_DIRS]
+        media_dirs = GLOBAL_MEDIA_DIRS[:]
         for app in settings.INSTALLED_APPS:
             if app in IGNORE_APP_MEDIA_DIRS:
                 continue
-            for name in ('static', 'media'):
+            for name in (u'static', u'media'):
                 app_root = os.path.dirname(import_module(app).__file__)
                 media_dirs.append(os.path.join(app_root, name))
         _media_dirs_cache.extend(media_dirs)

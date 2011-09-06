@@ -35,6 +35,7 @@ AUTOLOAD_SITECONF = 'indexes'
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
 DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -56,6 +57,8 @@ INSTALLED_APPS = (
     'events',
     'versions',
     'ICMtests',
+    'twitter',
+    'notificationsystem',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',

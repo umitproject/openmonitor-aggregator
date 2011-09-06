@@ -5,3 +5,5 @@
 *.pyc/djangologging/.svn/all-wcprops
 /djangologging/*
 /.idea/*
+
+.gaedata/datastore

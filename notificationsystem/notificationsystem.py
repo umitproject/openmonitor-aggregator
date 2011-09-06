@@ -26,8 +26,8 @@ from django.utils import simplejson
 
 from google.appengine.api import channel
 
-from twitter import send_event_tweet
-from notificationsystem import send_event_email
+from twitter.views import send_event_tweet
+from notificationsystem.views import send_event_email
 
 
 class NotificationInterface:

@@ -1,5 +1,5 @@
 from django import template
-from django.template.loaders import render_to_string
+from django.template.loader import render_to_string
 
 register = template.Library()
 

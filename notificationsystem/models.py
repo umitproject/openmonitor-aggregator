@@ -1,7 +1,28 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+##
+## Author: Adriano Monteiro Marques <adriano@umitproject.org>
+##
+## Copyright (C) 2011 S2S Network Consultoria e Tecnologia da Informacao LTDA
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU Affero General Public License as
+## published by the Free Software Foundation, either version 3 of the
+## License, or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU Affero General Public License for more details.
+##
+## You should have received a copy of the GNU Affero General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##
+
 from django.db import models
+from django.template.loader import render_to_string
 
-
-class Notification(models.Model):
+class EmailNotification(models.Model):
     """When an event happens, a notification is created.
     When a notification is created, the pre_save signal must go look for
     the relevant NotifyOnEvent instances and save the emails it will need
@@ -32,7 +53,7 @@ class Notification(models.Model):
         if not self.id:
             self._retrieve_emails()
         
-        super(Notification, self).save(*args, **kwargs)
+        super(EmailNotification, self).save(*args, **kwargs)
     
     def _notify_emails(self, region):
         notify = NotifyOnEvent.objects.filter(region=region)
@@ -66,9 +87,9 @@ class Notification(models.Model):
 
 
 class NotifyOnEvent(models.Model):
-    '''Aggregation for all users who asked to be notified about an specific
+    """Aggregation for all users who asked to be notified about an specific
     region
-    '''
+    """
     created_at = models.DateTimeField(null=True, blank=True, default=None)
     last_notified = models.DateTimeField(null=True, blank=True, default=None)
     region = models.CharField(null=False, blank=False, max_length=50)

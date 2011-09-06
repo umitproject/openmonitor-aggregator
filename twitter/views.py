@@ -19,17 +19,38 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+
 import time
 import urllib
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.utils import simplejson as json
 
 import oauth2 as oauth
 
 from twitter.models import *
 
+def send_event_tweet(event):
+    tweet = TwitterMessage()
+    tweet.message = render_to_string("notificatonsystem/event_tweet.html", locals())
+    tweet.save()
+    
+    # The following is going to put the tweet sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_tweet_task(tweet)
+
+def send_tweet(message):
+    tweet = TwitterMessage()
+    tweet.message = message
+    tweet.save()
+    
+    # The following is going to put the tweet sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_tweet_task(tweet)
 
 def send_tweet_task(tweet):
     """This is a non-blocking method safe to be called from anywhere in our

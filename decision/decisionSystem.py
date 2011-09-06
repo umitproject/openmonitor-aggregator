@@ -22,11 +22,10 @@
 
 from events.models import *
 from reports.models import *
-from notificationsystem.notificationsystem import NotificationSystem
+from notificationsystem.system import NotificationSystem
 import datetime, logging, random
 
 class DecisionSystem:
-
     def newReport(report):
         # TODO: decision about event creation
         # for now event is created directly from report

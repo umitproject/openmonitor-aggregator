@@ -23,7 +23,7 @@
 from django.db import models
 from django.db.models import Q
 from agents.RSACrypto import *
-from geoip import geoip
+from geoip.core import GeoIp
 from django.contrib.auth.models import User
 import logging, random
 
@@ -130,7 +130,7 @@ class Agent(models.Model):
         agent.uptime = random.randint(100, 10000)
 
         # get country by geoip
-        service = geoip.GeoIp()
+        service = GeoIp()
         location = service.getIPLocation(ip)
         agent.country = location['country_code']
         agent.latitude = location['latitude']
@@ -172,7 +172,7 @@ class Agent(models.Model):
         loggedAgent.publicKeyExp = self.publicKey.exp
 
         # get country by geoip
-        service = geoip.GeoIp()
+        service = GeoIp()
         location = service.getIPLocation(ip)
         loggedAgent.country = location['country_code']
         loggedAgent.latitude = location['latitude']

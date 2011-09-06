@@ -55,7 +55,7 @@ def send_event_emails_task(notification):
         # This means that we still have a processing task for this notification
         logging.critical('Task %s is still processing...' %
                             (CHECK_NOTIFICATION_KEY % notification.id))
-        continue
+        return
     
     try:
         task_name = 'check_notification_%s_%s' % (notification.id, uuid.uuid4())
@@ -105,4 +105,3 @@ def send_notification_task(request, notification_id):
     
     memcache.delete(CHECK_NOTIFICATION_KEY % notification.id)
     return HttpResponse("OK")
-'''

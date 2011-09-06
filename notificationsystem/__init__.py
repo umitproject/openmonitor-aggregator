@@ -20,6 +20,7 @@
 ##
 
 from notificationsystem.models import Notification
+from notificationsystem.views import send_event_emails_task
 
 def send_event_email(event):
     notification = Notification()
@@ -28,4 +29,7 @@ def send_event_email(event):
     notification.build_email_data()
     notification.save()
     
-    # TODO: Call task that will send this notification
+    # The following is going to put the email sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_event_emails_task(notification)

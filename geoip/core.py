@@ -26,7 +26,6 @@ from packages import pygeoip
 from geoip import splittedDat 
 
 class GeoIp:
-    
     def getIPLocation(self, address):
         # get path of data file that contains the locations
         basepath = os.path.dirname(__file__)

@@ -1,29 +1,35 @@
 #!/usr/bin/env python
 
+from django.http import HttpResponse
+from django.core.cache import cache
+from django.conf import settings
+
 from gui.decorators import staff_member_required
 
 from notificationsystem.models import *
 
+CHECK_NOTIFICATION_KEY = "check_notification_key_%s"
+
 def subscribe_to_region(request, region):
-    pass
+    if NotifyOnEvent.subscribe(request.user, region):
+        return HttpResponse('OK')
+    return HttpResponse('FAILED')
 
 @staff_member_required
 def check_notifications(request):
     """This method calls out the tasks to send notifications.
     Since it is a cron called view, there is a timeout, so we might want to
     make sure we never get more notifications than we can handle within that
-    timeframe.
+    timeframe. If we start to get backlogs, then we must create more cron
+    entries and call this view more than once per minute.
     """
     notifications = Notification.objects.filter(sent_at=None, send=True).order_by('-created_at')
     
     for notification in notifications:
         # Create the notification queue
         not_key = CHECK_NOTIFICATION_KEY % notification.id
-        if memcache.get(not_key, False):
-            # This means that we still have a processing task for this host
-            # TODO: Check if the amount of retries is too high, and if it is
-            #       then create an event to sinalize that there is an issue
-            #       with this host.
+        if cache.get(not_key, False):
+            # This means that we still have a processing task for this notification
             logging.critical('Task %s is still processing...' %
                                 (CHECK_NOTIFICATION_KEY % notification.id))
             continue
@@ -34,7 +40,8 @@ def check_notifications(request):
                                  name= task_name, queue_name='cron')
             if task is None:
                 logging.critical("!!!! TASK IS NONE! %s " % task_name)
-            memcache.set(not_key, task)
+            
+            cache.set(not_key, task)
             
         except taskqueue.TaskAlreadyExistsError, e:
             logging.info('Task is still running for module %s: %s' % \
@@ -49,10 +56,10 @@ def send_notification_task(request, notification_id):
     notification = Notification.objects.get(pk=notification_id)
     notification.build_email_data()
     
-    sent = send_mail(notification.site_config.notification_sender,
-                     notification.site_config.notification_to,
+    sent = send_mail(settings.NOTIFICATION_SENDER,
+                     settings.NOTIFICATION_TO,
                      bcc=notification.list_emails,
-                     reply_to=notification.site_config.notification_reply_to,
+                     reply_to=settings.NOTIFICATION_REPLY_TO,
                      subject=notification.subject,
                      body=notification.body,
                      html=notification.html)

@@ -4,4 +4,7 @@ cron:
   schedule: every 2 minutes
 - description: send tweet cron
   url: /twitter/cron/send_tweet_cron
-  schedule: every 2 minutes
+  schedule: every 3 minutes
+- description: check notifications
+  url: /notification/cron/check_notifications
+  schedule: every 3 minutes

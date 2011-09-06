@@ -102,10 +102,32 @@ class NotifyOnEvent(models.Model):
         return False
     
     @staticmethod
+    def subscribe(user, region):
+        instance = NotifyOnEvent.objects.filter(region=region)
+        if not instance:
+            instance = NotifyOnEvent()
+        
+        list_emails = instance.list_emails
+        if email not in list_emails:
+            profile = user.profile
+            
+            subs_ids = profile.list_subscriptions_ids
+            subs_ids.append(instance.id)
+            profile.subscriptions = ','.join(subs_ids)
+            profile.save()
+            
+            # Adding subscriber's email to NotifyOnEvent instance
+            list_emails.append(email)
+            instance.emails = ','.join(list_emails)
+            instance.save()
+        
+        return True
+    
+    @staticmethod
     def unsubscribe(email, region):
         instance = NotifyOnEvent.objects.filter(region=region)
         list_emails = instance.list_emails
-        if instance and email in list_emails:
+        if instance and (email in list_emails):
             # Removing the NotifyOnEvent id from subscriber's instance
             user = User.objects.get(email=email)
             profile = user.profile

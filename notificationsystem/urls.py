@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 ##
 ## Author: Adriano Monteiro Marques <adriano@umitproject.org>
-## Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
 ##
 ## Copyright (C) 2011 S2S Network Consultoria e Tecnologia da Informacao LTDA
 ##
@@ -21,20 +20,10 @@
 ##
 
 from django.conf.urls.defaults import *
-from django.contrib import admin
-
-admin.autodiscover()
-
-handler500 = 'djangotoolbox.errorviews.server_error'
 
 urlpatterns = patterns('',
-    ('^_ah/warmup$', 'djangoappengine.views.warmup'),
-    ('^$', 'django.views.generic.simple.direct_to_template', {'template': 'home.html'}),
-    (r'^map/$', 'gui.views.map'),
-    (r'^realtimebox/$', 'gui.views.realtimebox'),
-    (r'^events/(?P<event_id>\d+)/$', 'gui.views.event'),
-    (r'^twitter/', include(twitter.urls)),
-    (r'^notification/', include(notificationsystem.urls)),
-    (r'^admin/', include(admin.site.urls)),
-    (r'^api/', include('api.urls')),
+    url('^/cron/check_notifications',
+            'notificationsystem.views.check_notifications', name='check_notifications'),
+    url('^/taks/send_notification_task/(?P<notification_id>\d+)/?$',
+            'notificationsystem.views.send_notification_task', name='send_notification_task'),
 )

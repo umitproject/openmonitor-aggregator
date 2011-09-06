@@ -92,6 +92,10 @@ MEDIA_DEV_MODE = DEBUG
 DEV_MEDIA_URL = '/devmedia/'
 PRODUCTION_MEDIA_URL = '/media/'
 
+NOTIFICATION_SENDER = "notification@openmonitor.org"
+NOTIFICATION_TO = "notification@openmonitor.org"
+NOTIFICATION_REPLY_TO = "notification@openmonitor.org"
+
 GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)

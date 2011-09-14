@@ -8,3 +8,5 @@
 .gaedata/datastore
 .gaedata/rdbms
 .gaedata
+.project
+.pydevproject

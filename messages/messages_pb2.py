@@ -11,7 +11,7 @@ from protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='messages.proto',
   package='org.umit.icm.mobile.proto',
-  serialized_pb='\n\x0emessages.proto\x12\x19org.umit.icm.mobile.proto\"7\n\x05Trace\x12\x0b\n\x03hop\x18\x01 \x02(\x05\x12\n\n\x02ip\x18\x02 \x02(\t\x12\x15\n\rpacketsTiming\x18\x03 \x03(\x05\"p\n\nTraceRoute\x12\x0e\n\x06target\x18\x01 \x02(\t\x12\x0c\n\x04hops\x18\x02 \x02(\x05\x12\x12\n\npacketSize\x18\x03 \x02(\x05\x12\x30\n\x06traces\x18\x04 \x03(\x0b\x32 .org.umit.icm.mobile.proto.Trace\"\xb0\x01\n\tICMReport\x12\x10\n\x08reportID\x18\x01 \x02(\t\x12\x0f\n\x07\x61gentID\x18\x02 \x02(\x03\x12\x0e\n\x06testID\x18\x03 \x02(\x05\x12\x10\n\x08timeZone\x18\x04 \x02(\x05\x12\x0f\n\x07timeUTC\x18\x05 \x02(\x03\x12\x12\n\npassedNode\x18\x06 \x03(\t\x12\x39\n\ntraceroute\x18\x07 \x01(\x0b\x32%.org.umit.icm.mobile.proto.TraceRoute\"\xa5\x01\n\x13WebsiteReportDetail\x12\x12\n\nwebsiteURL\x18\x01 \x02(\t\x12\x12\n\nstatusCode\x18\x02 \x02(\x05\x12\x14\n\x0cresponseTime\x18\x03 \x01(\x05\x12\x11\n\tbandwidth\x18\x04 \x01(\x05\x12\x14\n\x0credirectLink\x18\x05 \x01(\t\x12\x14\n\x0chtmlResponse\x18\x06 \x01(\t\x12\x11\n\thtmlMedia\x18\x07 \x01(\x0c\"\x85\x01\n\rWebsiteReport\x12\x34\n\x06header\x18\x01 \x02(\x0b\x32$.org.umit.icm.mobile.proto.ICMReport\x12>\n\x06report\x18\x02 \x02(\x0b\x32..org.umit.icm.mobile.proto.WebsiteReportDetail\"g\n\x13ServiceReportDetail\x12\x13\n\x0bserviceName\x18\x01 \x02(\t\x12\x12\n\nstatusCode\x18\x02 \x02(\x05\x12\x14\n\x0cresponseTime\x18\x03 \x01(\x01\x12\x11\n\tbandwidth\x18\x04 \x01(\x01\"\x85\x01\n\rServiceReport\x12\x34\n\x06header\x18\x01 \x02(\x0b\x32$.org.umit.icm.mobile.proto.ICMReport\x12>\n\x06report\x18\x02 \x02(\x0b\x32..org.umit.icm.mobile.proto.ServiceReportDetail\"/\n\rRequestHeader\x12\r\n\x05token\x18\x01 \x02(\t\x12\x0f\n\x07\x61gentID\x18\x02 \x02(\x03\"H\n\x0eResponseHeader\x12\x18\n\x10\x63urrentVersionNo\x18\x01 \x02(\x05\x12\x1c\n\x14\x63urrentTestVersionNo\x18\x02 \x02(\x05\"A\n\rRegisterAgent\x12\x11\n\tversionNo\x18\x01 \x02(\x05\x12\x11\n\tagentType\x18\x02 \x02(\t\x12\n\n\x02ip\x18\x03 \x01(\t\"c\n\x15RegisterAgentResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x0f\n\x07\x61gentID\x18\x02 \x02(\x03\"\"\n\x06RSAKey\x12\x0b\n\x03mod\x18\x01 \x02(\t\x12\x0b\n\x03\x65xp\x18\x02 \x02(\t\"Z\n\x11GenerateSecretKey\x12\x0f\n\x07\x61gentID\x18\x01 \x02(\x03\x12\x34\n\tpublicKey\x18\x02 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\"\x8c\x01\n\x19GenerateSecretKeyResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x34\n\tpublicKey\x18\x02 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\",\n\x19GetTokenAndAsymmetricKeys\x12\x0f\n\x07\x61gentID\x18\x01 \x02(\x03\"\xd8\x02\n!GetTokenAndAsymmetricKeysResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\r\n\x05token\x18\x02 \x02(\t\x12\x35\n\nprivateKey\x18\x03 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\x12\x34\n\tpublicKey\x18\x04 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\x12<\n\x11\x63ipheredPublicKey\x18\x05 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\x12>\n\x13\x61ggregatorPublicKey\x18\x06 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\"$\n\x0f\x43heckAggregator\x12\x11\n\tagentType\x18\x01 \x02(\t\"d\n\x17\x43heckAggregatorResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x0e\n\x06status\x18\x02 \x02(\t\"M\n\x05Login\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\n\n\x02ip\x18\x02 \x01(\t\"B\n\x06Logout\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"J\n\rLoginResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\"V\n\x0bGetPeerList\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\"\x99\x01\n\tAgentData\x12\x0f\n\x07\x61gentID\x18\x01 \x02(\x03\x12\x0f\n\x07\x61gentIP\x18\x02 \x02(\t\x12\x11\n\tagentPort\x18\x03 \x02(\x05\x12\r\n\x05token\x18\x04 \x02(\t\x12\x34\n\tpublicKey\x18\x05 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\x12\x12\n\npeerStatus\x18\x06 \x02(\t\"\x8a\x01\n\x13GetPeerListResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x38\n\nknownPeers\x18\x02 \x03(\x0b\x32$.org.umit.icm.mobile.proto.AgentData\"[\n\x10GetSuperPeerList\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\"\x94\x01\n\x18GetSuperPeerListResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12=\n\x0fknownSuperPeers\x18\x02 \x03(\x0b\x32$.org.umit.icm.mobile.proto.AgentData\"/\n\x08Location\x12\x11\n\tlongitude\x18\x01 \x02(\x01\x12\x10\n\x08latitude\x18\x02 \x02(\x01\"\xb9\x01\n\tGetEvents\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x36\n\tlocations\x18\x02 \x03(\x0b\x32#.org.umit.icm.mobile.proto.Location\x12:\n\ragentLocation\x18\x03 \x01(\x0b\x32#.org.umit.icm.mobile.proto.Location\"\x99\x02\n\x05\x45vent\x12\x10\n\x08testType\x18\x01 \x02(\t\x12\x11\n\teventType\x18\x02 \x02(\t\x12\x0f\n\x07timeUTC\x18\x03 \x02(\x03\x12\x14\n\x0csinceTimeUTC\x18\x04 \x02(\x03\x12\x36\n\tlocations\x18\x05 \x03(\x0b\x32#.org.umit.icm.mobile.proto.Location\x12\x45\n\rwebsiteReport\x18\x06 \x01(\x0b\x32..org.umit.icm.mobile.proto.WebsiteReportDetail\x12\x45\n\rserviceReport\x18\x07 \x01(\x0b\x32..org.umit.icm.mobile.proto.ServiceReportDetail\"\x80\x01\n\x11GetEventsResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x30\n\x06\x65vents\x18\x02 \x03(\x0b\x32 .org.umit.icm.mobile.proto.Event\"\x87\x01\n\x11SendWebsiteReport\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x38\n\x06report\x18\x02 \x02(\x0b\x32(.org.umit.icm.mobile.proto.WebsiteReport\"\x87\x01\n\x11SendServiceReport\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x38\n\x06report\x18\x02 \x02(\x0b\x32(.org.umit.icm.mobile.proto.ServiceReport\"O\n\x12SendReportResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\"q\n\nNewVersion\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x16\n\x0e\x61gentVersionNo\x18\x02 \x02(\x05\x12\x11\n\tagentType\x18\x03 \x02(\t\"\x87\x01\n\x12NewVersionResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x13\n\x0b\x64ownloadURL\x18\x02 \x01(\t\x12\x0e\n\x06update\x18\x03 \x01(\x0c\x12\x11\n\tversionNo\x18\x04 \x02(\x05\"b\n\x08NewTests\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x1c\n\x14\x63urrentTestVersionNo\x18\x02 \x02(\x05\"\x16\n\x07Website\x12\x0b\n\x03url\x18\x01 \x02(\t\"1\n\x07Service\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x0c\n\x04port\x18\x02 \x02(\x05\x12\n\n\x02ip\x18\x03 \x02(\t\"\xac\x01\n\x04Test\x12\x0e\n\x06testID\x18\x01 \x02(\x03\x12\x33\n\x07website\x18\x02 \x01(\x0b\x32\".org.umit.icm.mobile.proto.Website\x12\x33\n\x07service\x18\x03 \x01(\x0b\x32\".org.umit.icm.mobile.proto.Service\x12\x18\n\x10\x65xecuteAtTimeUTC\x18\x04 \x01(\x03\x12\x10\n\x08testType\x18\x05 \x02(\t\"\x94\x01\n\x10NewTestsResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12.\n\x05tests\x18\x02 \x03(\x0b\x32\x1f.org.umit.icm.mobile.proto.Test\x12\x15\n\rtestVersionNo\x18\x03 \x02(\x05\"F\n\nAssignTask\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"\x7f\n\x12\x41ssignTaskResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12.\n\x05tests\x18\x02 \x03(\x0b\x32\x1f.org.umit.icm.mobile.proto.Test\"J\n\x0eUpgradeToSuper\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"\xd8\x01\n\x16UpgradeToSuperResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x10\n\x08newToken\x18\x02 \x02(\t\x12\x38\n\rnewPrivateKey\x18\x03 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\x12\x37\n\x0cnewPublicKey\x18\x04 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\"w\n\x11WebsiteSuggestion\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x12\n\nwebsiteURL\x18\x02 \x02(\t\x12\x14\n\x0c\x65mailAddress\x18\x03 \x01(\t\"\x96\x01\n\x11ServiceSuggestion\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x13\n\x0bserviceName\x18\x02 \x02(\t\x12\x14\n\x0c\x65mailAddress\x18\x03 \x01(\t\x12\x10\n\x08hostName\x18\x04 \x02(\t\x12\n\n\x02ip\x18\x05 \x02(\t\"S\n\x16TestSuggestionResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\"\x87\x01\n\x10\x41uthenticatePeer\x12\x11\n\tagentType\x18\x01 \x02(\x05\x12\x0f\n\x07\x61gentID\x18\x02 \x02(\x03\x12<\n\x11\x63ipheredPublicKey\x18\x03 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\x12\x11\n\tagentPort\x18\x04 \x01(\x05\"X\n\x18\x41uthenticatePeerResponse\x12<\n\x11\x63ipheredPublicKey\x18\x01 \x02(\x0b\x32!.org.umit.icm.mobile.proto.RSAKey\"$\n\x13P2PGetSuperPeerList\x12\r\n\x05\x63ount\x18\x01 \x02(\x05\"R\n\x1bP2PGetSuperPeerListResponse\x12\x33\n\x05peers\x18\x01 \x03(\x0b\x32$.org.umit.icm.mobile.proto.AgentData\"\x1f\n\x0eP2PGetPeerList\x12\r\n\x05\x63ount\x18\x01 \x02(\x05\"M\n\x16P2PGetPeerListResponse\x12\x33\n\x05peers\x18\x01 \x03(\x0b\x32$.org.umit.icm.mobile.proto.AgentData\"F\n\x0b\x41gentUpdate\x12\x0f\n\x07version\x18\x01 \x02(\t\x12\x13\n\x0b\x64ownloadURL\x18\x02 \x02(\t\x12\x11\n\tcheckCode\x18\x03 \x01(\x05\"6\n\x13\x41gentUpdateResponse\x12\x0f\n\x07version\x18\x01 \x02(\t\x12\x0e\n\x06result\x18\x02 \x02(\t\"K\n\x10TestModuleUpdate\x12\x0f\n\x07version\x18\x01 \x02(\t\x12\x13\n\x0b\x64ownloadURL\x18\x02 \x02(\t\x12\x11\n\tcheckCode\x18\x03 \x01(\x05\";\n\x18TestModuleUpdateResponse\x12\x0f\n\x07version\x18\x01 \x02(\t\x12\x0e\n\x06result\x18\x02 \x02(\t\"T\n\x11\x46orwardingMessage\x12\x13\n\x0b\x64\x65stination\x18\x01 \x02(\x03\x12\x12\n\nidentifier\x18\x02 \x02(\t\x12\x16\n\x0e\x65ncodedMessage\x18\x03 \x02(\t\"G\n\x19\x46orwardingMessageResponse\x12\x12\n\nidentifier\x18\x01 \x02(\t\x12\x16\n\x0e\x65ncodedMessage\x18\x02 \x02(\tB\x0f\x42\rMessageProtos')
+  serialized_pb='\n\x0emessages.proto\x12\x19org.umit.icm.mobile.proto\"7\n\x05Trace\x12\x0b\n\x03hop\x18\x01 \x02(\x05\x12\n\n\x02ip\x18\x02 \x02(\t\x12\x15\n\rpacketsTiming\x18\x03 \x03(\x05\"p\n\nTraceRoute\x12\x0e\n\x06target\x18\x01 \x02(\t\x12\x0c\n\x04hops\x18\x02 \x02(\x05\x12\x12\n\npacketSize\x18\x03 \x02(\x05\x12\x30\n\x06traces\x18\x04 \x03(\x0b\x32 .org.umit.icm.mobile.proto.Trace\"\xb0\x01\n\tICMReport\x12\x10\n\x08reportID\x18\x01 \x02(\x03\x12\x0f\n\x07\x61gentID\x18\x02 \x02(\x03\x12\x0e\n\x06testID\x18\x03 \x02(\x05\x12\x10\n\x08timeZone\x18\x04 \x02(\x05\x12\x0f\n\x07timeUTC\x18\x05 \x02(\x03\x12\x12\n\npassedNode\x18\x06 \x03(\x0c\x12\x39\n\ntraceroute\x18\x07 \x01(\x0b\x32%.org.umit.icm.mobile.proto.TraceRoute\"f\n\x13WebsiteReportDetail\x12\x12\n\nwebsiteURL\x18\x01 \x02(\t\x12\x12\n\nstatusCode\x18\x02 \x02(\x05\x12\x14\n\x0cresponseTime\x18\x03 \x01(\x05\x12\x11\n\tbandwidth\x18\x04 \x01(\x05\"\xc4\x01\n\rWebsiteReport\x12\x34\n\x06header\x18\x01 \x02(\x0b\x32$.org.umit.icm.mobile.proto.ICMReport\x12>\n\x06report\x18\x02 \x02(\x0b\x32..org.umit.icm.mobile.proto.WebsiteReportDetail\x12\x14\n\x0credirectLink\x18\x03 \x01(\t\x12\x14\n\x0chtmlResponse\x18\x04 \x01(\t\x12\x11\n\thtmlMedia\x18\x05 \x01(\x0c\"g\n\x13ServiceReportDetail\x12\x13\n\x0bserviceName\x18\x01 \x02(\t\x12\x12\n\nstatusCode\x18\x02 \x02(\x05\x12\x14\n\x0cresponseTime\x18\x03 \x01(\x01\x12\x11\n\tbandwidth\x18\x04 \x01(\x01\"\x85\x01\n\rServiceReport\x12\x34\n\x06header\x18\x01 \x02(\x0b\x32$.org.umit.icm.mobile.proto.ICMReport\x12>\n\x06report\x18\x02 \x02(\x0b\x32..org.umit.icm.mobile.proto.ServiceReportDetail\"/\n\rRequestHeader\x12\r\n\x05token\x18\x01 \x02(\t\x12\x0f\n\x07\x61gentID\x18\x02 \x02(\x03\"H\n\x0eResponseHeader\x12\x18\n\x10\x63urrentVersionNo\x18\x01 \x02(\x05\x12\x1c\n\x14\x63urrentTestVersionNo\x18\x02 \x02(\x05\".\n\rRegisterAgent\x12\n\n\x02ip\x18\x01 \x02(\t\x12\x11\n\tversionNo\x18\x02 \x02(\x05\"\xb4\x01\n\x15RegisterAgentResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\r\n\x05token\x18\x02 \x02(\t\x12\x12\n\nprivateKey\x18\x03 \x02(\t\x12\x11\n\tpublicKey\x18\x04 \x02(\t\x12\x0f\n\x07\x61gentID\x18\x05 \x02(\x03\x12\x19\n\x11\x63ipheredPublicKey\x18\x06 \x02(\t\"G\n\x0bGetPeerList\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"e\n\tAgentData\x12\r\n\x05token\x18\x01 \x02(\t\x12\x11\n\tpublicKey\x18\x02 \x02(\t\x12\x12\n\npeerStatus\x18\x03 \x02(\t\x12\x0f\n\x07\x61gentIP\x18\x04 \x02(\t\x12\x11\n\tagentPort\x18\x05 \x02(\x05\"\x8a\x01\n\x13GetPeerListResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x38\n\nknownPeers\x18\x02 \x03(\x0b\x32$.org.umit.icm.mobile.proto.AgentData\"L\n\x10GetSuperPeerList\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"\x94\x01\n\x18GetSuperPeerListResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12=\n\x0fknownSuperPeers\x18\x02 \x03(\x0b\x32$.org.umit.icm.mobile.proto.AgentData\"x\n\tGetEvents\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x11\n\tlocations\x18\x02 \x03(\t\x12\x0e\n\x06geoLat\x18\x03 \x01(\x03\x12\x0e\n\x06geoLon\x18\x04 \x01(\x03\"\x86\x02\n\x05\x45vent\x12\x10\n\x08testType\x18\x01 \x02(\t\x12\x11\n\teventType\x18\x02 \x02(\t\x12\x10\n\x08timeZone\x18\x03 \x02(\x05\x12\x0f\n\x07timeUTC\x18\x04 \x02(\x03\x12\x14\n\x0csinceTimeUTC\x18\x05 \x02(\x03\x12\x11\n\tlocations\x18\x06 \x03(\t\x12\x45\n\rwebsiteReport\x18\x07 \x01(\x0b\x32..org.umit.icm.mobile.proto.WebsiteReportDetail\x12\x45\n\rserviceReport\x18\x08 \x01(\x0b\x32..org.umit.icm.mobile.proto.ServiceReportDetail\"\x80\x01\n\x11GetEventsResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x30\n\x06\x65vents\x18\x02 \x03(\x0b\x32 .org.umit.icm.mobile.proto.Event\"\x87\x01\n\x11SendWebsiteReport\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x38\n\x06report\x18\x02 \x02(\x0b\x32(.org.umit.icm.mobile.proto.WebsiteReport\"\x87\x01\n\x11SendServiceReport\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x38\n\x06report\x18\x02 \x02(\x0b\x32(.org.umit.icm.mobile.proto.ServiceReport\"O\n\x12SendReportResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\"q\n\nNewVersion\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x16\n\x0e\x61gentVersionNo\x18\x02 \x02(\x05\x12\x11\n\tagentType\x18\x03 \x02(\t\"\x87\x01\n\x12NewVersionResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x13\n\x0b\x64ownloadURL\x18\x02 \x01(\t\x12\x0e\n\x06update\x18\x03 \x01(\x0c\x12\x11\n\tversionNo\x18\x04 \x02(\x05\"b\n\x08NewTests\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x1c\n\x14\x63urrentTestVersionNo\x18\x02 \x02(\x05\"Y\n\x04Test\x12\x0e\n\x06testID\x18\x01 \x02(\x03\x12\x12\n\nwebsiteURL\x18\x02 \x01(\t\x12\x13\n\x0bservideCode\x18\x03 \x01(\x05\x12\x18\n\x10\x65xecuteAtTimeUTC\x18\x04 \x01(\x03\"\x94\x01\n\x10NewTestsResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12.\n\x05tests\x18\x02 \x03(\x0b\x32\x1f.org.umit.icm.mobile.proto.Test\x12\x15\n\rtestVersionNo\x18\x03 \x02(\x05\"F\n\nAssignTask\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"\x7f\n\x12\x41ssignTaskResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12.\n\x05tests\x18\x02 \x03(\x0b\x32\x1f.org.umit.icm.mobile.proto.Test\"J\n\x0eUpgradeToSuper\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\"\x92\x01\n\x16UpgradeToSuperResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\x12\x10\n\x08newToken\x18\x02 \x02(\t\x12\x15\n\rnewPrivateKey\x18\x03 \x02(\t\x12\x14\n\x0cnewPublicKey\x18\x04 \x02(\t\"g\n\x0eSendPrivateKey\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x1b\n\x13symmetricPrivateKey\x18\x02 \x02(\t\"S\n\x16SendPrivateKeyResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeader\"w\n\x11WebsiteSuggestion\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x12\n\nwebsiteURL\x18\x02 \x02(\t\x12\x14\n\x0c\x65mailAddress\x18\x03 \x01(\t\"\x96\x01\n\x11ServiceSuggestion\x12\x38\n\x06header\x18\x01 \x02(\x0b\x32(.org.umit.icm.mobile.proto.RequestHeader\x12\x13\n\x0bserviceName\x18\x02 \x02(\t\x12\x14\n\x0c\x65mailAddress\x18\x03 \x01(\t\x12\x10\n\x08hostName\x18\x04 \x02(\t\x12\n\n\x02ip\x18\x05 \x02(\t\"S\n\x16TestSuggestionResponse\x12\x39\n\x06header\x18\x01 \x02(\x0b\x32).org.umit.icm.mobile.proto.ResponseHeaderB\x0f\x42\rMessageProtos')
 
 
 
@@ -116,8 +116,8 @@ _ICMREPORT = descriptor.Descriptor(
   fields=[
     descriptor.FieldDescriptor(
       name='reportID', full_name='org.umit.icm.mobile.proto.ICMReport.reportID', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      number=1, type=3, cpp_type=2, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -151,7 +151,7 @@ _ICMREPORT = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='passedNode', full_name='org.umit.icm.mobile.proto.ICMReport.passedNode', index=5,
-      number=6, type=9, cpp_type=9, label=3,
+      number=6, type=12, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -212,27 +212,6 @@ _WEBSITEREPORTDETAIL = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-    descriptor.FieldDescriptor(
-      name='redirectLink', full_name='org.umit.icm.mobile.proto.WebsiteReportDetail.redirectLink', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='htmlResponse', full_name='org.umit.icm.mobile.proto.WebsiteReportDetail.htmlResponse', index=5,
-      number=6, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='htmlMedia', full_name='org.umit.icm.mobile.proto.WebsiteReportDetail.htmlMedia', index=6,
-      number=7, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value="",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -242,8 +221,8 @@ _WEBSITEREPORTDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=396,
-  serialized_end=561,
+  serialized_start=395,
+  serialized_end=497,
 )
 
 
@@ -268,6 +247,27 @@ _WEBSITEREPORT = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='redirectLink', full_name='org.umit.icm.mobile.proto.WebsiteReport.redirectLink', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='htmlResponse', full_name='org.umit.icm.mobile.proto.WebsiteReport.htmlResponse', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='htmlMedia', full_name='org.umit.icm.mobile.proto.WebsiteReport.htmlMedia', index=4,
+      number=5, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value="",
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -277,8 +277,8 @@ _WEBSITEREPORT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=564,
-  serialized_end=697,
+  serialized_start=500,
+  serialized_end=696,
 )
 
 
@@ -326,8 +326,8 @@ _SERVICEREPORTDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=699,
-  serialized_end=802,
+  serialized_start=698,
+  serialized_end=801,
 )
 
 
@@ -361,8 +361,8 @@ _SERVICEREPORT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=805,
-  serialized_end=938,
+  serialized_start=804,
+  serialized_end=937,
 )
 
 
@@ -396,8 +396,8 @@ _REQUESTHEADER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=940,
-  serialized_end=987,
+  serialized_start=939,
+  serialized_end=986,
 )
 
 
@@ -431,8 +431,8 @@ _RESPONSEHEADER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=989,
-  serialized_end=1061,
+  serialized_start=988,
+  serialized_end=1060,
 )
 
 
@@ -444,23 +444,16 @@ _REGISTERAGENT = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='versionNo', full_name='org.umit.icm.mobile.proto.RegisterAgent.versionNo', index=0,
-      number=1, type=5, cpp_type=1, label=2,
+      name='ip', full_name='org.umit.icm.mobile.proto.RegisterAgent.ip', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='versionNo', full_name='org.umit.icm.mobile.proto.RegisterAgent.versionNo', index=1,
+      number=2, type=5, cpp_type=1, label=2,
       has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='agentType', full_name='org.umit.icm.mobile.proto.RegisterAgent.agentType', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='ip', full_name='org.umit.icm.mobile.proto.RegisterAgent.ip', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -473,8 +466,8 @@ _REGISTERAGENT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1063,
-  serialized_end=1128,
+  serialized_start=1062,
+  serialized_end=1108,
 )
 
 
@@ -493,232 +486,36 @@ _REGISTERAGENTRESPONSE = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='agentID', full_name='org.umit.icm.mobile.proto.RegisterAgentResponse.agentID', index=1,
-      number=2, type=3, cpp_type=2, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1130,
-  serialized_end=1229,
-)
-
-
-_RSAKEY = descriptor.Descriptor(
-  name='RSAKey',
-  full_name='org.umit.icm.mobile.proto.RSAKey',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='mod', full_name='org.umit.icm.mobile.proto.RSAKey.mod', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='exp', full_name='org.umit.icm.mobile.proto.RSAKey.exp', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1231,
-  serialized_end=1265,
-)
-
-
-_GENERATESECRETKEY = descriptor.Descriptor(
-  name='GenerateSecretKey',
-  full_name='org.umit.icm.mobile.proto.GenerateSecretKey',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='agentID', full_name='org.umit.icm.mobile.proto.GenerateSecretKey.agentID', index=0,
-      number=1, type=3, cpp_type=2, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='publicKey', full_name='org.umit.icm.mobile.proto.GenerateSecretKey.publicKey', index=1,
-      number=2, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1267,
-  serialized_end=1357,
-)
-
-
-_GENERATESECRETKEYRESPONSE = descriptor.Descriptor(
-  name='GenerateSecretKeyResponse',
-  full_name='org.umit.icm.mobile.proto.GenerateSecretKeyResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='header', full_name='org.umit.icm.mobile.proto.GenerateSecretKeyResponse.header', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='publicKey', full_name='org.umit.icm.mobile.proto.GenerateSecretKeyResponse.publicKey', index=1,
-      number=2, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1360,
-  serialized_end=1500,
-)
-
-
-_GETTOKENANDASYMMETRICKEYS = descriptor.Descriptor(
-  name='GetTokenAndAsymmetricKeys',
-  full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeys',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='agentID', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeys.agentID', index=0,
-      number=1, type=3, cpp_type=2, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1502,
-  serialized_end=1546,
-)
-
-
-_GETTOKENANDASYMMETRICKEYSRESPONSE = descriptor.Descriptor(
-  name='GetTokenAndAsymmetricKeysResponse',
-  full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='header', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse.header', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='token', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse.token', index=1,
+      name='token', full_name='org.umit.icm.mobile.proto.RegisterAgentResponse.token', index=1,
       number=2, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='privateKey', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse.privateKey', index=2,
-      number=3, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
+      name='privateKey', full_name='org.umit.icm.mobile.proto.RegisterAgentResponse.privateKey', index=2,
+      number=3, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='publicKey', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse.publicKey', index=3,
-      number=4, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
+      name='publicKey', full_name='org.umit.icm.mobile.proto.RegisterAgentResponse.publicKey', index=3,
+      number=4, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='cipheredPublicKey', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse.cipheredPublicKey', index=4,
-      number=5, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
+      name='agentID', full_name='org.umit.icm.mobile.proto.RegisterAgentResponse.agentID', index=4,
+      number=5, type=3, cpp_type=2, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='aggregatorPublicKey', full_name='org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse.aggregatorPublicKey', index=5,
-      number=6, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1549,
-  serialized_end=1893,
-)
-
-
-_CHECKAGGREGATOR = descriptor.Descriptor(
-  name='CheckAggregator',
-  full_name='org.umit.icm.mobile.proto.CheckAggregator',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='agentType', full_name='org.umit.icm.mobile.proto.CheckAggregator.agentType', index=0,
-      number=1, type=9, cpp_type=9, label=2,
+      name='cipheredPublicKey', full_name='org.umit.icm.mobile.proto.RegisterAgentResponse.cipheredPublicKey', index=5,
+      number=6, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -732,134 +529,8 @@ _CHECKAGGREGATOR = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1895,
-  serialized_end=1931,
-)
-
-
-_CHECKAGGREGATORRESPONSE = descriptor.Descriptor(
-  name='CheckAggregatorResponse',
-  full_name='org.umit.icm.mobile.proto.CheckAggregatorResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='header', full_name='org.umit.icm.mobile.proto.CheckAggregatorResponse.header', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='status', full_name='org.umit.icm.mobile.proto.CheckAggregatorResponse.status', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=1933,
-  serialized_end=2033,
-)
-
-
-_LOGIN = descriptor.Descriptor(
-  name='Login',
-  full_name='org.umit.icm.mobile.proto.Login',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='header', full_name='org.umit.icm.mobile.proto.Login.header', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='ip', full_name='org.umit.icm.mobile.proto.Login.ip', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=2035,
-  serialized_end=2112,
-)
-
-
-_LOGOUT = descriptor.Descriptor(
-  name='Logout',
-  full_name='org.umit.icm.mobile.proto.Logout',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='header', full_name='org.umit.icm.mobile.proto.Logout.header', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=2114,
-  serialized_end=2180,
-)
-
-
-_LOGINRESPONSE = descriptor.Descriptor(
-  name='LoginResponse',
-  full_name='org.umit.icm.mobile.proto.LoginResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='header', full_name='org.umit.icm.mobile.proto.LoginResponse.header', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=2182,
-  serialized_end=2256,
+  serialized_start=1111,
+  serialized_end=1291,
 )
 
 
@@ -877,13 +548,6 @@ _GETPEERLIST = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-    descriptor.FieldDescriptor(
-      name='count', full_name='org.umit.icm.mobile.proto.GetPeerList.count', index=1,
-      number=2, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -893,8 +557,8 @@ _GETPEERLIST = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2258,
-  serialized_end=2344,
+  serialized_start=1293,
+  serialized_end=1364,
 )
 
 
@@ -906,44 +570,37 @@ _AGENTDATA = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='agentID', full_name='org.umit.icm.mobile.proto.AgentData.agentID', index=0,
-      number=1, type=3, cpp_type=2, label=2,
-      has_default_value=False, default_value=0,
+      name='token', full_name='org.umit.icm.mobile.proto.AgentData.token', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='agentIP', full_name='org.umit.icm.mobile.proto.AgentData.agentIP', index=1,
+      name='publicKey', full_name='org.umit.icm.mobile.proto.AgentData.publicKey', index=1,
       number=2, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='agentPort', full_name='org.umit.icm.mobile.proto.AgentData.agentPort', index=2,
-      number=3, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
+      name='peerStatus', full_name='org.umit.icm.mobile.proto.AgentData.peerStatus', index=2,
+      number=3, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='token', full_name='org.umit.icm.mobile.proto.AgentData.token', index=3,
+      name='agentIP', full_name='org.umit.icm.mobile.proto.AgentData.agentIP', index=3,
       number=4, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='publicKey', full_name='org.umit.icm.mobile.proto.AgentData.publicKey', index=4,
-      number=5, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='peerStatus', full_name='org.umit.icm.mobile.proto.AgentData.peerStatus', index=5,
-      number=6, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      name='agentPort', full_name='org.umit.icm.mobile.proto.AgentData.agentPort', index=4,
+      number=5, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -956,8 +613,8 @@ _AGENTDATA = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2347,
-  serialized_end=2500,
+  serialized_start=1366,
+  serialized_end=1467,
 )
 
 
@@ -991,8 +648,8 @@ _GETPEERLISTRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2503,
-  serialized_end=2641,
+  serialized_start=1470,
+  serialized_end=1608,
 )
 
 
@@ -1010,13 +667,6 @@ _GETSUPERPEERLIST = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-    descriptor.FieldDescriptor(
-      name='count', full_name='org.umit.icm.mobile.proto.GetSuperPeerList.count', index=1,
-      number=2, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -1026,8 +676,8 @@ _GETSUPERPEERLIST = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2643,
-  serialized_end=2734,
+  serialized_start=1610,
+  serialized_end=1686,
 )
 
 
@@ -1061,43 +711,8 @@ _GETSUPERPEERLISTRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2737,
-  serialized_end=2885,
-)
-
-
-_LOCATION = descriptor.Descriptor(
-  name='Location',
-  full_name='org.umit.icm.mobile.proto.Location',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='longitude', full_name='org.umit.icm.mobile.proto.Location.longitude', index=0,
-      number=1, type=1, cpp_type=5, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='latitude', full_name='org.umit.icm.mobile.proto.Location.latitude', index=1,
-      number=2, type=1, cpp_type=5, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=2887,
-  serialized_end=2934,
+  serialized_start=1689,
+  serialized_end=1837,
 )
 
 
@@ -1117,15 +732,22 @@ _GETEVENTS = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='locations', full_name='org.umit.icm.mobile.proto.GetEvents.locations', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='agentLocation', full_name='org.umit.icm.mobile.proto.GetEvents.agentLocation', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='geoLat', full_name='org.umit.icm.mobile.proto.GetEvents.geoLat', index=2,
+      number=3, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='geoLon', full_name='org.umit.icm.mobile.proto.GetEvents.geoLon', index=3,
+      number=4, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -1138,8 +760,8 @@ _GETEVENTS = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2937,
-  serialized_end=3122,
+  serialized_start=1839,
+  serialized_end=1959,
 )
 
 
@@ -1165,36 +787,43 @@ _EVENT = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='timeUTC', full_name='org.umit.icm.mobile.proto.Event.timeUTC', index=2,
-      number=3, type=3, cpp_type=2, label=2,
+      name='timeZone', full_name='org.umit.icm.mobile.proto.Event.timeZone', index=2,
+      number=3, type=5, cpp_type=1, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='sinceTimeUTC', full_name='org.umit.icm.mobile.proto.Event.sinceTimeUTC', index=3,
+      name='timeUTC', full_name='org.umit.icm.mobile.proto.Event.timeUTC', index=3,
       number=4, type=3, cpp_type=2, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='locations', full_name='org.umit.icm.mobile.proto.Event.locations', index=4,
-      number=5, type=11, cpp_type=10, label=3,
+      name='sinceTimeUTC', full_name='org.umit.icm.mobile.proto.Event.sinceTimeUTC', index=4,
+      number=5, type=3, cpp_type=2, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='locations', full_name='org.umit.icm.mobile.proto.Event.locations', index=5,
+      number=6, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='websiteReport', full_name='org.umit.icm.mobile.proto.Event.websiteReport', index=5,
-      number=6, type=11, cpp_type=10, label=1,
+      name='websiteReport', full_name='org.umit.icm.mobile.proto.Event.websiteReport', index=6,
+      number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='serviceReport', full_name='org.umit.icm.mobile.proto.Event.serviceReport', index=6,
-      number=7, type=11, cpp_type=10, label=1,
+      name='serviceReport', full_name='org.umit.icm.mobile.proto.Event.serviceReport', index=7,
+      number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -1208,8 +837,8 @@ _EVENT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3125,
-  serialized_end=3406,
+  serialized_start=1962,
+  serialized_end=2224,
 )
 
 
@@ -1243,8 +872,8 @@ _GETEVENTSRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3409,
-  serialized_end=3537,
+  serialized_start=2227,
+  serialized_end=2355,
 )
 
 
@@ -1278,8 +907,8 @@ _SENDWEBSITEREPORT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3540,
-  serialized_end=3675,
+  serialized_start=2358,
+  serialized_end=2493,
 )
 
 
@@ -1313,8 +942,8 @@ _SENDSERVICEREPORT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3678,
-  serialized_end=3813,
+  serialized_start=2496,
+  serialized_end=2631,
 )
 
 
@@ -1341,8 +970,8 @@ _SENDREPORTRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3815,
-  serialized_end=3894,
+  serialized_start=2633,
+  serialized_end=2712,
 )
 
 
@@ -1383,8 +1012,8 @@ _NEWVERSION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3896,
-  serialized_end=4009,
+  serialized_start=2714,
+  serialized_end=2827,
 )
 
 
@@ -1432,8 +1061,8 @@ _NEWVERSIONRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4012,
-  serialized_end=4147,
+  serialized_start=2830,
+  serialized_end=2965,
 )
 
 
@@ -1467,78 +1096,8 @@ _NEWTESTS = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4149,
-  serialized_end=4247,
-)
-
-
-_WEBSITE = descriptor.Descriptor(
-  name='Website',
-  full_name='org.umit.icm.mobile.proto.Website',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='url', full_name='org.umit.icm.mobile.proto.Website.url', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=4249,
-  serialized_end=4271,
-)
-
-
-_SERVICE = descriptor.Descriptor(
-  name='Service',
-  full_name='org.umit.icm.mobile.proto.Service',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='name', full_name='org.umit.icm.mobile.proto.Service.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='port', full_name='org.umit.icm.mobile.proto.Service.port', index=1,
-      number=2, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='ip', full_name='org.umit.icm.mobile.proto.Service.ip', index=2,
-      number=3, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=4273,
-  serialized_end=4322,
+  serialized_start=2967,
+  serialized_end=3065,
 )
 
 
@@ -1557,16 +1116,16 @@ _TEST = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='website', full_name='org.umit.icm.mobile.proto.Test.website', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='websiteURL', full_name='org.umit.icm.mobile.proto.Test.websiteURL', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='service', full_name='org.umit.icm.mobile.proto.Test.service', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='servideCode', full_name='org.umit.icm.mobile.proto.Test.servideCode', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -1574,13 +1133,6 @@ _TEST = descriptor.Descriptor(
       name='executeAtTimeUTC', full_name='org.umit.icm.mobile.proto.Test.executeAtTimeUTC', index=3,
       number=4, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='testType', full_name='org.umit.icm.mobile.proto.Test.testType', index=4,
-      number=5, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -1593,8 +1145,8 @@ _TEST = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4325,
-  serialized_end=4497,
+  serialized_start=3067,
+  serialized_end=3156,
 )
 
 
@@ -1635,8 +1187,8 @@ _NEWTESTSRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4500,
-  serialized_end=4648,
+  serialized_start=3159,
+  serialized_end=3307,
 )
 
 
@@ -1663,8 +1215,8 @@ _ASSIGNTASK = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4650,
-  serialized_end=4720,
+  serialized_start=3309,
+  serialized_end=3379,
 )
 
 
@@ -1698,8 +1250,8 @@ _ASSIGNTASKRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4722,
-  serialized_end=4849,
+  serialized_start=3381,
+  serialized_end=3508,
 )
 
 
@@ -1726,8 +1278,8 @@ _UPGRADETOSUPER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4851,
-  serialized_end=4925,
+  serialized_start=3510,
+  serialized_end=3584,
 )
 
 
@@ -1754,14 +1306,77 @@ _UPGRADETOSUPERRESPONSE = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='newPrivateKey', full_name='org.umit.icm.mobile.proto.UpgradeToSuperResponse.newPrivateKey', index=2,
-      number=3, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
+      number=3, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
       name='newPublicKey', full_name='org.umit.icm.mobile.proto.UpgradeToSuperResponse.newPublicKey', index=3,
-      number=4, type=11, cpp_type=10, label=2,
+      number=4, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=3587,
+  serialized_end=3733,
+)
+
+
+_SENDPRIVATEKEY = descriptor.Descriptor(
+  name='SendPrivateKey',
+  full_name='org.umit.icm.mobile.proto.SendPrivateKey',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='header', full_name='org.umit.icm.mobile.proto.SendPrivateKey.header', index=0,
+      number=1, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='symmetricPrivateKey', full_name='org.umit.icm.mobile.proto.SendPrivateKey.symmetricPrivateKey', index=1,
+      number=2, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=3735,
+  serialized_end=3838,
+)
+
+
+_SENDPRIVATEKEYRESPONSE = descriptor.Descriptor(
+  name='SendPrivateKeyResponse',
+  full_name='org.umit.icm.mobile.proto.SendPrivateKeyResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='header', full_name='org.umit.icm.mobile.proto.SendPrivateKeyResponse.header', index=0,
+      number=1, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -1775,8 +1390,8 @@ _UPGRADETOSUPERRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4928,
-  serialized_end=5144,
+  serialized_start=3840,
+  serialized_end=3923,
 )
 
 
@@ -1817,8 +1432,8 @@ _WEBSITESUGGESTION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5146,
-  serialized_end=5265,
+  serialized_start=3925,
+  serialized_end=4044,
 )
 
 
@@ -1873,8 +1488,8 @@ _SERVICESUGGESTION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5268,
-  serialized_end=5418,
+  serialized_start=4047,
+  serialized_end=4197,
 )
 
 
@@ -1901,428 +1516,8 @@ _TESTSUGGESTIONRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5420,
-  serialized_end=5503,
-)
-
-
-_AUTHENTICATEPEER = descriptor.Descriptor(
-  name='AuthenticatePeer',
-  full_name='org.umit.icm.mobile.proto.AuthenticatePeer',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='agentType', full_name='org.umit.icm.mobile.proto.AuthenticatePeer.agentType', index=0,
-      number=1, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='agentID', full_name='org.umit.icm.mobile.proto.AuthenticatePeer.agentID', index=1,
-      number=2, type=3, cpp_type=2, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='cipheredPublicKey', full_name='org.umit.icm.mobile.proto.AuthenticatePeer.cipheredPublicKey', index=2,
-      number=3, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='agentPort', full_name='org.umit.icm.mobile.proto.AuthenticatePeer.agentPort', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5506,
-  serialized_end=5641,
-)
-
-
-_AUTHENTICATEPEERRESPONSE = descriptor.Descriptor(
-  name='AuthenticatePeerResponse',
-  full_name='org.umit.icm.mobile.proto.AuthenticatePeerResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='cipheredPublicKey', full_name='org.umit.icm.mobile.proto.AuthenticatePeerResponse.cipheredPublicKey', index=0,
-      number=1, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5643,
-  serialized_end=5731,
-)
-
-
-_P2PGETSUPERPEERLIST = descriptor.Descriptor(
-  name='P2PGetSuperPeerList',
-  full_name='org.umit.icm.mobile.proto.P2PGetSuperPeerList',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='count', full_name='org.umit.icm.mobile.proto.P2PGetSuperPeerList.count', index=0,
-      number=1, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5733,
-  serialized_end=5769,
-)
-
-
-_P2PGETSUPERPEERLISTRESPONSE = descriptor.Descriptor(
-  name='P2PGetSuperPeerListResponse',
-  full_name='org.umit.icm.mobile.proto.P2PGetSuperPeerListResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='peers', full_name='org.umit.icm.mobile.proto.P2PGetSuperPeerListResponse.peers', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5771,
-  serialized_end=5853,
-)
-
-
-_P2PGETPEERLIST = descriptor.Descriptor(
-  name='P2PGetPeerList',
-  full_name='org.umit.icm.mobile.proto.P2PGetPeerList',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='count', full_name='org.umit.icm.mobile.proto.P2PGetPeerList.count', index=0,
-      number=1, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5855,
-  serialized_end=5886,
-)
-
-
-_P2PGETPEERLISTRESPONSE = descriptor.Descriptor(
-  name='P2PGetPeerListResponse',
-  full_name='org.umit.icm.mobile.proto.P2PGetPeerListResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='peers', full_name='org.umit.icm.mobile.proto.P2PGetPeerListResponse.peers', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5888,
-  serialized_end=5965,
-)
-
-
-_AGENTUPDATE = descriptor.Descriptor(
-  name='AgentUpdate',
-  full_name='org.umit.icm.mobile.proto.AgentUpdate',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='version', full_name='org.umit.icm.mobile.proto.AgentUpdate.version', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='downloadURL', full_name='org.umit.icm.mobile.proto.AgentUpdate.downloadURL', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='checkCode', full_name='org.umit.icm.mobile.proto.AgentUpdate.checkCode', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=5967,
-  serialized_end=6037,
-)
-
-
-_AGENTUPDATERESPONSE = descriptor.Descriptor(
-  name='AgentUpdateResponse',
-  full_name='org.umit.icm.mobile.proto.AgentUpdateResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='version', full_name='org.umit.icm.mobile.proto.AgentUpdateResponse.version', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='result', full_name='org.umit.icm.mobile.proto.AgentUpdateResponse.result', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=6039,
-  serialized_end=6093,
-)
-
-
-_TESTMODULEUPDATE = descriptor.Descriptor(
-  name='TestModuleUpdate',
-  full_name='org.umit.icm.mobile.proto.TestModuleUpdate',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='version', full_name='org.umit.icm.mobile.proto.TestModuleUpdate.version', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='downloadURL', full_name='org.umit.icm.mobile.proto.TestModuleUpdate.downloadURL', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='checkCode', full_name='org.umit.icm.mobile.proto.TestModuleUpdate.checkCode', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=6095,
-  serialized_end=6170,
-)
-
-
-_TESTMODULEUPDATERESPONSE = descriptor.Descriptor(
-  name='TestModuleUpdateResponse',
-  full_name='org.umit.icm.mobile.proto.TestModuleUpdateResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='version', full_name='org.umit.icm.mobile.proto.TestModuleUpdateResponse.version', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='result', full_name='org.umit.icm.mobile.proto.TestModuleUpdateResponse.result', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=6172,
-  serialized_end=6231,
-)
-
-
-_FORWARDINGMESSAGE = descriptor.Descriptor(
-  name='ForwardingMessage',
-  full_name='org.umit.icm.mobile.proto.ForwardingMessage',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='destination', full_name='org.umit.icm.mobile.proto.ForwardingMessage.destination', index=0,
-      number=1, type=3, cpp_type=2, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='identifier', full_name='org.umit.icm.mobile.proto.ForwardingMessage.identifier', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='encodedMessage', full_name='org.umit.icm.mobile.proto.ForwardingMessage.encodedMessage', index=2,
-      number=3, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=6233,
-  serialized_end=6317,
-)
-
-
-_FORWARDINGMESSAGERESPONSE = descriptor.Descriptor(
-  name='ForwardingMessageResponse',
-  full_name='org.umit.icm.mobile.proto.ForwardingMessageResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='identifier', full_name='org.umit.icm.mobile.proto.ForwardingMessageResponse.identifier', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='encodedMessage', full_name='org.umit.icm.mobile.proto.ForwardingMessageResponse.encodedMessage', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=6319,
-  serialized_end=6390,
+  serialized_start=4199,
+  serialized_end=4282,
 )
 
 _TRACEROUTE.fields_by_name['traces'].message_type = _TRACE
@@ -2332,29 +1527,13 @@ _WEBSITEREPORT.fields_by_name['report'].message_type = _WEBSITEREPORTDETAIL
 _SERVICEREPORT.fields_by_name['header'].message_type = _ICMREPORT
 _SERVICEREPORT.fields_by_name['report'].message_type = _SERVICEREPORTDETAIL
 _REGISTERAGENTRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
-_GENERATESECRETKEY.fields_by_name['publicKey'].message_type = _RSAKEY
-_GENERATESECRETKEYRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
-_GENERATESECRETKEYRESPONSE.fields_by_name['publicKey'].message_type = _RSAKEY
-_GETTOKENANDASYMMETRICKEYSRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
-_GETTOKENANDASYMMETRICKEYSRESPONSE.fields_by_name['privateKey'].message_type = _RSAKEY
-_GETTOKENANDASYMMETRICKEYSRESPONSE.fields_by_name['publicKey'].message_type = _RSAKEY
-_GETTOKENANDASYMMETRICKEYSRESPONSE.fields_by_name['cipheredPublicKey'].message_type = _RSAKEY
-_GETTOKENANDASYMMETRICKEYSRESPONSE.fields_by_name['aggregatorPublicKey'].message_type = _RSAKEY
-_CHECKAGGREGATORRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
-_LOGIN.fields_by_name['header'].message_type = _REQUESTHEADER
-_LOGOUT.fields_by_name['header'].message_type = _REQUESTHEADER
-_LOGINRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _GETPEERLIST.fields_by_name['header'].message_type = _REQUESTHEADER
-_AGENTDATA.fields_by_name['publicKey'].message_type = _RSAKEY
 _GETPEERLISTRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _GETPEERLISTRESPONSE.fields_by_name['knownPeers'].message_type = _AGENTDATA
 _GETSUPERPEERLIST.fields_by_name['header'].message_type = _REQUESTHEADER
 _GETSUPERPEERLISTRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _GETSUPERPEERLISTRESPONSE.fields_by_name['knownSuperPeers'].message_type = _AGENTDATA
 _GETEVENTS.fields_by_name['header'].message_type = _REQUESTHEADER
-_GETEVENTS.fields_by_name['locations'].message_type = _LOCATION
-_GETEVENTS.fields_by_name['agentLocation'].message_type = _LOCATION
-_EVENT.fields_by_name['locations'].message_type = _LOCATION
 _EVENT.fields_by_name['websiteReport'].message_type = _WEBSITEREPORTDETAIL
 _EVENT.fields_by_name['serviceReport'].message_type = _SERVICEREPORTDETAIL
 _GETEVENTSRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
@@ -2367,8 +1546,6 @@ _SENDREPORTRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _NEWVERSION.fields_by_name['header'].message_type = _REQUESTHEADER
 _NEWVERSIONRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _NEWTESTS.fields_by_name['header'].message_type = _REQUESTHEADER
-_TEST.fields_by_name['website'].message_type = _WEBSITE
-_TEST.fields_by_name['service'].message_type = _SERVICE
 _NEWTESTSRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _NEWTESTSRESPONSE.fields_by_name['tests'].message_type = _TEST
 _ASSIGNTASK.fields_by_name['header'].message_type = _REQUESTHEADER
@@ -2376,15 +1553,11 @@ _ASSIGNTASKRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _ASSIGNTASKRESPONSE.fields_by_name['tests'].message_type = _TEST
 _UPGRADETOSUPER.fields_by_name['header'].message_type = _REQUESTHEADER
 _UPGRADETOSUPERRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
-_UPGRADETOSUPERRESPONSE.fields_by_name['newPrivateKey'].message_type = _RSAKEY
-_UPGRADETOSUPERRESPONSE.fields_by_name['newPublicKey'].message_type = _RSAKEY
+_SENDPRIVATEKEY.fields_by_name['header'].message_type = _REQUESTHEADER
+_SENDPRIVATEKEYRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 _WEBSITESUGGESTION.fields_by_name['header'].message_type = _REQUESTHEADER
 _SERVICESUGGESTION.fields_by_name['header'].message_type = _REQUESTHEADER
 _TESTSUGGESTIONRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
-_AUTHENTICATEPEER.fields_by_name['cipheredPublicKey'].message_type = _RSAKEY
-_AUTHENTICATEPEERRESPONSE.fields_by_name['cipheredPublicKey'].message_type = _RSAKEY
-_P2PGETSUPERPEERLISTRESPONSE.fields_by_name['peers'].message_type = _AGENTDATA
-_P2PGETPEERLISTRESPONSE.fields_by_name['peers'].message_type = _AGENTDATA
 DESCRIPTOR.message_types_by_name['Trace'] = _TRACE
 DESCRIPTOR.message_types_by_name['TraceRoute'] = _TRACEROUTE
 DESCRIPTOR.message_types_by_name['ICMReport'] = _ICMREPORT
@@ -2396,22 +1569,11 @@ DESCRIPTOR.message_types_by_name['RequestHeader'] = _REQUESTHEADER
 DESCRIPTOR.message_types_by_name['ResponseHeader'] = _RESPONSEHEADER
 DESCRIPTOR.message_types_by_name['RegisterAgent'] = _REGISTERAGENT
 DESCRIPTOR.message_types_by_name['RegisterAgentResponse'] = _REGISTERAGENTRESPONSE
-DESCRIPTOR.message_types_by_name['RSAKey'] = _RSAKEY
-DESCRIPTOR.message_types_by_name['GenerateSecretKey'] = _GENERATESECRETKEY
-DESCRIPTOR.message_types_by_name['GenerateSecretKeyResponse'] = _GENERATESECRETKEYRESPONSE
-DESCRIPTOR.message_types_by_name['GetTokenAndAsymmetricKeys'] = _GETTOKENANDASYMMETRICKEYS
-DESCRIPTOR.message_types_by_name['GetTokenAndAsymmetricKeysResponse'] = _GETTOKENANDASYMMETRICKEYSRESPONSE
-DESCRIPTOR.message_types_by_name['CheckAggregator'] = _CHECKAGGREGATOR
-DESCRIPTOR.message_types_by_name['CheckAggregatorResponse'] = _CHECKAGGREGATORRESPONSE
-DESCRIPTOR.message_types_by_name['Login'] = _LOGIN
-DESCRIPTOR.message_types_by_name['Logout'] = _LOGOUT
-DESCRIPTOR.message_types_by_name['LoginResponse'] = _LOGINRESPONSE
 DESCRIPTOR.message_types_by_name['GetPeerList'] = _GETPEERLIST
 DESCRIPTOR.message_types_by_name['AgentData'] = _AGENTDATA
 DESCRIPTOR.message_types_by_name['GetPeerListResponse'] = _GETPEERLISTRESPONSE
 DESCRIPTOR.message_types_by_name['GetSuperPeerList'] = _GETSUPERPEERLIST
 DESCRIPTOR.message_types_by_name['GetSuperPeerListResponse'] = _GETSUPERPEERLISTRESPONSE
-DESCRIPTOR.message_types_by_name['Location'] = _LOCATION
 DESCRIPTOR.message_types_by_name['GetEvents'] = _GETEVENTS
 DESCRIPTOR.message_types_by_name['Event'] = _EVENT
 DESCRIPTOR.message_types_by_name['GetEventsResponse'] = _GETEVENTSRESPONSE
@@ -2421,29 +1583,17 @@ DESCRIPTOR.message_types_by_name['SendReportResponse'] = _SENDREPORTRESPONSE
 DESCRIPTOR.message_types_by_name['NewVersion'] = _NEWVERSION
 DESCRIPTOR.message_types_by_name['NewVersionResponse'] = _NEWVERSIONRESPONSE
 DESCRIPTOR.message_types_by_name['NewTests'] = _NEWTESTS
-DESCRIPTOR.message_types_by_name['Website'] = _WEBSITE
-DESCRIPTOR.message_types_by_name['Service'] = _SERVICE
 DESCRIPTOR.message_types_by_name['Test'] = _TEST
 DESCRIPTOR.message_types_by_name['NewTestsResponse'] = _NEWTESTSRESPONSE
 DESCRIPTOR.message_types_by_name['AssignTask'] = _ASSIGNTASK
 DESCRIPTOR.message_types_by_name['AssignTaskResponse'] = _ASSIGNTASKRESPONSE
 DESCRIPTOR.message_types_by_name['UpgradeToSuper'] = _UPGRADETOSUPER
 DESCRIPTOR.message_types_by_name['UpgradeToSuperResponse'] = _UPGRADETOSUPERRESPONSE
+DESCRIPTOR.message_types_by_name['SendPrivateKey'] = _SENDPRIVATEKEY
+DESCRIPTOR.message_types_by_name['SendPrivateKeyResponse'] = _SENDPRIVATEKEYRESPONSE
 DESCRIPTOR.message_types_by_name['WebsiteSuggestion'] = _WEBSITESUGGESTION
 DESCRIPTOR.message_types_by_name['ServiceSuggestion'] = _SERVICESUGGESTION
 DESCRIPTOR.message_types_by_name['TestSuggestionResponse'] = _TESTSUGGESTIONRESPONSE
-DESCRIPTOR.message_types_by_name['AuthenticatePeer'] = _AUTHENTICATEPEER
-DESCRIPTOR.message_types_by_name['AuthenticatePeerResponse'] = _AUTHENTICATEPEERRESPONSE
-DESCRIPTOR.message_types_by_name['P2PGetSuperPeerList'] = _P2PGETSUPERPEERLIST
-DESCRIPTOR.message_types_by_name['P2PGetSuperPeerListResponse'] = _P2PGETSUPERPEERLISTRESPONSE
-DESCRIPTOR.message_types_by_name['P2PGetPeerList'] = _P2PGETPEERLIST
-DESCRIPTOR.message_types_by_name['P2PGetPeerListResponse'] = _P2PGETPEERLISTRESPONSE
-DESCRIPTOR.message_types_by_name['AgentUpdate'] = _AGENTUPDATE
-DESCRIPTOR.message_types_by_name['AgentUpdateResponse'] = _AGENTUPDATERESPONSE
-DESCRIPTOR.message_types_by_name['TestModuleUpdate'] = _TESTMODULEUPDATE
-DESCRIPTOR.message_types_by_name['TestModuleUpdateResponse'] = _TESTMODULEUPDATERESPONSE
-DESCRIPTOR.message_types_by_name['ForwardingMessage'] = _FORWARDINGMESSAGE
-DESCRIPTOR.message_types_by_name['ForwardingMessageResponse'] = _FORWARDINGMESSAGERESPONSE
 
 class Trace(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -2511,66 +1661,6 @@ class RegisterAgentResponse(message.Message):
   
   # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.RegisterAgentResponse)
 
-class RSAKey(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _RSAKEY
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.RSAKey)
-
-class GenerateSecretKey(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _GENERATESECRETKEY
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.GenerateSecretKey)
-
-class GenerateSecretKeyResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _GENERATESECRETKEYRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.GenerateSecretKeyResponse)
-
-class GetTokenAndAsymmetricKeys(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _GETTOKENANDASYMMETRICKEYS
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeys)
-
-class GetTokenAndAsymmetricKeysResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _GETTOKENANDASYMMETRICKEYSRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.GetTokenAndAsymmetricKeysResponse)
-
-class CheckAggregator(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _CHECKAGGREGATOR
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.CheckAggregator)
-
-class CheckAggregatorResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _CHECKAGGREGATORRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.CheckAggregatorResponse)
-
-class Login(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _LOGIN
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.Login)
-
-class Logout(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _LOGOUT
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.Logout)
-
-class LoginResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _LOGINRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.LoginResponse)
-
 class GetPeerList(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _GETPEERLIST
@@ -2600,12 +1690,6 @@ class GetSuperPeerListResponse(message.Message):
   DESCRIPTOR = _GETSUPERPEERLISTRESPONSE
   
   # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.GetSuperPeerListResponse)
-
-class Location(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _LOCATION
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.Location)
 
 class GetEvents(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -2661,18 +1745,6 @@ class NewTests(message.Message):
   
   # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.NewTests)
 
-class Website(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _WEBSITE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.Website)
-
-class Service(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _SERVICE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.Service)
-
 class Test(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _TEST
@@ -2709,6 +1781,18 @@ class UpgradeToSuperResponse(message.Message):
   
   # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.UpgradeToSuperResponse)
 
+class SendPrivateKey(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _SENDPRIVATEKEY
+  
+  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.SendPrivateKey)
+
+class SendPrivateKeyResponse(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _SENDPRIVATEKEYRESPONSE
+  
+  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.SendPrivateKeyResponse)
+
 class WebsiteSuggestion(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _WEBSITESUGGESTION
@@ -2726,77 +1810,5 @@ class TestSuggestionResponse(message.Message):
   DESCRIPTOR = _TESTSUGGESTIONRESPONSE
   
   # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.TestSuggestionResponse)
-
-class AuthenticatePeer(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _AUTHENTICATEPEER
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.AuthenticatePeer)
-
-class AuthenticatePeerResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _AUTHENTICATEPEERRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.AuthenticatePeerResponse)
-
-class P2PGetSuperPeerList(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _P2PGETSUPERPEERLIST
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.P2PGetSuperPeerList)
-
-class P2PGetSuperPeerListResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _P2PGETSUPERPEERLISTRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.P2PGetSuperPeerListResponse)
-
-class P2PGetPeerList(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _P2PGETPEERLIST
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.P2PGetPeerList)
-
-class P2PGetPeerListResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _P2PGETPEERLISTRESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.P2PGetPeerListResponse)
-
-class AgentUpdate(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _AGENTUPDATE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.AgentUpdate)
-
-class AgentUpdateResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _AGENTUPDATERESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.AgentUpdateResponse)
-
-class TestModuleUpdate(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _TESTMODULEUPDATE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.TestModuleUpdate)
-
-class TestModuleUpdateResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _TESTMODULEUPDATERESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.TestModuleUpdateResponse)
-
-class ForwardingMessage(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _FORWARDINGMESSAGE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.ForwardingMessage)
-
-class ForwardingMessageResponse(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _FORWARDINGMESSAGERESPONSE
-  
-  # @@protoc_insertion_point(class_scope:org.umit.icm.mobile.proto.ForwardingMessageResponse)
 
 # @@protoc_insertion_point(module_scope)

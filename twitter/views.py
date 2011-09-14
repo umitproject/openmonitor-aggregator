@@ -20,6 +20,7 @@
 ##
 
 
+
 import time
 import urllib
 
@@ -31,6 +32,7 @@ from django.utils import simplejson as json
 import oauth2 as oauth
 
 from twitter.models import *
+
 
 def send_event_tweet(event):
     tweet = TwitterMessage()

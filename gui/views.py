@@ -25,6 +25,9 @@ from django.utils import simplejson
 from google.appengine.api import channel
 from events.models import Event
 
+def home(request):
+    return render_to_response('gui/home.html', locals())
+
 def map(request):
     token = channel.create_channel('map')
     events = Event.getActiveEvents()

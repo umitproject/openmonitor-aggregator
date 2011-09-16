@@ -52,6 +52,7 @@ INSTALLED_APPS = (
     'messages',
     'geoip',
     'api',
+    'gui',
     'reports',
     'suggestions',
     'events',
@@ -90,6 +91,14 @@ TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 
 ROOT_URLCONF = 'urls'
 
+MEDIA_BUNDLES = (
+     ('main.css',
+        'css/main.css',
+        'css/realtimebox.css'),
+     ('main.js',
+         'js/date.format.js',
+         'js/markerclusterer.js'),
+)
 
 MEDIA_DEV_MODE = DEBUG
 DEV_MEDIA_URL = '/devmedia/'
@@ -99,7 +108,7 @@ NOTIFICATION_SENDER = "notification@openmonitor.org"
 NOTIFICATION_TO = "notification@openmonitor.org"
 NOTIFICATION_REPLY_TO = "notification@openmonitor.org"
 
-GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
+GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'media'),)
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 LOGGING_OUTPUT_ENABLED = True

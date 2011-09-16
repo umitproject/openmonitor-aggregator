@@ -64,6 +64,11 @@ indexes:
   - name: uptime
     direction: desc
 
+- kind: events_event
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: piston_consumer
   properties:
   - name: __key__

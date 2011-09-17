@@ -38,22 +38,22 @@ class NotificationInterface:
 class NotificationSystem:
     subscribers = []
 
+    @staticmethod
     def registerSubscriber(subscriber):
         if isinstance(subscriber, NotificationInterface):
             NotificationSystem.subscribers.append(subscriber)
         else:
             raise TypeError, 'subscriber doesnt implement notification interface'
 
+    @staticmethod
     def publishEvent(event):
         logging.info(NotificationSystem.subscribers)
+        logging.info(">>> Publishing events: %s" % event)
         try:
             for subscriber in NotificationSystem.subscribers:
                 subscriber.eventReceived(event)
         except Exception,ex:
             logging.error(ex)
-
-    registerSubscriber = staticmethod(registerSubscriber)
-    publishEvent = staticmethod(publishEvent)
 
 
 class RealtimeBox(NotificationInterface):

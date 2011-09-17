@@ -97,7 +97,10 @@ MEDIA_BUNDLES = (
         'css/realtimebox.css'),
      ('main.js',
          'js/date.format.js',
-         'js/markerclusterer.js'),
+         'js/markerclusterer.js',
+         'js/common.js',
+         'js/realtimebox.js',
+         'js/map.js'),
 )
 
 MEDIA_DEV_MODE = DEBUG

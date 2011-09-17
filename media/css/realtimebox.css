@@ -20,14 +20,15 @@
 
 #realtime_content .event
 {
-    background-color: #c3c3c3;
-    margin: 2px;
-    padding: 6px;
-    width: 400px;
+    background-color: #f3f2eb;
+    width: 99%;
+    margin: 1px;
+    padding: 1px;
     font-family: Arial;
+    font-size: 0.95em;
 }
 
 #realtime_content .active
 {
-    background-color: #eb576a;
+    background-color: #EDEADA;
 }

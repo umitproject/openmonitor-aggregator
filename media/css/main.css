@@ -96,7 +96,7 @@ acronym, .titleTip {
 /* ##### Left Side Bar ##### */
 
 .leftSideBar {
-  width: 12.5em;
+  width: 16.5em;
   float: left;
   clear: left;
 }
@@ -217,8 +217,8 @@ acronym, .titleTip {
   background-color: white;
   text-align: justify;
   line-height: 1.5em;
-  margin: 0 0 0 12.5em;
-  padding: 0.5ex 15em 1em 1em;
+  margin: 0 0 0 16.5em;
+  padding: 0.5ex 1em 1em 1em;
   border-left: 1px solid rgb(216,210,195);
 }
 
@@ -289,4 +289,8 @@ dd {
 
 #footer a:hover {
   text-decoration: none;
+}
+
+#map_canvas {
+	
 }

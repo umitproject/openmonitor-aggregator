@@ -115,8 +115,7 @@ function onMapError(error) {
     $("#map_status").html("Error loading events")
 }
 
-function onMapOpenChannel() {
-    var token = '{{ token }}';
+function onMapOpenChannel(token) {
     var channel = new goog.appengine.Channel(token);
     var handler = {
       'onopen': onMapOpened,
@@ -139,10 +138,8 @@ function updateInitialMapEvents(m)
     }
 }
 
-function initializeMap() {
+function initializeMapSystem(token, initial_events) {
     initializeMap();
-    openChannel();
-    updateInitialMapEvents({data: '{{ initial_events|safe }}'});
+    //onMapOpenChannel(token);
+    //updateInitialMapEvents({data: initial_events});
 }
-
-$(document).load(initializeMap);

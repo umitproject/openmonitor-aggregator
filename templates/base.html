@@ -5,6 +5,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-AU">
   <head>
     <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    {% block extra_meta %}{% endblock %}
+    
+    {% block first_js %}
+    {% endblock %}
     
     {% include_media 'main.css' %}
     {% include_media 'main.js' %}
@@ -63,6 +67,7 @@
 
       <!-- ##### Right Sidebar ##### -->
 
+	{% block main_right_side %}
       <div class="rightSideBar">
       	{% block right_side %}
 	        <p class="sideBarTitle">News</p>
@@ -91,6 +96,7 @@
 	      </div>
 		{% endblock %}
     </div>
+   {% endblock %}
 
     <!-- ##### Main Copy ##### -->
 

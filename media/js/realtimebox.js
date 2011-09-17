@@ -1,6 +1,6 @@
 function addEventToList(event, appear)
 {
-    eventdiv = $( document.createElement('div') )
+    eventli = $( document.createElement('li') )
     content = "<a href='" + event.url + "'>" + event.targetType + " " + event.type + " " + event.target + "</a><br />First Detection: " + formatDate(event.firstdetection) + "<br />Last Detection: " + formatDate(event.lastdetection) + "<br />Location: ";
     for(i=0; i<event.locations.length; i++)
     {
@@ -10,16 +10,16 @@ function addEventToList(event, appear)
         if(i!=event.locations.length-1)
             content += "; ";
     }
-    eventdiv.addClass("event").html(content)
+    eventli.addClass("event").html(content)
 
     if(event.active)
-        eventdiv.addClass("active")
-    $("#realtime_content").prepend(eventdiv)
+        eventli.addClass("active")
+    $("#realtime_ul").prepend(eventli)
 
     if(appear)
     {
-        eventdiv.hide()
-        eventdiv.slideDown("slow")
+        eventli.hide()
+        eventli.slideDown("slow")
     }
 
     // TODO: format information; show all information
@@ -39,8 +39,7 @@ function onRealTimeError() {
     $("#realtime_status").html("Error loading events")
 }
 
-function onRealTimeChannelOpen() {
-    var token = '{{ token }}';
+function onRealTimeChannelOpen(token) {
     var channel = new goog.appengine.Channel(token);
     var handler = {
       'onopen': onRealTimeOpened,
@@ -63,9 +62,7 @@ updateInitialRealTimeEvents = function(m)
     }
 }
 
-function initializeRealTime() {
-    openChannel();
-    updateInitialEvents({data: '{{ initial_events|safe }}'});
+function initializeRealTime(token, initial_events) {
+    onRealTimeChannelOpen(token);
+    updateInitialRealTimeEvents({data: initial_events});
 }
-
-$(document).load(initializeRealTime);

@@ -94,13 +94,14 @@ ROOT_URLCONF = 'urls'
 MEDIA_BUNDLES = (
      ('main.css',
         'css/main.css',
-        'css/realtimebox.css'),
+        'css/realtimebox.css', ),
      ('main.js',
+         'js/jquery.js',
          'js/date.format.js',
          'js/markerclusterer.js',
          'js/common.js',
          'js/realtimebox.js',
-         'js/map.js'),
+         'js/map.js', ),
 )
 
 MEDIA_DEV_MODE = DEBUG

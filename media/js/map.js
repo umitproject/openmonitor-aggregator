@@ -140,6 +140,6 @@ function updateInitialMapEvents(m)
 
 function initializeMapSystem(token, initial_events) {
     initializeMap();
-    //onMapOpenChannel(token);
-    //updateInitialMapEvents({data: initial_events});
+    onMapOpenChannel(token);
+    updateInitialMapEvents({data: initial_events});
 }

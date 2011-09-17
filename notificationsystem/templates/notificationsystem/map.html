@@ -32,7 +32,7 @@
 {% block left_side %}
 	<script type="text/javascript">
 		$(document).ready(function() {
-			//initializeRealTime('{{ token }}', '{{ initial_events|safe }}');
+			initializeRealTime('{{ token }}', '{{ initial_events|safe }}');
 		});
 	</script>
 	<p class="sideBarTitle">Recent Events</p>

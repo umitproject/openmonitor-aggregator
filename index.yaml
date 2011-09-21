@@ -69,6 +69,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: gui_region
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: piston_consumer
   properties:
   - name: __key__

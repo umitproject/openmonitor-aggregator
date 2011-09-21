@@ -80,6 +80,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
+    'django.core.context_processors.csrf',
 )
 
 # This test runner captures stdout and associates tracebacks with their
@@ -94,9 +95,11 @@ ROOT_URLCONF = 'urls'
 MEDIA_BUNDLES = (
      ('main.css',
         'css/main.css',
+        'css/jquery-ui.css',
         'css/realtimebox.css', ),
      ('main.js',
          'js/jquery.js',
+         'js/jquery-ui.js',
          'js/date.format.js',
          'js/markerclusterer.js',
          'js/common.js',

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Suggest a Service{% endblock %}
+
+{% block extra_js %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var regions;
+			$.getJSON("/a/regions/", function(data){ regions = data; });
+			alert(regions);
+			$("#id_region").autocomplete({
+				source:function(req, add) {
+							var suggestions = [];
+							for (i=0; i < regions.length; i++) {
+								if (regions[i].indexOf(req.term) != -1) {
+									suggestions.push(regions[i]);
+								}
+							}
+							add(suggestions);
+						}
+					});
+		});
+	</script>
+{% endblock %}
+
+{% block content %}
+	<form method="POST" action="/suggest_service">
+		{{ form.as_p }}
+	</form>
+{% endblock %}

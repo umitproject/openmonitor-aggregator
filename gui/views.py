@@ -20,13 +20,19 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import render_to_response
-from django.utils import simplejson
+from django.utils import simplejson as json
+from django.http import HttpResponse
+
 from google.appengine.api import channel
+
 from events.models import Event
+from gui.models import Region
+from gui.forms import SuggestServiceForm, SuggestWebsiteForm
 
 def home(request):
-    return render_to_response('gui/home.html', locals())
+    return map(request)
 
 def map(request):
     token = channel.create_channel('map')
@@ -34,7 +40,7 @@ def map(request):
     events_dict = []
     for event in events:
         events_dict.append(event.getDict())
-    initialEvents = simplejson.dumps(events_dict)
+    initialEvents = json.dumps(events_dict)
     return render_to_response('notificationsystem/map.html', {'token': token, 'initial_events': initialEvents})
 
 def realtimebox(request):
@@ -43,7 +49,7 @@ def realtimebox(request):
     events_dict = []
     for event in events:
         events_dict.append(event.getDict())
-    initialEvents = simplejson.dumps(events_dict)
+    initialEvents = json.dumps(events_dict)
     return render_to_response('notificationsystem/realtimebox.html', {'token': token, 'initial_events': initialEvents})
 
 def event(request, event_id):
@@ -52,7 +58,26 @@ def event(request, event_id):
     except Event.DoesNotExist:
         raise Http404
     eventDict = event.getFullDict()
-    locations = simplejson.dumps(eventDict['locations'])
-    blockingNodes = simplejson.dumps(eventDict['blockingNodes'])
+    locations = json.dumps(eventDict['locations'])
+    blockingNodes = json.dumps(eventDict['blockingNodes'])
 
     return render_to_response('events/event.html', {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes})
+
+def about(request):
+    return render_to_response('gui/about.html', locals())
+
+@csrf_protect
+def suggest_service(request):
+    form = SuggestServiceForm()
+    return render_to_response('gui/suggest_service.html', locals())
+
+@csrf_protect
+def suggest_website(request):
+    form = SuggestWebsiteForm()
+    return render_to_response('gui/suggest_website.html', locals())
+
+@csrf_protect
+def ajax_regions(request):
+    if request.is_ajax():
+        return HttpResponse(json.dumps(Region.all_regions()))
+    return HttpResponse(json.dumps([]))

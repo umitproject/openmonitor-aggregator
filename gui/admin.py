@@ -19,12 +19,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.conf.urls.defaults import *
+from django.contrib import admin
+from gui.models import *
 
-urlpatterns = patterns('',
-    url('^$', 'gui.views.home', name='home'),
-    url('^about/?$', 'gui.views.about', name='about'),
-    url('^suggest_service/?$', 'gui.views.suggest_service', name='suggest_service'),
-    url('^suggest_website/?$', 'gui.views.suggest_website', name='suggest_website'),
-    url('^a/regions/?$', 'gui.views.ajax_regions', name='ajax_regions'),
-)
+admin.site.register(Region)
+admin.site.register(RegionAggregation)

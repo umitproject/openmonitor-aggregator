@@ -26,5 +26,4 @@ urlpatterns = patterns('',
     url('^about/?$', 'gui.views.about', name='about'),
     url('^suggest_service/?$', 'gui.views.suggest_service', name='suggest_service'),
     url('^suggest_website/?$', 'gui.views.suggest_website', name='suggest_website'),
-    url('^a/regions/?$', 'gui.views.ajax_regions', name='ajax_regions'),
 )

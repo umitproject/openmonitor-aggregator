@@ -37,6 +37,18 @@ SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+ENVIRONMENT = os.environ.get('SERVER_SOFTWARE', '')
+GAE = True
+PRODUCTION = True
+TEST = False
+
+if ENVIRONMENT == '':
+    GAE = False
+elif ENVIRONMENT.startswith('Development'):
+    PRODUCTION = False
+elif ENVIRONMENT.startswith('GAETest'):
+    TEST = True
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.contenttypes',
@@ -60,6 +72,7 @@ INSTALLED_APPS = (
     'ICMtests',
     'twitter',
     'notificationsystem',
+    'geodata',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',

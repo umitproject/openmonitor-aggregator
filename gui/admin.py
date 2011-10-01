@@ -22,5 +22,5 @@
 from django.contrib import admin
 from gui.models import *
 
-admin.site.register(Region)
-admin.site.register(RegionAggregation)
+#admin.site.register(Region)
+#admin.site.register(RegionAggregation)

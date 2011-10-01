@@ -1,3 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}Suggest a Website{% endblock %}
+
+{% block content %}
+	<form method="POST" action="/suggest_website/">
+		{{ form.as_p }}
+	</form>
+{% endblock %}

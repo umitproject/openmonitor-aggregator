@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 ##
 ## Author: Adriano Monteiro Marques <adriano@umitproject.org>
-## Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
 ##
 ## Copyright (C) 2011 S2S Network Consultoria e Tecnologia da Informacao LTDA
 ##
@@ -19,24 +18,3 @@
 ## You should have received a copy of the GNU Affero General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-
-from django.conf.urls.defaults import *
-from django.contrib import admin
-
-admin.autodiscover()
-
-handler500 = 'djangotoolbox.errorviews.server_error'
-
-urlpatterns = patterns('',
-    ('^_ah/warmup$', 'djangoappengine.views.warmup'),
-    (r'', include('gui.urls')),
-    (r'', include('geodata.urls')),
-    #('^$', 'django.views.generic.simple.direct_to_template', {'template': 'home.html'}),
-    (r'^map/$', 'gui.views.map'),
-    (r'^realtimebox/$', 'gui.views.realtimebox'),
-    (r'^events/(?P<event_id>\d+)/$', 'gui.views.event'),
-    (r'^twitter/', include('twitter.urls')),
-    (r'^notification/', include('notificationsystem.urls')),
-    (r'^admin/', include(admin.site.urls)),
-    (r'^api/', include('api.urls')),
-)

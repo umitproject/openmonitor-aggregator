@@ -10,3 +10,7 @@
 .gaedata
 .project
 .pydevproject
+geodata/allCountries.txt
+geodata/allCountries.zip
+geodata/cities1000.txt
+geodata/cities1000.zip

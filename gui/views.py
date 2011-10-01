@@ -23,13 +23,13 @@
 from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import render_to_response
 from django.utils import simplejson as json
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 
 from google.appengine.api import channel
 
 from events.models import Event
-from gui.models import Region
 from gui.forms import SuggestServiceForm, SuggestWebsiteForm
+from geodata.models import Region
 
 def home(request):
     return map(request)
@@ -73,11 +73,20 @@ def suggest_service(request):
 
 @csrf_protect
 def suggest_website(request):
+    if request.is_ajax():
+        form = SuggestWebsiteForm(request.POST)
+        
+        if form.is_valid():
+            website = form.cleaned_data['website']
+            region = Region.retrieve_or_create(form.cleaned_data['region'].split(', ')[:1])
+            
+            
+            return HttpResponse(json.dumps(dict(status='OK',
+                                                msg='Website suggestion added \
+successfully! Make sure you subscribe to receive the site status once it is tested.')))
+        
+        return HttpResponse(json.dumps(dict(status='FAILED',
+                                            msg='Failed to add your suggestion. \
+Please, make sure you provided at least a valid website.')))
     form = SuggestWebsiteForm()
     return render_to_response('gui/suggest_website.html', locals())
-
-@csrf_protect
-def ajax_regions(request):
-    if request.is_ajax():
-        return HttpResponse(json.dumps(Region.all_regions()))
-    return HttpResponse(json.dumps([]))

@@ -3,7 +3,10 @@
 {% block title %}Suggest a Website{% endblock %}
 
 {% block content %}
-	<form method="POST" action="/suggest_website/">
+	<div id='msg'></div>
+	<div id='error'></div>
+	<form method="POST" action="/suggest_website/" id='website_suggest_form'>
 		{{ form.as_p }}
+		<input type="submit" value="Suggest" name="suggest" id="website_suggest_button"/>
 	</form>
 {% endblock %}

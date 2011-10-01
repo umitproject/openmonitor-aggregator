@@ -3,7 +3,10 @@
 {% block title %}Suggest a Service{% endblock %}
 
 {% block content %}
-	<form method="POST" action="/suggest_service/">
+	<div id='msg'></div>
+	<div id='error'></div>
+	<form method="POST" action="/suggest_service/" id='service_suggest_form'>
 		{{ form.as_p }}
+		<input type="submit" value="Suggest" name="suggest" id="service_suggest_button"/>
 	</form>
 {% endblock %}

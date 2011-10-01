@@ -118,19 +118,18 @@ class Region(models.Model):
         self.save()
     
     @staticmethod
-    def retrieve_or_create(self, region_name):
+    def retrieve_region(region_name):
         """If region is empty we consider this suggestion to be world wide.
         If region doesn't exist in our datastore, we try to get its
         coordinates. If successful, we create a new entry. Otherwise, we
         consider the suggestion to be world wide.
         """
-        region = Region.objects.filter(name=region_name)
+        region = Region.objects.filter(asciiname=region_name)
+        if not region:
+            region = Region.objects.filter(name=region_name)
+
         if region:
-            return region
-        
-        # Region isn't registered in our system. Let's try and fetch coordinates
-        geo_data = fetch_obj('')
-        
+            return region[0]
     
     @staticmethod
     def all_regions():

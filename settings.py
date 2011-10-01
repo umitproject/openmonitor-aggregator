@@ -117,7 +117,8 @@ MEDIA_BUNDLES = (
          'js/markerclusterer.js',
          'js/common.js',
          'js/realtimebox.js',
-         'js/map.js', ),
+         'js/map.js',
+         'js/suggestion.js', ),
 )
 
 MEDIA_DEV_MODE = DEBUG

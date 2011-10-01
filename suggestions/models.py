@@ -23,80 +23,221 @@
 from django.db import models
 from messages.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
+def add_to_aggregation(agg_model, fields, suggestion):
+    agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))
+    suggestions = []
+    if agg:
+        agg = agg[0]
+        suggestions = agg.suggestions.split(',')
+        if str(suggestion.id) in suggestions:
+            return agg
+        agg.count += 1
+    else:
+        agg = agg_model()
+        for f in fields:
+            setattr(agg, f, getattr(suggestion, f))
+    
+    suggestions.append(str(suggestion.id))
+    agg.suggestions = ','.join(suggestions)
+    agg.save()
+    
+    return agg
 
 class WebsiteSuggestion(models.Model):
-    
-    # TODO (Adriano): Another thing we need is to prioritize a region. Users
-    # should be allowed to suggest a region to save up resources and make it
-    # easier and faster to leverage the results. Let's say china has blocked
-    # www.twitter.com, and we get 1k suggestions in one hour. Sure thing we
-    # should test www.twitter.com, but if we don't have a location suggestion
-    # then we must run that in the other countries that are not blocking the
-    # website.
-    # Don't get me wrong: we should test the website in the other locations,
-    # but with a much lower priority. Countries with high occurrance of
-    # censorship records get a higher priority of checking unrelated
-    # suggestions, though.
-    # TODO (Adriano): Now, we have to decide on how to separate the regions.
-    # I think that by country using the english name is the best option, what
-    # do you say?
-    # Remove my comments once you've read this and linked the list of
-    # COUNTRIES to the choices.
-    # region = models.CharField(max_length=50, choices=COUNTRIES)
-
     created_at = models.DateTimeField(auto_now_add=True)
-    websiteUrl = models.URLField(max_length=100)
-    email      = models.EmailField(blank=True)
+    website_url = models.URLField(max_length=300)
+    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    email = models.EmailField(blank=True)
 
+    @staticmethod
     def create(websiteSuggestionMsg):
         suggestion = WebsiteSuggestion()
-        suggestion.websiteUrl = websiteSuggestionMsg.websiteURL
+        suggestion.website_url = websiteSuggestionMsg.websiteURL
         suggestion.email = websiteSuggestionMsg.emailAddress
         suggestion.save()
         return suggestion
+    
+    def save(self, *args, **kwargs):
+        new = self.id is None
+        
+        res = super(WebsiteSuggestion, self).save(*args, **kwargs)
+        
+        if new:
+            WebsiteUrlAggregation.add_suggestion(self)
+            WebsiteRegionAggregation.add_suggestion(self)
+            WebsiteAggregation.add_suggestion(self)
+
+        return res
 
     def __unicode__(self):
-        return self.websiteUrl
+        return "%s - %s" % (self.website_url, self.region)
 
-    create = staticmethod(create)
+class WebsiteUrlAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    website_url = models.URLField(max_length=300)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(WebsiteUrlAggregation, ['website_url'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.website_url)
+
+class WebsiteRegionAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(WebsiteRegionAggregation, ['region'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.region)
+
+class WebsiteAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    website_url = models.URLField(max_length=300)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(WebsiteAggregation, ['website_url', 'region'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s - %s" % (self.count, self.region, self.website_url)
 
 
 class ServiceSuggestion(models.Model):
-    
-    # TODO (Adriano): Another thing we need is to prioritize a region. Users
-    # should be allowed to suggest a region to save up resources and make it
-    # easier and faster to leverage the results. Let's say china has blocked
-    # www.twitter.com, and we get 1k suggestions in one hour. Sure thing we
-    # should test www.twitter.com, but if we don't have a location suggestion
-    # then we must run that in the other countries that are not blocking the
-    # website.
-    # Don't get me wrong: we should test the website in the other locations,
-    # but with a much lower priority. Countries with high occurrance of
-    # censorship records get a higher priority of checking unrelated
-    # suggestions, though.
-    # TODO (Adriano): Now, we have to decide on how to separate the regions.
-    # I think that by country using the english name is the best option, what
-    # do you say?
-    # Remove my comments once you've read this and linked the list of
-    # COUNTRIES to the choices.
-    # region = models.CharField(max_length=50, choices=COUNTRIES)
-
     created_at = models.DateTimeField(auto_now_add=True)
-    serviceName = models.CharField(max_length=100)
-    hostName    = models.CharField(max_length=100)
-    ip          = models.CharField(max_length=60)
-    email       = models.EmailField(blank=True)
+    service_name = models.CharField(max_length=100)
+    host_name = models.CharField(max_length=100)
+    ip = models.CharField(max_length=60)
+    port = models.IntegerField()
+    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    email = models.EmailField(blank=True)
 
+    @staticmethod
     def create(serviceSuggestionMsg):
         suggestion = ServiceSuggestion()
-        suggestion.serviceName = serviceSuggestionMsg.serviceName
-        suggestion.hostName = serviceSuggestionMsg.hostName
+        suggestion.service_name = serviceSuggestionMsg.serviceName
+        suggestion.host_name = serviceSuggestionMsg.hostName
         suggestion.ip = serviceSuggestionMsg.ip
         suggestion.email = serviceSuggestionMsg.emailAddress
         suggestion.save()
         return suggestion
 
+    def save(self, *args, **kwargs):
+        new = self.id is None
+        
+        res = super(ServiceSuggestion, self).save(*args, **kwargs)
+        
+        if new:
+            ServiceNameAggregation.add_suggestion(self)
+            ServiceHostAggregation.add_suggestion(self)
+            ServiceIPAggregation.add_suggestion(self)
+            ServicePortAggregation.add_suggestion(self)
+            ServiceRegionAggregation.add_suggestion(self)
+            ServiceAggregation.add_suggestion(self)
+
+        return res
+
     def __unicode__(self):
         return self.serviceName
 
-    create = staticmethod(create)
+class ServiceNameAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    service_name = models.CharField(max_length=100)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServiceNameAggregation, ['service_name'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.service_name)
+
+class ServiceHostAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    host_name = models.CharField(max_length=100)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServiceHostAggregation, ['host_name'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.host_name)
+
+class ServiceIPAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    ip = models.CharField(max_length=60)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServiceIPAggregation, ['ip'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.ip)
+
+class ServicePortAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    port = models.IntegerField()
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServicePortAggregation, ['port'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.port)
+
+class ServiceRegionAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServiceRegionAggregation, ['region'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.region)
+
+class ServiceAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    port = models.IntegerField()
+    ip = models.CharField(max_length=60)
+    host_name = models.CharField(max_length=100)
+    service_name = models.CharField(max_length=100)
+    suggestions = models.TextField()
+    count = models.IntegerField(default=1)
+    
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServiceAggregation,
+            ['region', 'port', 'ip', 'host_name', 'service_name'], suggestion)
+    
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.region)

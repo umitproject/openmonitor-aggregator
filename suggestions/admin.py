@@ -20,8 +20,17 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from suggestions.models import WebsiteSuggestion, ServiceSuggestion
+from suggestions.models import *
 from django.contrib import admin
 
 admin.site.register(WebsiteSuggestion)
 admin.site.register(ServiceSuggestion)
+admin.site.register(WebsiteUrlAggregation)
+admin.site.register(WebsiteRegionAggregation)
+admin.site.register(WebsiteAggregation)
+admin.site.register(ServiceNameAggregation)
+admin.site.register(ServiceHostAggregation)
+admin.site.register(ServiceIPAggregation)
+admin.site.register(ServicePortAggregation)
+admin.site.register(ServiceRegionAggregation)
+admin.site.register(ServiceAggregation)

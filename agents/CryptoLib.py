@@ -30,12 +30,12 @@ DEFAULT_BLOCK_SIZE = 32
 DEFAULT_PADDING = '{'
 DEFAULT_KEYSIZE = 1024
 RANDOM_PARAM = 32
+CHALLENGE_SIZE = 10
 
-class RSACrypto:
+class CryptoLib:
 
     def __init__(self, blockSize=DEFAULT_BLOCK_SIZE, padding=DEFAULT_PADDING):
         self.blockSize = blockSize
-        self.padding = padding
         self.padding = padding
 
     def generateRSAKey(self):
@@ -108,6 +108,9 @@ class RSACrypto:
         # decode data
         data = cipher.decrypt(base64.b64decode(encodedData)).rstrip(self.padding)
         return data
+
+    def generateChallenge(self):
+        return base64.b64encode(os.urandom(CHALLENGE_SIZE))
 
 
 class RSAKey:

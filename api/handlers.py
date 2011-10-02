@@ -32,6 +32,8 @@ from versions.models import DesktopAgentVersion, MobileAgentVersion
 from ICMtests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
+from agents.CryptoLib import *
+from django.conf import settings
 import logging
 import base64
 
@@ -46,7 +48,7 @@ class RegisterAgentHandler(BaseHandler):
         receivedAgentRegister = messages_pb2.RegisterAgent()
         receivedAgentRegister.ParseFromString(msg)
 
-        # create agent
+        # get agent ip
         if receivedAgentRegister.HasField('ip'):
             agentIp = receivedAgentRegister.ip
         else:
@@ -54,11 +56,12 @@ class RegisterAgentHandler(BaseHandler):
 
         logging.debug("Agent ip is " + agentIp)
 
-        agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp)
-        logging.info(agent.agentID)
-        keyPair = agent.generateKeys()
-        logging.info("agent added")
-
+        # create agent
+        publicKeyMod = receivedAgentRegister.agentPublicKey.mod
+        publicKeyExp = receivedAgentRegister.agentPublicKey.exp
+        username = receivedAgentRegister.credentials.username
+        password = receivedAgentRegister.credentials.password
+        agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp, publicKeyMod, publicKeyExp, username, password)
 
         # get software version information
         if receivedAgentRegister.agentType=="DESKTOP":
@@ -69,11 +72,16 @@ class RegisterAgentHandler(BaseHandler):
         # get last test id
         testVersion = Test.getLastTestNo()
 
+        crypto = CryptoLib()
+        aggregatorPrivateKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
+
         # create the response
         response = messages_pb2.RegisterAgentResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
         response.agentID = agent.agentID
+        response.cipheredPublicKey.mod = crypto.encodeRSAPrivateKey(publicKeyMod, aggregatorPrivateKey)
+        response.cipheredPublicKey.exp = crypto.encodeRSAPrivateKey(publicKeyExp, aggregatorPrivateKey)
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -90,29 +98,68 @@ class LoginHandler(BaseHandler):
         loginAgent = messages_pb2.Login()
         loginAgent.ParseFromString(msg)
 
-        # login stuff
-        # TODO: login
+        # get agent
+        agent = Agent.getAgent(loginAgent.agentID)
 
-        # get agent info
-        agent = Agent.getAgent(loginAgent.header.agentID)
-
-        # get software version information
-        if agent.agentType=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        # get agent ip
+        if loginAgent.HasField('ip'):
+            agentIp = loginAgent.ip
         else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
+            agentIp = request.META['REMOTE_ADDR']
 
-        # get last test id
-        testVersion = Test.getLastTestNo()
+        # initiate login process
+        loginProcess = agent.initLogin(agentIp, loginAgent.port)
+
+        # initiate crypto to cipher challenge
+        crypto = CryptoLib()
+        aggregatorPrivateKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
+        cipheredChallenge = crypto.encodeRSAPrivateKey(loginAgent.challenge, aggregatorPrivateKey)
 
         # create the response
-        response = messages_pb2.LoginResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response = messages_pb2.LoginStep1()
+        response.processID = loginProcess.processID
+        response.cipheredChallenge = cipheredChallenge
+        response.challenge = loginProcess.challenge
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
         return response_str
+
+
+class Login2Handler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    def create(self, request):
+        logging.info("loginAgent2 received")
+        msg = base64.b64decode(request.POST['msg'])
+
+        loginAgent = messages_pb2.LoginStep2()
+        loginAgent.ParseFromString(msg)
+
+        # check login process
+        agent = Agent.finishLogin(loginAgent.processID, loginAgent.cipheredChallenge)
+
+        if agent is not None:
+            # get software version information
+            if agent.agentType=='DESKTOP':
+                softwareVersion = DesktopAgentVersion.getLastVersionNo()
+            else:
+                softwareVersion = MobileAgentVersion.getLastVersionNo()
+
+            # get last test id
+            testVersion = Test.getLastTestNo()
+
+            # create the response
+            response = messages_pb2.LoginResponse()
+            response.header.currentVersionNo = softwareVersion.version
+            response.header.currentTestVersionNo = testVersion.testID
+            response.AESKey = agent.AESKey
+
+            # send back response
+            response_str = base64.b64encode(response.SerializeToString())
+            return response_str
+        else:
+            logging.error('Error in login')
 
 
 class LogoutHandler(BaseHandler):
@@ -120,13 +167,15 @@ class LogoutHandler(BaseHandler):
 
     def create(self, request):
         logging.info("logoutAgent received")
+        agentID = request.POST['agentID']
         msg = base64.b64decode(request.POST['msg'])
 
         logoutAgent = messages_pb2.Logout()
         logoutAgent.ParseFromString(msg)
 
-        # logout stuff
-        # TODO: logout
+        # get agent
+        agent = Agent.getAgent(agentID)
+        agent.logout()
 
 
 class GetPeerListHandler(BaseHandler):
@@ -134,13 +183,16 @@ class GetPeerListHandler(BaseHandler):
 
     def create(self, request):
         logging.info("getPeerList received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedMsg = messages_pb2.GetPeerList()
         receivedMsg.ParseFromString(msg)
-
-        # get agent info
-        agent = Agent.getAgent(receivedMsg.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -180,7 +232,7 @@ class GetPeerListHandler(BaseHandler):
 
         # send back response
         try:
-            response_str = base64.b64encode(response.SerializeToString())
+            response_str = agent.encodeMessage(response.SerializeToString())
         except Exception,e:
             logging.error(e)
 
@@ -192,13 +244,16 @@ class GetSuperPeerListHandler(BaseHandler):
 
     def create(self, request):
         logging.info("getSuperPeerList received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedMsg = messages_pb2.GetSuperPeerList()
         receivedMsg.ParseFromString(msg)
-
-        # get agent info
-        agent = Agent.getAgent(receivedMsg.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -237,7 +292,7 @@ class GetSuperPeerListHandler(BaseHandler):
                 knownSuperPeer.peerStatus = "OFF"
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -246,15 +301,18 @@ class GetEventsHandler(BaseHandler):
 
     def create(self, request):
         logging.info("getEvents received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedMsg = messages_pb2.GetEvents()
         receivedMsg.ParseFromString(msg)
 
         # TODO: get events
-
-        # get agent info
-        agent = Agent.getAgent(receivedMsg.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -276,7 +334,7 @@ class GetEventsHandler(BaseHandler):
         event.sinceTimeUTC = 10
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -284,8 +342,14 @@ class SendWebsiteReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
-        logging.info("sendWebsiteReport received2")
-        msg = base64.b64decode(request.POST['msg'])
+        logging.info("sendWebsiteReport received")
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedWebsiteReport = messages_pb2.SendWebsiteReport()
         receivedWebsiteReport.ParseFromString(msg)
@@ -294,9 +358,6 @@ class SendWebsiteReportHandler(BaseHandler):
         webSiteReport = WebsiteReport.create(receivedWebsiteReport)
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
-
-        # get agent info
-        agent = Agent.getAgent(receivedWebsiteReport.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -307,16 +368,13 @@ class SendWebsiteReportHandler(BaseHandler):
         # get last test id
         testVersion = Test.getLastTestNo()
 
-        logging.info("sendWebsiteReport sending response")
-
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
-        logging.info("sendWebsiteReport msg encoded")
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -325,7 +383,13 @@ class SendServiceReportHandler(BaseHandler):
 
     def create(self, request):
         logging.info("sendServiceReport received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedServiceReport = messages_pb2.SendServiceReport()
         receivedServiceReport.ParseFromString(msg)
@@ -336,9 +400,6 @@ class SendServiceReportHandler(BaseHandler):
         # send report to decision system
         DecisionSystem.newReport(serviceReport)
 
-        # get agent info
-        agent = Agent.getAgent(receivedServiceReport.header.agentID)
-
         # get software version information
         if agent.agentType=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
@@ -354,7 +415,7 @@ class SendServiceReportHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -398,15 +459,18 @@ class CheckNewTestHandler(BaseHandler):
 
     def create(self, request):
         logging.info("checkNewTest received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedMsg = messages_pb2.NewTests()
         receivedMsg.ParseFromString(msg)
 
         newTests = Test.getUpdatedTests(receivedMsg.currentTestVersionNo)
-
-        # get agent info
-        agent = Agent.getAgent(receivedMsg.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -437,7 +501,7 @@ class CheckNewTestHandler(BaseHandler):
                 test.serviceCode = newTest.serviceCode
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -446,16 +510,19 @@ class WebsiteSuggestionHandler(BaseHandler):
 
     def create(self, request):
         logging.info("websiteSuggestion received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedWebsiteSuggestion = messages_pb2.WebsiteSuggestion()
         receivedWebsiteSuggestion.ParseFromString(msg)
 
         # create the suggestion
         webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion)
-
-        # get agent info
-        agent = Agent.getAgent(receivedWebsiteSuggestion.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -475,7 +542,7 @@ class WebsiteSuggestionHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -484,16 +551,19 @@ class ServiceSuggestionHandler(BaseHandler):
 
     def create(self, request):
         logging.info("serviceSuggestion received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        # get agent info
+        agentID = request.POST['agentID']
+        agent = Agent.getAgent(agentID)
+
+        # decode received message
+        msg = agent.decodeMessage(request.POST['msg'])
 
         receivedServiceSuggestion = messages_pb2.ServiceSuggestion()
         receivedServiceSuggestion.ParseFromString(msg)
 
         # create the suggestion
         serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion)
-
-        # get agent info
-        agent = Agent.getAgent(receivedServiceSuggestion.header.agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -510,7 +580,7 @@ class ServiceSuggestionHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion.testID
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -521,7 +591,6 @@ class CheckAggregator(BaseHandler):
         logging.info("CheckAggregator received")
         
         msg = base64.b64decode(request.POST['msg'])
-        logging.critical(">>> B64decode")
 
         checkAggregator = messages_pb2.CheckAggregator()
         try:

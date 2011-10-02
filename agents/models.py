@@ -22,10 +22,19 @@
 
 from django.db import models
 from django.db.models import Q
-from agents.RSACrypto import *
+from agents.CryptoLib import *
 from geoip.core import GeoIp
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 import logging, random
+
+
+class LoginProcess(models.Model):
+    processID     = models.IntegerField(primary_key=True)
+    agentID       = models.IntegerField()
+    loginTime     = models.DateTimeField(auto_now_add=True)
+    ip            = models.CharField(max_length=255)
+    port          = models.PositiveIntegerField()
+    challenge     = models.TextField()
 
 
 class LoggedAgent(models.Model):
@@ -37,8 +46,7 @@ class LoggedAgent(models.Model):
     port          = models.PositiveIntegerField()
     agentInfo     = models.ForeignKey('Agent')
     superPeer     = models.BooleanField()
-    publicKeyMod  = models.TextField()
-    publicKeyExp  = models.TextField()
+    AESKey        = models.TextField()
 
     def getAgent(agentID):
         return LoggedAgent.objects.get(agentID=agentID)
@@ -106,6 +114,7 @@ class Agent(models.Model):
     registered_ip = models.CharField(max_length=255)
     publicKeyMod  = models.TextField()
     publicKeyExp  = models.TextField()
+    AESKey        = models.TextField()
     country       = models.CharField(max_length=2)
     superPeer     = models.BooleanField(default=False)
     latitude      = models.FloatField()
@@ -122,34 +131,32 @@ class Agent(models.Model):
     # flag to mark agent as blocked (if blocked agent will not be able to login)
     blocked       = models.BooleanField(default=False)
 
-    def create(versionNo, agentType, ip):
-        agent = Agent()
-        agent.agentVersion = versionNo
-        agent.agentType = agentType
-        agent.registered_ip = ip
-        agent.uptime = random.randint(100, 10000)
+    def create(versionNo, agentType, ip, publicKeyMod, publicKeyExp, username, password):
+        # check username and password
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            agent = Agent()
+            agent.agentVersion = versionNo
+            agent.agentType = agentType
+            agent.registered_ip = ip
+            agent.uptime = 0
+            agent.publicKeyMod = publicKeyMod
+            agent.publicKeyExp = publicKeyExp
+            agent.user = user
 
-        # get country by geoip
-        service = GeoIp()
-        location = service.getIPLocation(ip)
-        agent.country = location['country_code']
-        agent.latitude = location['latitude']
-        agent.longitude = location['longitude']
+            # generate AES key
+            crypto = CryptoLib()
+            agent.AESKey = crypto.generateAESKey()
 
-        agent.save()
-        return agent
+            # get country by geoip
+            service = GeoIp()
+            location = service.getIPLocation(ip)
+            agent.country = location['country_code']
+            agent.latitude = location['latitude']
+            agent.longitude = location['longitude']
 
-    def generateKeys(self):
-        # get new RSAKey pair
-        crypto = RSACrypto()
-        keyPair = crypto.getNewRSAKey()
-
-        # save public key
-        self.publicKeyMod = str(keyPair['public'].mod)
-        self.publicKeyExp = str(keyPair['public'].exp)
-        self.save()
-
-        return keyPair
+            agent.save()
+            return agent
 
     def promoteToSuperPeer(self):
         self.superPeer = True
@@ -159,34 +166,60 @@ class Agent(models.Model):
         self.superPeer = False
         self.save()
 
-    def login(self, ip, port):
-        # TODO: check login
-        LoggedAgent.objects.filter(agentID=self.agentID).delete()
-        loggedAgent = LoggedAgent()
-        loggedAgent.agentID = self.agentID
-        loggedAgent.agentInfo = self
-        loggedAgent.current_ip = ip
-        loggedAgent.port = port
-        loggedAgent.superPeer = self.superPeer
-        loggedAgent.publicKeyMod = self.publicKey.mod
-        loggedAgent.publicKeyExp = self.publicKey.exp
+    def initLogin(self, ip, port):
+        # get new challenge
+        crypto = CryptoLib()
+        challenge = crypto.generateChallenge()
 
-        # get country by geoip
-        service = GeoIp()
-        location = service.getIPLocation(ip)
-        loggedAgent.country = location['country_code']
-        loggedAgent.latitude = location['latitude']
-        loggedAgent.longitude = location['longitude']
+        loginProcess = LoginProcess()
+        loginProcess.agentID = self.agentID
+        loginProcess.ip = ip
+        loginProcess.port = port
+        loginProcess.challenge = challenge
+        loginProcess.save()
 
-        loggedAgent.save()
+    def finishLogin(loginProcessID, cipheredChallenge):
+        # get login process
+        loginProcess = LoginProcess.objects.get(processID=loginProcessID)
 
-        # update agent information
-        self.lastKnownCountry = location['country_code']
-        self.lastKnownLatitude = location['latitude']
-        self.lastKnownLongitude = location['longitude']
-        self.lastKnownIP = ip
-        self.lastKnownPort = port
-        self.save()
+        # get agent instance
+        agent = Agent.getAgent(loginProcess.agentID)
+
+        # check challenge
+        if loginProcess.challenge==agent.decryptChallenge(cipheredChallenge):
+
+            # delete already logged agent info
+            LoggedAgent.objects.filter(agentID=self.agentID).delete()
+            loggedAgent = LoggedAgent()
+            loggedAgent.agentID = agent.agentID
+            loggedAgent.agentInfo = agent
+            loggedAgent.current_ip = loginProcess.ip
+            loggedAgent.port = loginProcess.port
+            loggedAgent.superPeer = agent.superPeer
+            loggedAgent.AESKey = agent.AESKey
+
+            # get country by geoip
+            service = GeoIp()
+            location = service.getIPLocation(ip)
+            loggedAgent.country = location['country_code']
+            loggedAgent.latitude = location['latitude']
+            loggedAgent.longitude = location['longitude']
+
+            loggedAgent.save()
+
+            # update agent information
+            agent.lastKnownCountry = location['country_code']
+            agent.lastKnownLatitude = location['latitude']
+            agent.lastKnownLongitude = location['longitude']
+            agent.lastKnownIP = loginProcess.ip
+            agent.lastKnownPort = loginProcess.port
+            agent.save()
+
+            return agent
+
+        else:
+            logging.error('Challenge not ok')
+            return None
 
     def logout(self):
         # TODO: update uptime
@@ -209,6 +242,25 @@ class Agent(models.Model):
         except Exception, e:
             logging.error(e)
         return loggedAgent.country
+
+    def encodeMessage(self, message):
+        # get cryptolib instance
+        crypt = CryptoLib()
+        encoded = crypt.encodeAES(message, self.AESKey)
+        return encoded
+
+    def decodeMessage(self, encodedMessage):
+        # get cryptolib instance
+        crypt = CryptoLib()
+        message = crypt.decodeAES(encodedMessage, self.AESKey)
+        return message
+
+    def decryptChallenge(self, cipheredChallenge):
+        # get cryptolib instance
+        crypt = CryptoLib()
+        publicKey = RSAKey(self.publicKeyMod, self.publicKeyExp)
+        challenge = crypt.decodeRSAPublicKey(cipheredChallenge, publicKey)
+        return challenge
         
 
     def __unicode__(self):
@@ -218,3 +270,4 @@ class Agent(models.Model):
     getPeers = staticmethod(getPeers)
     getSuperPeers = staticmethod(getSuperPeers)
     getAgent = staticmethod(getAgent)
+    finishLogin = staticmethod(finishLogin)

@@ -37,11 +37,13 @@ servicesuggestion_handler = Resource(ServiceSuggestionHandler)
 test_handler = Resource(TestsHandler)
 checkaggregator_handler = Resource(CheckAggregator)
 login_handler = Resource(LoginHandler)
+login2_handler = Resource(Login2Handler)
 logout_handler = Resource(LogoutHandler)
 
 urlpatterns = patterns('',
    url(r'^registeragent/$', registeragent_handler),
    url(r'^loginagent/$', login_handler),
+   url(r'^loginagent2/$', login2_handler),
    url(r'^logoutagent/$', logout_handler),
    url(r'^getpeerlist/$', getpeerlist_handler),
    url(r'^getsuperpeerlist/$', getsuperpeerlist_handler),

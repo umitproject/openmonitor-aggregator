@@ -19,13 +19,18 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import logging
+import uuid
+import datetime
 
 from django.http import HttpResponse
 from django.core.cache import cache
 from django.conf import settings
 
-from gui.decorators import staff_member_required
+from google.appengine.api import taskqueue
 
+from gui.decorators import staff_member_required
+from utils import send_mail
 from notificationsystem.models import *
 
 
@@ -67,8 +72,8 @@ def send_event_emails_task(notification):
         cache.set(not_key, task)
         
     except taskqueue.TaskAlreadyExistsError, e:
-        logging.info('Task is still running for module %s: %s' % \
-             (module.name,'/cron/create_notification_queue/%s' % notification.id))
+        logging.info('Task is still running for notification %s: %s' % \
+             (notification,'/cron/create_notification_queue/%s' % notification.id))
 
 @staff_member_required
 def check_notifications(request):
@@ -103,5 +108,5 @@ def send_notification_task(request, notification_id):
     notification.sent_at = datetime.datetime.now()
     notification.save()
     
-    memcache.delete(CHECK_NOTIFICATION_KEY % notification.id)
+    cache.delete(CHECK_NOTIFICATION_KEY % notification.id)
     return HttpResponse("OK")

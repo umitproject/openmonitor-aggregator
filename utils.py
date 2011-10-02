@@ -30,6 +30,30 @@ if settings.GAE:
 else:
     import urllib2 as urlfetch
 
+EmailMessage = None
+if settings.GAE:
+    from google.appengine.api.mail import EmailMessage
+
+def send_mail(sender, to, cc='', bcc='', reply_to='', subject='', body='', html='', attachments=[], headers={}):
+    if settings.GAE:
+        return _gae_send_mail(sender, to, cc, bcc, reply_to, subject, body, html, attachments, headers)
+
+def _gae_send_mail(sender, to, cc=None, bcc=None, reply_to=None, subject='', body='', html='', attachments=[], headers={}):
+    email = EmailMessage()
+    email.sender = sender
+    email.to = to
+    email.subject = subject
+    email.body = body
+    if cc: email.cc = cc
+    if bcc: email.bcc = bcc
+    if reply_to: email.reply_to = reply_to
+    if html: email.html = html
+    if attachments: email.attachments = attachments
+    if headers: email.headers = headers
+    
+    return email.send()
+
+
 def fetch(url):
     if settings.GAE:
         result = urlfetch.fetch(url,

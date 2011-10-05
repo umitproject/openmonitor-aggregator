@@ -24,6 +24,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import render_to_response
 from django.utils import simplejson as json
 from django.http import HttpResponse, Http404
+from django.views.decorators.cache import cache_page
 
 from google.appengine.api import channel
 
@@ -33,12 +34,23 @@ from gui.decorators import cant_repeat_form
 from geodata.models import Region
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
 
+# Our current limit is 25. Let's play around with this and we'll figure if it is enough
+SHOW_EVENT_LIMIT = 25
+
+# View cache is set to 10 minutes now. We'll slowly decrease this with time to test
+VIEW_CACHE_TIME = 60 * 10
+
+
+@cache_page(VIEW_CACHE_TIME)
 def home(request):
     return map(request)
 
+@cache_page(VIEW_CACHE_TIME)
 def map(request):
     token = channel.create_channel('map')
-    events = Event.getActiveEvents()
+    
+    # Our current limit 
+    events = Event.getActiveEvents(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:
         events_dict.append(event.getDict())
@@ -47,7 +59,7 @@ def map(request):
 
 def realtimebox(request):
     token = channel.create_channel('realtimebox')
-    events = Event.getActiveEvents()
+    events = Event.getActiveEvents(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:
         events_dict.append(event.getDict())
@@ -65,12 +77,13 @@ def event(request, event_id):
 
     return render_to_response('events/event.html', {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes})
 
+@cache_page(VIEW_CACHE_TIME)
 def about(request):
     return render_to_response('gui/about.html', locals())
 
 
-@csrf_protect
 @cant_repeat_form(SuggestServiceForm, ['service_name', 'host_name', 'port', 'region'])
+@csrf_protect
 def suggest_service(request, form, valid, *args, **kwargs):
     if (form is not None) and valid:
         service_name = form.cleaned_data['service_name']
@@ -99,8 +112,8 @@ provided all terms.',
     return render_to_response('gui/suggest_service.html', locals())
 
 
-@csrf_protect
 @cant_repeat_form(SuggestWebsiteForm, ['website', 'region'])
+@csrf_protect
 def suggest_website(request, form, valid, *args, **kwargs):
     if (form is not None) and valid:
         website = form.cleaned_data['website']

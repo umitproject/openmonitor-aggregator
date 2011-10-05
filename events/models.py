@@ -62,7 +62,7 @@ class Event(models.Model):
     active            = models.BooleanField()    # indicate if the event is still happening
 
     @staticmethod
-    def getActiveEvents(limit=0):
+    def getActiveEvents(limit=20):
         #return self.activated==True
         # TODO: order by firstDetection or lastDetection ?
         query = Event.objects.filter(active=True)#.order_by(lastDetectionUTC)

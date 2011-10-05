@@ -6,6 +6,7 @@
 	<div id='msg'></div>
 	<div id='error'></div>
 	<form method="POST" action="/suggest_website/" id='website_suggest_form'>
+		{% csrf_token %}
 		{{ form.as_p }}
 		<input type="submit" value="Suggest" name="suggest" id="website_suggest_button"/>
 	</form>

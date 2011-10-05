@@ -41,11 +41,11 @@ SHOW_EVENT_LIMIT = 25
 VIEW_CACHE_TIME = 60 * 10
 
 
-@cache_page(VIEW_CACHE_TIME)
+#@cache_page(VIEW_CACHE_TIME)
 def home(request):
     return map(request)
 
-@cache_page(VIEW_CACHE_TIME)
+#@cache_page(VIEW_CACHE_TIME)
 def map(request):
     token = channel.create_channel('map')
     

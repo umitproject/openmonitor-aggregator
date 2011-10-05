@@ -69,6 +69,21 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: events_eventblockednode
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: events_eventlocation
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: events_eventwebsitereport
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: geodata_region
   properties:
   - name: __key__

@@ -113,6 +113,7 @@ MEDIA_BUNDLES = (
         'css/realtimebox.css', ),
      ('main.js',
          'js/jquery.js',
+         {'filter': 'mediagenerator.filters.media_url.MediaURL'},
          'js/jquery-ui.js',
          'js/date.format.js',
          'js/markerclusterer.js',

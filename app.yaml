@@ -39,15 +39,6 @@ handlers:
 - url: /_ah/stats/.*
   script: djangoappengine/appstats/ui.py
 
-- url: /css
-  static_dir: templates/css
-
-- url: /js
-  static_dir: templates/js
-
-- url: /images
-  static_dir: templates/images
-
 - url: /media/admin
   static_dir: django/contrib/admin/media
   expiration: '0'

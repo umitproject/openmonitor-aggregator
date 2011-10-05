@@ -142,7 +142,8 @@ AUTH_PROFILE_MODULE = 'users.UserProfile'
 ACCOUNT_ACTIVATION_DAYS = 30
 LOGIN_REDIRECT_URL = '/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+#'django.core.mail.backends.console.EmailBackend'
 
 if on_production_server:
     EMAIL_HOST = 'smtp.gmail.com'
@@ -159,6 +160,8 @@ else:
     DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 USE_I18N = True
+
+SITENAME = "OpenMonitor"
 
 
 # aggregator private key

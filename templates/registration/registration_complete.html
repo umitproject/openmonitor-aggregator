@@ -1,10 +1,6 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-    <title></title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load i18n %}
 
-</body>
-</html>
+{% block content %}
+<p>{% trans "You are now registered. Activation email sent." %}</p>
+{% endblock %}

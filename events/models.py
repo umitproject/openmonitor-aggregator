@@ -22,6 +22,14 @@
 
 from django.db import models
 from django.utils import simplejson
+from django.core.cache import cache
+
+from geodata.models import Region
+
+EVENT_CACHE_TIME = 30 # Leave it cached for half a minute
+REGION_CACHE_TIME = 60*10 # Cache it for 10 minutes
+EVENT_LIST_CACHE_KEY = "events_list"
+REGION_CACHE_KEY = "region_%s"
 
 eventType = ["Censor", "Throttling", "Offline"]
 targetType = ["Website", "Service"]
@@ -54,22 +62,48 @@ class TargetType:
     
 
 class Event(models.Model):
-    targetType        = models.PositiveSmallIntegerField()
-    eventType         = models.PositiveSmallIntegerField()
-    firstDetectionUTC = models.DateTimeField()
-    lastDetectionUTC  = models.DateTimeField()
-    target            = models.TextField()
-    active            = models.BooleanField()    # indicate if the event is still happening
+    target_type = models.PositiveSmallIntegerField()
+    event_type = models.PositiveSmallIntegerField()
+    first_detection_utc = models.DateTimeField()
+    last_detection_utc = models.DateTimeField()
+    target = models.TextField()
+    active = models.BooleanField() # indicate if the event is still happening
+    
+    ############################################################################
+    # We need to keep the basic region data here to make it faster to retrieve.
+    # Keeping data away from where it is used is a huge waste of resources on
+    # GAE and can severely constraint its scaleability
+    region_id = models.IntegerField()
+    region_name = models.CharField(max_length=200)
+    region_country_code = models.CharField(max_length=2)
+    lat = models.DecimalField(decimal_places=20, max_digits=23)
+    lon = models.DecimalField(decimal_places=20, max_digits=23)
+    
+    
+    @property
+    def region(self):
+        region = cache.get(REGION_CACHE_KEY % self.region_id, False)
+        if not region:
+            region = Region.objects.get(id=self.region_id)
+            cache.set(REGION_CACHE_KEY % self.region_id, REGION_CACHE_TIME)
+        
+        return region
 
     @staticmethod
-    def getActiveEvents(limit=20):
-        #return self.activated==True
+    def get_active_events(limit=20):
+        """This method must be cached to save some processing and access to the
+        datastore. The cache is invalidated as soon as new events are registered
+        so we don't miss them showing up in real time.
+        """
         # TODO: order by firstDetection or lastDetection ?
-        query = Event.objects.filter(active=True)#.order_by(lastDetectionUTC)
-        if limit>0:
-            query = query[:limit]
-        return query
-
+        events = cache.get(EVENT_LIST_CACHE_KEY, False)
+        if not events:
+            events = Event.objects.filter(active=True).order_by("last_detection_utc")[:limit]
+            cache.set(EVENT_LIST_CACHE_KEY, events, EVENT_CACHE_TIME)
+        
+        return events
+    
+    
     # TODO: more search methods:
     #   search by location (should be the name of place or coordinates ?
     #   search by isp ?
@@ -89,32 +123,32 @@ class Event(models.Model):
     #def __str__(self):
     #    return '%s %s %s' % (self.targetType, self.eventType, self.firstDetectionUTC)
 
-    def getTargetType(self):
-        return TargetType.getTargetType(self.targetType)
+    def get_target_type(self):
+        return TargetType.get_target_type(self.target_type)
 
-    def getEventType(self):
-        return EventType.getEventType(self.eventType)
+    def get_event_type(self):
+        return EventType.get_event_type(self.event_type)
 
-    def getDict(self):
-
-        locations = []
-        for location in self.eventlocation_set.all():
-            locations.append({'city': location.city, 'country': location.country, 'lat': location.latitude, 'lng': location.longitude})
-
+    def get_dict(self):
         event = {
           'url': "/events/" + str(self.id),
-          'targetType': self.getTargetType(),
+          'targetType': self.get_target_type(),
           'target': self.target,
-          'type': self.getEventType(),
-          'firstdetection': self.firstDetectionUTC.ctime(),
-          'lastdetection': self.lastDetectionUTC.ctime(),
+          'type': self.get_event_type(),
+          'firstdetection': self.first_detection_utc.ctime(),
+          'lastdetection': self.last_detection_utc.ctime(),
           'active': self.active,
-          'locations': locations
+          'location': {'region_id':self.region_id,
+                       'name': self.region_name,
+                       'country': self.region_country_code,
+                       'lat': self.lat,
+                       'lng': self.lon}
         }
+        
         return event
 
-    def getFullDict(self):
-        event = self.getDict()
+    def get_full_dict(self):
+        event = self.get_dict()
 
         isps = []
         for isp in self.eventisp_set.all():

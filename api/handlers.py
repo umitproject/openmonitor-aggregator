@@ -43,7 +43,11 @@ class RegisterAgentHandler(BaseHandler):
 
     def create(self, request):
         logging.info("registerAgent received")
-        msg = base64.b64decode(request.POST['msg'])
+
+        crypto = CryptoLib()
+        aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
+
+        msg = crypto.decodeRSAPrivateKey(request.POST['msg'], aggregatorKey)
 
         receivedAgentRegister = messages_pb2.RegisterAgent()
         receivedAgentRegister.ParseFromString(msg)
@@ -72,9 +76,6 @@ class RegisterAgentHandler(BaseHandler):
         # get last test id
         testVersion = Test.getLastTestNo()
 
-        crypto = CryptoLib()
-        aggregatorPrivateKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
-
         # create the response
         response = messages_pb2.RegisterAgentResponse()
         response.header.currentVersionNo = softwareVersion.version
@@ -84,7 +85,7 @@ class RegisterAgentHandler(BaseHandler):
         response.cipheredPublicKey.exp = crypto.encodeRSAPrivateKey(publicKeyExp, aggregatorPrivateKey)
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = agent.encodeMessageRSA(response.SerializeToString())
         return response_str
 
 

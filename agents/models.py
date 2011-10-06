@@ -249,6 +249,13 @@ class Agent(models.Model):
         encoded = crypt.encodeAES(message, self.AESKey)
         return encoded
 
+    def encodeMessageRSA(self, message):
+        # get cryptolib instance
+        crypt = CryptoLib()
+        agentKey = RSAKey(self.publicKeyMod, self.publicKeyExp)
+        encoded = crypt.encodeRSAPublicKey(message, agentKey)
+        return encoded
+
     def decodeMessage(self, encodedMessage):
         # get cryptolib instance
         crypt = CryptoLib()

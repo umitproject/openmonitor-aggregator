@@ -69,6 +69,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: events_event
+  properties:
+  - name: active
+  - name: last_detection_utc
+
 - kind: events_eventblockednode
   properties:
   - name: __key__

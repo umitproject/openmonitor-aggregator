@@ -23,8 +23,3 @@ from django.contrib import admin
 from events.models import *
 
 admin.site.register(Event)
-admin.site.register(EventLocation)
-admin.site.register(EventISP)
-admin.site.register(EventWebsiteReport)
-admin.site.register(EventServiceReport)
-admin.site.register(EventBlockedNode)

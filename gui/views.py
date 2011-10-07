@@ -31,7 +31,7 @@ from google.appengine.api import channel
 from events.models import Event
 from gui.forms import SuggestServiceForm, SuggestWebsiteForm
 from gui.decorators import cant_repeat_form
-from geodata.models import Region
+from geoip.models import Location
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
 
 # Our current limit is 25. Let's play around with this and we'll figure if it is enough
@@ -50,7 +50,7 @@ def map(request):
     token = channel.create_channel('map')
     
     # Our current limit 
-    events = Event.getActiveEvents(SHOW_EVENT_LIMIT)
+    events = Event.get_active_events(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:
         events_dict.append(event.getDict())
@@ -59,7 +59,7 @@ def map(request):
 
 def realtimebox(request):
     token = channel.create_channel('realtimebox')
-    events = Event.getActiveEvents(SHOW_EVENT_LIMIT)
+    events = Event.get_active_events(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:
         events_dict.append(event.getDict())
@@ -82,20 +82,20 @@ def about(request):
     return render_to_response('gui/about.html', locals())
 
 
-@cant_repeat_form(SuggestServiceForm, ['service_name', 'host_name', 'port', 'region'])
+@cant_repeat_form(SuggestServiceForm, ['service_name', 'host_name', 'port', 'location'])
 @csrf_protect
 def suggest_service(request, form, valid, *args, **kwargs):
     if (form is not None) and valid:
         service_name = form.cleaned_data['service_name']
         host_name = form.cleaned_data['host_name']
         port = form.cleaned_data['port']
-        region = Region.retrieve_region(form.cleaned_data['region'].split(', ')[0])
+        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
         
         suggestion = ServiceSuggestion()
         suggestion.service_name = service_name
         suggestion.host_name = host_name
         suggestion.port = port
-        suggestion.region = region
+        suggestion.location = location
         suggestion.save()
         
         return HttpResponse(json.dumps(dict(status='OK',
@@ -112,16 +112,16 @@ provided all terms.',
     return render_to_response('gui/suggest_service.html', locals())
 
 
-@cant_repeat_form(SuggestWebsiteForm, ['website', 'region'])
+@cant_repeat_form(SuggestWebsiteForm, ['website', 'location'])
 @csrf_protect
 def suggest_website(request, form, valid, *args, **kwargs):
     if (form is not None) and valid:
         website = form.cleaned_data['website']
-        region = Region.retrieve_region(form.cleaned_data['region'].split(', ')[0])
+        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
         
         suggestion = WebsiteSuggestion()
         suggestion.website_url = website
-        suggestion.region = region
+        suggestion.location = location
         suggestion.save()
         
         return HttpResponse(json.dumps(dict(status='OK',

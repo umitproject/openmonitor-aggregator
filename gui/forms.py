@@ -23,10 +23,10 @@ from django import forms
 
 class SuggestWebsiteForm(forms.Form):
     website = forms.CharField(max_length=300, required=True)
-    region = forms.CharField(max_length=300, required=False)
+    location = forms.CharField(max_length=300, required=False)
 
 class SuggestServiceForm(forms.Form):
     host_name = forms.CharField(max_length=300, required=True)
     service_name = forms.CharField(max_length=20, required=True)
     port = forms.IntegerField(required=True)
-    region = forms.CharField(max_length=300, required=False)
+    location = forms.CharField(max_length=300, required=False)

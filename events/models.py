@@ -20,11 +20,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import decimal
+
 from django.db import models
 from django.utils import simplejson
 from django.core.cache import cache
 
 from geoip.models import Location
+from dbextra.fields import ListField
 
 EVENT_CACHE_TIME = 30 # Leave it cached for half a minute
 LOCATION_CACHE_TIME = 60*10 # Cache it for 10 minutes
@@ -59,7 +62,6 @@ class TargetType:
             return "Service"
         else:
             return "Unknown"
-    
 
 class Event(models.Model):
     target_type = models.PositiveSmallIntegerField()
@@ -73,12 +75,13 @@ class Event(models.Model):
     # We need to keep the basic region data here to make it faster to retrieve.
     # Keeping data away from where it is used is a huge waste of resources on
     # GAE and can severely constraint its scaleability
-    location_ids = models.TextField()
-    location_names = models.TextField()
-    location_country_names = models.TextField()
-    location_country_codes = models.TextField()
-    lats = models.DecimalField(decimal_places=20, max_digits=23)
-    lons = models.DecimalField(decimal_places=20, max_digits=23)
+    location_ids = ListField(field_type=int)
+    location_names = ListField(field_type=str)
+    location_country_names = ListField(field_type=str)
+    location_country_codes = ListField(field_type=str)
+    lats = ListField(field_type=decimal.Decimal)
+    lons = ListField(field_type=decimal.Decimal)
+    isps = ListField(field_type=str)
     
     
     @property
@@ -96,7 +99,6 @@ class Event(models.Model):
         datastore. The cache is invalidated as soon as new events are registered
         so we don't miss them showing up in real time.
         """
-        # TODO: order by firstDetection or lastDetection ?
         events = cache.get(EVENT_LIST_CACHE_KEY, False)
         if not events:
             events = Event.objects.filter(active=True).order_by("last_detection_utc")[:limit]
@@ -104,26 +106,6 @@ class Event(models.Model):
         
         return events
     
-    
-    # TODO: more search methods:
-    #   search by location (should be the name of place or coordinates ?
-    #   search by isp ?
-    #   search events for specific website
-    #   search events for specific services
-    #   search old events too, limited by dates
-
-    # get all the active events, in a location, and for a specific website/service
-    #@staticmethod
-    #def getActiveEvents(location, target):
-    #    pass
-
-
-    #def __unicode__(self):
-    #    return u'%s %s %s' % (self.targetType, self.eventType, self.firstDetectionUTC)
-
-    #def __str__(self):
-    #    return '%s %s %s' % (self.targetType, self.eventType, self.firstDetectionUTC)
-
     def get_target_type(self):
         return TargetType.get_target_type(self.target_type)
 
@@ -163,36 +145,3 @@ class Event(models.Model):
         event['blockingNodes'] = blockedNodes
         return event
 
-
-class Location(models.Model):
-    city     = models.CharField(max_length=100)
-    country  = models.CharField(max_length=100)
-    latitude = models.FloatField()
-    longitude= models.FloatField()
-
-    class Meta:
-        abstract = True
-
-
-class EventLocation(Location):
-    event    = models.ForeignKey('Event')
-
-
-class EventISP(models.Model):
-    event = models.ForeignKey('Event')
-    isp   = models.CharField(max_length=100)
-
-
-class EventWebsiteReport(models.Model):
-    event  = models.ForeignKey('Event')
-    report = models.ForeignKey('reports.WebsiteReport')
-
-
-class EventServiceReport(models.Model):
-    event  = models.ForeignKey('Event')
-    report = models.ForeignKey('reports.ServiceReport')
-
-    
-class EventBlockedNode(Location):
-    event = models.ForeignKey('Event')
-    ip    = models.CharField(max_length=255)

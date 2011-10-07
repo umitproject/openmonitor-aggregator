@@ -20,6 +20,8 @@
 ##
 
 
+import decimal
+
 from django.db import models
 from django.core.cache import cache
 
@@ -32,36 +34,6 @@ PREFIX_KEY = "region_prefix_%s"
 CLOSEST_LOCATION_KEY='closest_location_%s_%s'
 CLOSEST_LOCATIONS_KEY='closes_locationss_%s_%s'
 
-
-class IPRange(models.Model):
-    location_id = models.IntegerField()
-    start_number = models.IntegerField()
-    end_number = models.IntegerField()
-    name = models.CharField(max_length=300)
-    country_name = models.CharField(max_length=100)
-    country_code = models.CharField(max_length=2)
-    state_region = models.CharField(max_length=2)
-    city = models.CharField(max_length=255)
-    zipcode = models.CharField(max_length=6)
-    lat = models.DecimalField(decimal_places=20, max_digits=23)
-    lon = models.DecimalField(decimal_places=20, max_digits=23)
-    
-    @property
-    def location(self):
-        key = LOCATION_CACHE_KEY % self.location_id
-        location = cache.get(key, False)
-        if not location:
-            location = Location.objects.get(id=self.location_id)
-            cache.set(key, location, CACHE_EXPIRATION)
-        return location
-
-    def save(self, *args, **kwargs):
-        new = self.id is None
-        
-        super(IPRange, self).save(*args, **kwargs)
-        
-        if new:
-            Location.add_ip_range(self)
 
 class Location(models.Model):
     ip_range_ids = ListField(field_type=int)
@@ -166,6 +138,71 @@ class Location(models.Model):
         return locations
 
 
+UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
+                                                  country_name='Unknown',
+                                                  country_code='UN',
+                                                  state_region='UN',
+                                                  city='Unknown',
+                                                  zipcode='',
+                                                  lat=decimal.Decimal('0.0'),
+                                                  lon=decimal.Decimal('0.0'))
+
+class IPRange(models.Model):
+    location_id = models.IntegerField()
+    start_number = models.IntegerField()
+    end_number = models.IntegerField()
+    name = models.CharField(max_length=300)
+    country_name = models.CharField(max_length=100)
+    country_code = models.CharField(max_length=2)
+    state_region = models.CharField(max_length=2)
+    city = models.CharField(max_length=255)
+    zipcode = models.CharField(max_length=6)
+    lat = models.DecimalField(decimal_places=20, max_digits=23)
+    lon = models.DecimalField(decimal_places=20, max_digits=23)
+    
+    @staticmethod
+    def ip_location(ip):
+        iprange = IPRange.objects.filter(start_number__lte=ip).order_by('start_number')
+        if iprange:
+            return iprange[0]
+        iprange = IPRange.objects.filter(end_number__gte=ip).order_by('end_number')
+        if iprange:
+            return iprange[0]
+        
+        return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,
+                                             start_number=ip,
+                                             end_number=ip,
+                                             name=UNKNOWN_LOCATION.name,
+                                             country_name=UNKNOWN_LOCATION.country_name,
+                                             country_code=UNKNOWN_LOCATION.country_code,
+                                             state_region=UNKNOWN_LOCATION.state_region,
+                                             city=UNKNOWN_LOCATION.city,
+                                             zipcode=UNKNOWN_LOCATION.zipcode,
+                                             lat=UNKNOWN_LOCATION.lat,
+                                             lon=UNKNOWN_LOCATION.lon)
+    
+    @property
+    def location(self):
+        key = LOCATION_CACHE_KEY % self.location_id
+        location = cache.get(key, False)
+        if not location:
+            location = Location.objects.get(id=self.location_id)
+            cache.set(key, location, CACHE_EXPIRATION)
+        return location
+
+    def save(self, *args, **kwargs):
+        new = self.id is None
+        
+        super(IPRange, self).save(*args, **kwargs)
+        
+        if new:
+            Location.add_ip_range(self)
+    
+    def dump(self):
+        # TODO!
+        return "FIGURE THE OLD GeoIP dump format!"
+
+
 class LocationAggregation(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23) # Base Latitude
     lon = models.DecimalField(decimal_places=20, max_digits=23) # Base Longitude
@@ -206,7 +243,7 @@ class LocationAggregation(models.Model):
 class LocationNamesAggregation(models.Model):
     prefix = models.CharField(max_length=200)
     names = ListField(field_type=str)
-    locations = ListField(fielf_type=int)
+    locations = ListField(field_type=int)
     
     @staticmethod
     def add_location(location):

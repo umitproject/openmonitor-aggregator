@@ -23,5 +23,5 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
     url('^geoip/save_geoip/?$', 'geoip.views.save_geoip', name='save_geoip'),
-    url('^a/locations/?$', 'geodata.views.ajax_locations', name='ajax_locations'),
+    url('^a/locations/?$', 'geoip.views.ajax_locations', name='ajax_locations'),
 )

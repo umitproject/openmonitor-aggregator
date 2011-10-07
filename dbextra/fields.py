@@ -35,8 +35,12 @@ class ListField(models.TextField):
         kwargs['null'] = True
         kwargs['blank'] = True
         kwargs['default'] = ""
-        super(ListField, self).__init__(*args, **kwargs)
+        
         self.converter = kwargs.get('field_type', str)
+        if 'field_type' in kwargs:
+            del(kwargs['field_type'])
+        
+        super(ListField, self).__init__(*args, **kwargs)
     
     def to_python(self, value):
         if isinstance(value, list):

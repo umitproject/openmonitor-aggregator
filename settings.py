@@ -72,7 +72,6 @@ INSTALLED_APPS = (
     'ICMtests',
     'twitter',
     'notificationsystem',
-    'geodata',
     'registration',
 
     # djangoappengine should come last, so it can override a few manage.py commands

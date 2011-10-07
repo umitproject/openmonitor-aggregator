@@ -24,12 +24,12 @@ from django.db import models
 from django.utils import simplejson
 from django.core.cache import cache
 
-from geodata.models import Region
+from geoip.models import Location
 
 EVENT_CACHE_TIME = 30 # Leave it cached for half a minute
-REGION_CACHE_TIME = 60*10 # Cache it for 10 minutes
+LOCATION_CACHE_TIME = 60*10 # Cache it for 10 minutes
 EVENT_LIST_CACHE_KEY = "events_list"
-REGION_CACHE_KEY = "region_%s"
+LOCATION_CACHE_KEY = "location_%s"
 
 eventType = ["Censor", "Throttling", "Offline"]
 targetType = ["Website", "Service"]
@@ -73,21 +73,22 @@ class Event(models.Model):
     # We need to keep the basic region data here to make it faster to retrieve.
     # Keeping data away from where it is used is a huge waste of resources on
     # GAE and can severely constraint its scaleability
-    region_id = models.IntegerField()
-    region_name = models.CharField(max_length=200)
-    region_country_code = models.CharField(max_length=2)
-    lat = models.DecimalField(decimal_places=20, max_digits=23)
-    lon = models.DecimalField(decimal_places=20, max_digits=23)
+    location_ids = models.TextField()
+    location_names = models.TextField()
+    location_country_names = models.TextField()
+    location_country_codes = models.TextField()
+    lats = models.DecimalField(decimal_places=20, max_digits=23)
+    lons = models.DecimalField(decimal_places=20, max_digits=23)
     
     
     @property
-    def region(self):
-        region = cache.get(REGION_CACHE_KEY % self.region_id, False)
-        if not region:
-            region = Region.objects.get(id=self.region_id)
-            cache.set(REGION_CACHE_KEY % self.region_id, REGION_CACHE_TIME)
+    def location(self):
+        location = cache.get(LOCATION_CACHE_KEY % self.location_id, False)
+        if not location:
+            region = Location.objects.get(id=self.location_id)
+            cache.set(LOCATION_CACHE_KEY % self.location_id, LOCATION_CACHE_TIME)
         
-        return region
+        return location
 
     @staticmethod
     def get_active_events(limit=20):

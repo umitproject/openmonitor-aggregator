@@ -25,6 +25,7 @@ from django.shortcuts import render_to_response
 from django.utils import simplejson as json
 from django.http import HttpResponse, Http404
 from django.views.decorators.cache import cache_page
+from django.shortcuts import get_object_or_404
 
 from google.appengine.api import channel
 
@@ -33,6 +34,9 @@ from gui.forms import SuggestServiceForm, SuggestWebsiteForm
 from gui.decorators import cant_repeat_form
 from geoip.models import Location
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
+from reports.models import WebsiteReport
+from filetransfers.api import serve_file
+
 
 # Our current limit is 25. Let's play around with this and we'll figure if it is enough
 SHOW_EVENT_LIMIT = 25
@@ -136,3 +140,7 @@ provided at least a valid website.',
     
     form = SuggestWebsiteForm()
     return render_to_response('gui/suggest_website.html', locals())
+
+def serve_media(request, id):
+    upload = get_object_or_404(WebsiteReport, pk=id)
+    return serve_file(request, upload.file)

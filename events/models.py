@@ -75,13 +75,13 @@ class Event(models.Model):
     # We need to keep the basic region data here to make it faster to retrieve.
     # Keeping data away from where it is used is a huge waste of resources on
     # GAE and can severely constraint its scaleability
-    location_ids = ListField(field_type=int)
-    location_names = ListField(field_type=str)
-    location_country_names = ListField(field_type=str)
-    location_country_codes = ListField(field_type=str)
-    lats = ListField(field_type=decimal.Decimal)
-    lons = ListField(field_type=decimal.Decimal)
-    isps = ListField(field_type=str)
+    location_ids = ListField(py_type=int)
+    location_names = ListField()
+    location_country_names = ListField()
+    location_country_codes = ListField()
+    lats = ListField(py_type=decimal.Decimal)
+    lons = ListField(py_type=decimal.Decimal)
+    isps = ListField()
     
     
     @property

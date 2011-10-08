@@ -94,6 +94,21 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: geoip_iprange
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: geoip_location
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: geoip_locationaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: gui_region
   properties:
   - name: __key__
@@ -119,10 +134,25 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: reports_report
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: reports_servicereport
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: reports_trace
   properties:
   - name: traceRoute_id
   - name: hop
+    direction: desc
+
+- kind: reports_websitereport
+  properties:
+  - name: __key__
     direction: desc
 
 - kind: suggestions_serviceaggregation

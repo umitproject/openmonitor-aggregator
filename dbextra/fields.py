@@ -36,22 +36,29 @@ class ListField(models.TextField):
         kwargs['blank'] = True
         kwargs['default'] = ""
         
-        self.converter = kwargs.get('field_type', str)
-        if 'field_type' in kwargs:
-            del(kwargs['field_type'])
+        self.db_converter = kwargs.get('db_type', str)
+        if 'db_type' in kwargs:
+            del(kwargs['db_type'])
+        
+        self.py_converter = kwargs.get('py_type', str)
+        if 'py_type' in kwargs:
+            del(kwargs['py_type'])
         
         super(ListField, self).__init__(*args, **kwargs)
     
     def to_python(self, value):
         if isinstance(value, list):
             return list
+
+        if value in ['', None]:
+            return []
         
-        return [self.converter(v[0]) for v in csv.reader([value], delimiter=',')]
+        return [self.py_converter(v[0]) for v in csv.reader([value], delimiter=',')]
 
     def get_prep_value(self, value):
         valueio = cStringIO.StringIO()
         writer = csv.writer(valueio, delimiter=',')
-        [writer.writerow([v]) for v in value]
+        [writer.writerow([self.db_converter(v)]) for v in value]
         return valueio.getvalue()
 
 

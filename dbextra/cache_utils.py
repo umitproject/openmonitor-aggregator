@@ -19,12 +19,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.conf.urls.defaults import *
+from django.core.cache import cache
 
-urlpatterns = patterns('',
-    url('^$', 'gui.views.home', name='home'),
-    url('^about/?$', 'gui.views.about', name='about'),
-    url('^suggest_service/?$', 'gui.views.suggest_service', name='suggest_service'),
-    url('^suggest_website/?$', 'gui.views.suggest_website', name='suggest_website'),
-    url('^wsrdata/(?P<id>\d+)/?$', 'gui.views.serve_media', name='serve_media'),
-)
+def invalidade_cache(method, id):
+    cache_key = get_cache_key(method, id)
+    if cache.get(cache_key, False):
+        cache.delete(cache_key)
+        return True
+    return False
+
+def get_cache_key(method, id):
+    return "%s_%s" % (method.__name__, id)

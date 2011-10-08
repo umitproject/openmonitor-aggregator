@@ -868,4 +868,5 @@ class TestsHandler(BaseHandler):
         except Exception, inst:
             logging.error(inst)
 
-        return HttpResponse(IPRange.ip_location('209.85.146.106').dump())
+        
+        return HttpResponse(str(IPRange.ip_location('209.85.146.106').dump()))

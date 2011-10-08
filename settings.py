@@ -73,6 +73,7 @@ INSTALLED_APPS = (
     'twitter',
     'notificationsystem',
     'registration',
+    'filetransfers',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
@@ -161,6 +162,15 @@ else:
 USE_I18N = True
 
 SITENAME = "OpenMonitor"
+
+#########################
+# File Transfer settings
+PREPARE_UPLOAD_BACKEND = 'filetransfers.backends.delegate.prepare_upload'
+PRIVATE_PREPARE_UPLOAD_BACKEND = 'djangoappengine.storage.prepare_upload'
+PUBLIC_PREPARE_UPLOAD_BACKEND = 'djangoappengine.storage.prepare_upload'
+SERVE_FILE_BACKEND = 'djangoappengine.storage.serve_file'
+PUBLIC_DOWNLOAD_URL_BACKEND = 'filetransfers.backends.base_url.public_download_url'
+PUBLIC_DOWNLOADS_URL_BASE = '/data/'
 
 
 # aggregator private key

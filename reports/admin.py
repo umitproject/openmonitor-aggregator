@@ -19,12 +19,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.conf.urls.defaults import *
+from django.contrib import admin
 
-urlpatterns = patterns('',
-    url('^$', 'gui.views.home', name='home'),
-    url('^about/?$', 'gui.views.about', name='about'),
-    url('^suggest_service/?$', 'gui.views.suggest_service', name='suggest_service'),
-    url('^suggest_website/?$', 'gui.views.suggest_website', name='suggest_website'),
-    url('^wsrdata/(?P<id>\d+)/?$', 'gui.views.serve_media', name='serve_media'),
-)
+from reports.models import *
+
+admin.site.register(Report)
+admin.site.register(WebsiteReport)
+admin.site.register(ServiceReport)

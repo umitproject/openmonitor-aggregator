@@ -21,11 +21,13 @@
 
 
 import decimal
+import logging
 
 from django.db import models
 from django.core.cache import cache
 
 from dbextra.fields import ListField
+from geoip.ip import convert_ip, convert_int_ip
 
 CACHE_EXPIRATION = 60*60 # 1 hour, since this doesn't change any often
 LOCATION_CACHE_KEY = "location_%s"
@@ -36,7 +38,7 @@ CLOSEST_LOCATIONS_KEY='closes_locationss_%s_%s'
 
 
 class Location(models.Model):
-    ip_range_ids = ListField(field_type=int)
+    ip_range_ids = ListField(py_type=int)
     name = models.CharField(max_length=300)
     country_name = models.CharField(max_length=100)
     country_code = models.CharField(max_length=2)
@@ -45,7 +47,7 @@ class Location(models.Model):
     zipcode = models.CharField(max_length=6)
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
-    aggregations = ListField(field_type=int)
+    aggregations = ListField(py_type=int)
     
     def add_aggregation(self, aggregation):
         if aggregation.id in self.aggregations:
@@ -145,7 +147,7 @@ UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
                                                   city='Unknown',
                                                   zipcode='',
                                                   lat=decimal.Decimal('0.0'),
-                                                  lon=decimal.Decimal('0.0'))
+                                                  lon=decimal.Decimal('0.0'))[0]
 
 class IPRange(models.Model):
     location_id = models.IntegerField()
@@ -162,6 +164,9 @@ class IPRange(models.Model):
     
     @staticmethod
     def ip_location(ip):
+        if type(ip) != type(0):
+            ip = convert_ip(ip)
+        
         iprange = IPRange.objects.filter(start_number__lte=ip).order_by('start_number')
         if iprange:
             return iprange[0]
@@ -179,7 +184,7 @@ class IPRange(models.Model):
                                              city=UNKNOWN_LOCATION.city,
                                              zipcode=UNKNOWN_LOCATION.zipcode,
                                              lat=UNKNOWN_LOCATION.lat,
-                                             lon=UNKNOWN_LOCATION.lon)
+                                             lon=UNKNOWN_LOCATION.lon)[0]
     
     @property
     def location(self):
@@ -199,14 +204,20 @@ class IPRange(models.Model):
             Location.add_ip_range(self)
     
     def dump(self):
-        # TODO!
-        return "FIGURE THE OLD GeoIP dump format!"
+        return dict(city=self.city,
+                    country_name=self.country_name,
+                    country_code=self.country_code,
+                    latitude=self.lat,
+                    longitude=self.lon,
+                    start_ip=convert_int_ip(self.start_number),
+                    end_ip=convert_int_ip(self.end_number)
+                    )
 
 
 class LocationAggregation(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23) # Base Latitude
     lon = models.DecimalField(decimal_places=20, max_digits=23) # Base Longitude
-    locations = ListField(field_type=int)
+    locations = ListField(py_type=int)
 
     def add(self, location):
         if location.id in self.locations:
@@ -242,8 +253,8 @@ class LocationAggregation(models.Model):
 
 class LocationNamesAggregation(models.Model):
     prefix = models.CharField(max_length=200)
-    names = ListField(field_type=str)
-    locations = ListField(field_type=int)
+    names = ListField()
+    locations = ListField(py_type=int)
     
     @staticmethod
     def add_location(location):

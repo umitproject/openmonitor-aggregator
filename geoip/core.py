@@ -40,13 +40,14 @@ class GeoIp:
 
         # remove unused fields
         result = {}
-        if 'city' in location:
-            result['city'] = location['city']
-        else:
-            result['city'] = ''
-        result['country_name'] = location['country_name']
-        result['country_code'] = location['country_code']
-        result['latitude'] = location['latitude']
-        result['longitude'] = location['longitude']
+        if location!=None:
+            if 'city' in location:
+                result['city'] = location['city']
+            else:
+                result['city'] = ''
+            result['country_name'] = location['country_name']
+            result['country_code'] = location['country_code']
+            result['latitude'] = location['latitude']
+            result['longitude'] = location['longitude']
 
         return result

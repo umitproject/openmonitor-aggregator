@@ -24,11 +24,11 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 import os
 import base64
+import settings
 
 
 DEFAULT_BLOCK_SIZE = 32
 DEFAULT_PADDING = '{'
-DEFAULT_KEYSIZE = 1024
 RANDOM_PARAM = 32
 CHALLENGE_SIZE = 10
 
@@ -38,9 +38,9 @@ class CryptoLib:
         self.blockSize = blockSize
         self.padding = padding
 
-    def generateRSAKey(self):
+    def generateRSAKey(self, size=settings.RSA_KEYSIZE):
         # generate new RSA key
-        keyPair = RSA.generate(DEFAULT_KEYSIZE, os.urandom)
+        keyPair = RSA.generate(size, os.urandom)
         # export keys
         key = {}
         key['public'] = RSAKey(keyPair.n, keyPair.e)
@@ -109,6 +109,15 @@ class CryptoLib:
         data = cipher.decrypt(base64.b64decode(encodedData)).rstrip(self.padding)
         return data
 
+    def signRSA(self, data, key):
+        privateKey = key.getPrivateKey()
+        signed = privateKey.sign(str(data), '')
+        return base64.b64encode(str(signed[0]))
+
+    def verifySignatureRSA(self, challenge, signedChallenge, key):
+        publicKey = key.getPublicKey()
+        return publicKey.verify(str(challenge), (long(base64.b64decode(signedChallenge)),))
+
     def generateChallenge(self):
         return base64.b64encode(os.urandom(CHALLENGE_SIZE))
 
@@ -124,9 +133,9 @@ class RSAKey:
         self.u = u
 
     def getPublicKey(self):
-        rsaKey = RSA.construct((self.mod, self.exp))
+        rsaKey = RSA.construct((long(self.mod), long(self.exp)))
         return rsaKey.publickey()
 
     def getPrivateKey(self):
-        rsaKey = RSA.construct((self.mod, self.exp, self.d, self.p, self.q, self.u))
+        rsaKey = RSA.construct((long(self.mod), long(self.exp), long(self.d), long(self.p), long(self.q), long(self.u)))
         return rsaKey

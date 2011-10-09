@@ -19,14 +19,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django import forms
+from django.core.cache import cache
 
-class SuggestWebsiteForm(forms.Form):
-    website = forms.CharField(max_length=300, required=True)
-    location = forms.CharField(max_length=300, required=False)
+def invalidade_cache(method, id):
+    cache_key = get_cache_key(method, id)
+    if cache.get(cache_key, False):
+        cache.delete(cache_key)
+        return True
+    return False
 
-class SuggestServiceForm(forms.Form):
-    host_name = forms.CharField(max_length=300, required=True)
-    service_name = forms.CharField(max_length=20, required=True)
-    port = forms.IntegerField(required=True)
-    location = forms.CharField(max_length=300, required=False)
+def get_cache_key(method, id):
+    return "%s_%s" % (method.__name__, id)

@@ -45,7 +45,7 @@ $(document).ready(function () {
 			set_errors(null);
 			
 			var website = $('#id_website').val();
-			var region = $('#id_region').val();
+			var location = $('#id_location').val();
 			
 			if (website == '') {
 				set_msg("You must fill in at least a website");
@@ -54,7 +54,7 @@ $(document).ready(function () {
 			
 			send_suggestion('website',
 							{website:website,
-							 region:region});
+							 location:location});
 			
 			return false;
 		});
@@ -68,7 +68,7 @@ $(document).ready(function () {
 			var host = $('#id_host').val();
 			var service = $('#id_service').val();
 			var port = $('#id_port').val();
-			var region = $('#id_region').val();
+			var location = $('#id_location').val();
 			
 			if (host == '' || service == '' || port == '') {
 				set_msg("You must fill in a host name, service name and port at least.");
@@ -79,7 +79,7 @@ $(document).ready(function () {
 							{host_name:$('#id_host_name').val(),
 							 service_name:$('#id_service_name').val(),
 							 port:$('#id_port').val(),
-							 region:$('#id_region').val()});
+							 location:$('#id_location').val()});
 			
 			return false;
 		});

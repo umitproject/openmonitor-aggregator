@@ -19,14 +19,5 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django import forms
-
-class SuggestWebsiteForm(forms.Form):
-    website = forms.CharField(max_length=300, required=True)
-    location = forms.CharField(max_length=300, required=False)
-
-class SuggestServiceForm(forms.Form):
-    host_name = forms.CharField(max_length=300, required=True)
-    service_name = forms.CharField(max_length=20, required=True)
-    port = forms.IntegerField(required=True)
-    location = forms.CharField(max_length=300, required=False)
+def ip_to_int(ip):
+    pass

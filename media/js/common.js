@@ -5,10 +5,10 @@ function formatDate(dateStr)
 }
 
 $(document).ready(function () {
-	if ($('#id_region').length > 0) {
-		$("#id_region").autocomplete({
+	if ($('#id_location').length > 0) {
+		$("#id_location").autocomplete({
 			source:function(req, add) {
-						$.getJSON("/a/regions/",
+						$.getJSON("/a/locations/",
 								  { prefix:req.term },
 								  function(data){ add(data); });
 					}

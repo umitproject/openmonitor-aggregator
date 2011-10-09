@@ -20,12 +20,15 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import logging
+import random
+
 from django.db import models
 from django.db.models import Q
-from agents.CryptoLib import *
-from geoip.core import GeoIp
 from django.contrib.auth import authenticate
-import logging, random
+
+from agents.CryptoLib import *
+from geoip.models import IPRange
 
 
 class LoginProcess(models.Model):
@@ -147,15 +150,23 @@ class Agent(models.Model):
             agent.activated = True
 
             # get country by geoip
-            service = GeoIp()
-            location = service.getIPLocation(ip)
 
-            if len(location)>0:
-                agent.country = location['country_code']
-                agent.latitude = location['latitude']
-                agent.longitude = location['longitude']
+
+
+
+
+
+
+
+
+            iprange = IPRange.ip_location(ip)
+            agent.country = iprange.country_code
+            agent.latitude = iprange.lat
+            agent.longitude = iprange.lon
+
 
             agent.save()
+            
             return agent
 
     def promoteToSuperPeer(self):
@@ -204,18 +215,25 @@ class Agent(models.Model):
             loggedAgent.AESKey = agent.AESKey
 
             # get country by geoip
-            service = GeoIp()
-            location = service.getIPLocation(loginProcess.ip)
-            loggedAgent.country = location['country_code']
-            loggedAgent.latitude = location['latitude']
-            loggedAgent.longitude = location['longitude']
+
+
+
+
+
+
+
+            iprange = IPRange.ip_location(ip)
+            loggedAgent.country = iprange.country_code
+            loggedAgent.latitude = iprange.lat
+            loggedAgent.longitude = iprange.lon
+
 
             loggedAgent.save()
 
             # update agent information
-            agent.lastKnownCountry = location['country_code']
-            agent.lastKnownLatitude = location['latitude']
-            agent.lastKnownLongitude = location['longitude']
+            agent.lastKnownCountry = iprange.country_code
+            agent.lastKnownLatitude = iprange.lat
+            agent.lastKnownLongitude = iprange.lon
             agent.lastKnownIP = loginProcess.ip
             agent.lastKnownPort = loginProcess.port
             agent.save()

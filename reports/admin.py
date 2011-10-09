@@ -19,14 +19,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django import forms
+from django.contrib import admin
 
-class SuggestWebsiteForm(forms.Form):
-    website = forms.CharField(max_length=300, required=True)
-    location = forms.CharField(max_length=300, required=False)
+from reports.models import *
 
-class SuggestServiceForm(forms.Form):
-    host_name = forms.CharField(max_length=300, required=True)
-    service_name = forms.CharField(max_length=20, required=True)
-    port = forms.IntegerField(required=True)
-    location = forms.CharField(max_length=300, required=False)
+admin.site.register(Report)
+admin.site.register(WebsiteReport)
+admin.site.register(ServiceReport)

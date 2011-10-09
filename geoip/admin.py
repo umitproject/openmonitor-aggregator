@@ -19,14 +19,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django import forms
+from django.contrib import admin
+from geoip.models import *
 
-class SuggestWebsiteForm(forms.Form):
-    website = forms.CharField(max_length=300, required=True)
-    location = forms.CharField(max_length=300, required=False)
-
-class SuggestServiceForm(forms.Form):
-    host_name = forms.CharField(max_length=300, required=True)
-    service_name = forms.CharField(max_length=20, required=True)
-    port = forms.IntegerField(required=True)
-    location = forms.CharField(max_length=300, required=False)
+admin.site.register(IPRange)
+admin.site.register(Location)
+admin.site.register(LocationNamesAggregation)
+admin.site.register(LocationAggregation)

@@ -69,6 +69,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: events_event
+  properties:
+  - name: active
+  - name: last_detection_utc
+
 - kind: events_eventblockednode
   properties:
   - name: __key__
@@ -85,6 +90,21 @@ indexes:
     direction: desc
 
 - kind: geodata_region
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: geoip_iprange
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: geoip_location
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: geoip_locationaggregation
   properties:
   - name: __key__
     direction: desc
@@ -114,10 +134,25 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: reports_report
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: reports_servicereport
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: reports_trace
   properties:
   - name: traceRoute_id
   - name: hop
+    direction: desc
+
+- kind: reports_websitereport
+  properties:
+  - name: __key__
     direction: desc
 
 - kind: suggestions_serviceaggregation

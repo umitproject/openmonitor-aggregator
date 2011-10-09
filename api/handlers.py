@@ -20,6 +20,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import logging
+import base64
+
 from piston.handler import BaseHandler
 from messages import messages_pb2
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
@@ -27,16 +30,21 @@ from reports.models import WebsiteReport, ServiceReport
 
 from django.test.client import Client
 from django.http import HttpResponse
+from django.conf import settings
 
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from ICMtests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
 from agents.CryptoLib import *
+
 from django.conf import settings
 import hashlib
 import logging
 import base64
+
+from geoip.models import IPRange
+
 
 
 class RegisterAgentHandler(BaseHandler):
@@ -977,5 +985,10 @@ class TestsHandler(BaseHandler):
 
 
 
+
         except Exception,e:
             logging.error(e)
+
+        
+        return HttpResponse(str(IPRange.ip_location('209.85.146.106').dump()))
+

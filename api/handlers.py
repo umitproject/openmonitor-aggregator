@@ -37,7 +37,14 @@ from ICMtests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
 from agents.CryptoLib import *
+
+from django.conf import settings
+import hashlib
+import logging
+import base64
+
 from geoip.models import IPRange
+
 
 
 class RegisterAgentHandler(BaseHandler):
@@ -49,7 +56,8 @@ class RegisterAgentHandler(BaseHandler):
         crypto = CryptoLib()
         aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
 
-        msg = crypto.decodeRSAPrivateKey(request.POST['msg'], aggregatorKey)
+        AESKey = crypto.decodeRSAPrivateKey(request.POST['key'], aggregatorKey)
+        msg = crypto.decodeAES(request.POST['msg'], AESKey)
 
         receivedAgentRegister = messages_pb2.RegisterAgent()
         receivedAgentRegister.ParseFromString(msg)
@@ -60,14 +68,12 @@ class RegisterAgentHandler(BaseHandler):
         else:
             agentIp = request.META['REMOTE_ADDR']
 
-        logging.debug("Agent ip is " + agentIp)
-
         # create agent
         publicKeyMod = receivedAgentRegister.agentPublicKey.mod
         publicKeyExp = receivedAgentRegister.agentPublicKey.exp
         username = receivedAgentRegister.credentials.username
         password = receivedAgentRegister.credentials.password
-        agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp, publicKeyMod, publicKeyExp, username, password)
+        agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp, publicKeyMod, publicKeyExp, username, password, AESKey)
 
         # get software version information
         if receivedAgentRegister.agentType=="DESKTOP":
@@ -78,16 +84,22 @@ class RegisterAgentHandler(BaseHandler):
         # get last test id
         testVersion = Test.getLastTestNo()
 
+        m = hashlib.sha1()
+        m.update(agent.publicKeyMod)
+        publicKeyHash = m.digest()
+
         # create the response
-        response = messages_pb2.RegisterAgentResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
-        response.agentID = agent.agentID
-        response.cipheredPublicKey.mod = crypto.encodeRSAPrivateKey(publicKeyMod, aggregatorPrivateKey)
-        response.cipheredPublicKey.exp = crypto.encodeRSAPrivateKey(publicKeyExp, aggregatorPrivateKey)
+        try:
+            response = messages_pb2.RegisterAgentResponse()
+            response.header.currentVersionNo = softwareVersion.version
+            response.header.currentTestVersionNo = testVersion.testID
+            response.agentID = agent.agentID
+            response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash, aggregatorKey)
+        except Exception,e:
+            logging.error(e)
 
         # send back response
-        response_str = agent.encodeMessageRSA(response.SerializeToString())
+        response_str = agent.encodeMessage(response.SerializeToString())
         return response_str
 
 
@@ -96,6 +108,7 @@ class LoginHandler(BaseHandler):
 
     def create(self, request):
         logging.info("loginAgent received")
+        logging.info("Aggregator: Starting login step1")
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.Login()
@@ -113,10 +126,14 @@ class LoginHandler(BaseHandler):
         # initiate login process
         loginProcess = agent.initLogin(agentIp, loginAgent.port)
 
+        logging.info("Challeng received from agent: %s" % loginAgent.challenge)
+
         # initiate crypto to cipher challenge
         crypto = CryptoLib()
         aggregatorPrivateKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
-        cipheredChallenge = crypto.encodeRSAPrivateKey(loginAgent.challenge, aggregatorPrivateKey)
+        cipheredChallenge = crypto.signRSA(loginAgent.challenge, aggregatorPrivateKey)
+
+        logging.info("Challenge generated on aggregator: %s" % loginProcess.challenge)
 
         # create the response
         response = messages_pb2.LoginStep1()
@@ -126,6 +143,7 @@ class LoginHandler(BaseHandler):
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
+        logging.info("Sending login step1")
         return response_str
 
 
@@ -134,6 +152,7 @@ class Login2Handler(BaseHandler):
 
     def create(self, request):
         logging.info("loginAgent2 received")
+        logging.info("Aggregator: Starting login step2")
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.LoginStep2()
@@ -143,6 +162,8 @@ class Login2Handler(BaseHandler):
         agent = Agent.finishLogin(loginAgent.processID, loginAgent.cipheredChallenge)
 
         if agent is not None:
+            logging.info("PASSED TEST")
+
             # get software version information
             if agent.agentType=='DESKTOP':
                 softwareVersion = DesktopAgentVersion.getLastVersionNo()
@@ -156,7 +177,6 @@ class Login2Handler(BaseHandler):
             response = messages_pb2.LoginResponse()
             response.header.currentVersionNo = softwareVersion.version
             response.header.currentTestVersionNo = testVersion.testID
-            response.AESKey = agent.AESKey
 
             # send back response
             response_str = base64.b64encode(response.SerializeToString())
@@ -628,245 +648,347 @@ class TestsHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     def read(self, request):
+#        try:
+#            c = Client()
+#            suggestion = messages_pb2.WebsiteSuggestion()
+#            suggestion.header.token = "token"
+#            suggestion.header.agentID = 5
+#            suggestion.websiteURL = "www.facebook.com"
+#            suggestion.emailAddress = "diogopinheiro@ua.pt"
+#            sug_str = base64.b64encode(suggestion.SerializeToString())
+#            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
+#
+#
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        try:
+#            suggestion = messages_pb2.ServiceSuggestion()
+#            suggestion.header.token = "token"
+#            suggestion.header.agentID = 5
+#            suggestion.serviceName = "torrent"
+#            suggestion.emailAddress = "zeux@hotmail.com"
+#            suggestion.ip = "80.92.156.29"
+#            suggestion.hostName = "piratebay"
+#            sug_str = base64.b64encode(suggestion.SerializeToString())
+#            response = c.post('/api/servicesuggestion/', {'msg': sug_str})
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        try:
+#            c = Client()
+#            newtests = messages_pb2.NewTests()
+#            newtests.header.token = "token"
+#            newtests.header.agentID = 5
+#            newtests.currentTestVersionNo = 0
+#            newt_str = base64.b64encode(newtests.SerializeToString())
+#            response = c.post('/api/checktests/', {'msg': newt_str})
+#
+#            msg = base64.b64decode(response.content)
+#            tests = messages_pb2.NewTestsResponse()
+#            tests.ParseFromString(msg)
+#
+#            logging.info(tests)
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        try:
+#            c = Client()
+#            newversion = messages_pb2.NewVersion()
+#            newversion.header.token = "token"
+#            newversion.header.agentID = 5
+#            newversion.agentVersionNo = 1
+#            newversion.agentType = "MOBILE"
+#            newt_str = base64.b64encode(newversion.SerializeToString())
+#            response = c.post('http://icm-dev.appspot.com/api/checkversion/', {'msg': newt_str})
+#
+#            msg = base64.b64decode(response.content)
+#            nv = messages_pb2.NewVersionResponse()
+#            nv.ParseFromString(msg)
+#
+#            logging.info(nv)
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        # create website report
+#        try:
+#            c = Client()
+#            wreport = messages_pb2.SendWebsiteReport()
+#            wreport.header.token = "token"
+#            wreport.header.agentID = 3
+#            wreport.report.header.reportID = "45457"
+#            wreport.report.header.agentID = 5
+#            wreport.report.header.testID = 100
+#            wreport.report.header.timeZone = -5
+#            wreport.report.header.timeUTC = 1310396214
+#            wreport.report.report.websiteURL = "www.google.com"
+#            wreport.report.report.statusCode = 200
+#            wreport.report.report.responseTime = 129
+#            wreport.report.report.bandwidth = 2300
+#
+#            wreport.report.header.passedNode.append("node1")
+#            wreport.report.header.passedNode.append("node2")
+#
+#            wreport.report.header.traceroute.target = "78.43.34.120"
+#            wreport.report.header.traceroute.hops = 2
+#            wreport.report.header.traceroute.packetSize = 200
+#
+#            trace = wreport.report.header.traceroute.traces.add()
+#            trace.ip = "214.23.54.34"
+#            trace.hop = 1
+#            trace.packetsTiming.append(120)
+#            trace.packetsTiming.append(129)
+#
+#            trace = wreport.report.header.traceroute.traces.add()
+#            trace.ip = "24.63.54.128"
+#            trace.hop = 2
+#            trace.packetsTiming.append(120)
+#
+#            wreport_str = base64.b64encode(wreport.SerializeToString())
+#            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        # create service report
+#        try:
+#            c = Client()
+#            sreport = messages_pb2.SendServiceReport()
+#            sreport.header.token = "token"
+#            sreport.header.agentID = 3
+#            sreport.report.header.reportID = "newrep45457"
+#            sreport.report.header.agentID = 5
+#            sreport.report.header.testID = 100
+#            sreport.report.header.timeZone = -5
+#            sreport.report.header.timeUTC = 1310396214
+#            sreport.report.report.serviceName = "p2p"
+#            sreport.report.report.statusCode = 100
+#            sreport.report.report.responseTime = 53
+#            sreport.report.report.bandwidth = 9456
+#
+#            sreport.report.header.passedNode.append("node1")
+#            sreport.report.header.passedNode.append("node2")
+#
+#            sreport.report.header.traceroute.target = "78.43.34.120"
+#            sreport.report.header.traceroute.hops = 2
+#            sreport.report.header.traceroute.packetSize = 200
+#
+#            trace = sreport.report.header.traceroute.traces.add()
+#            trace.ip = "214.23.54.34"
+#            trace.hop = 1
+#            trace.packetsTiming.append(120)
+#            trace.packetsTiming.append(129)
+#
+#            sreport_str = base64.b64encode(sreport.SerializeToString())
+#            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        # check aggregator
+#        try:
+#            c = Client()
+#            wreport = messages_pb2.CheckAggregator()
+#            wreport.header.token = "token"
+#            wreport.header.agentID = 3
+#
+#            wreport_str = base64.b64encode(wreport.SerializeToString())
+#            response = c.post('/api/checkaggregator/', {'msg': wreport_str})
+#
+#            msg = base64.b64decode(response.content)
+#
+#            checkAggregator = messages_pb2.CheckAggregatorResponse()
+#            checkAggregator.ParseFromString(msg)
+#
+#            logging.info("Aggregator is " + checkAggregator.status)
+#
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        # register agent
+#        try:
+#            c = Client()
+#            register = messages_pb2.RegisterAgent()
+#            register.versionNo = 1
+#            register.agentType = "DESKTOP"
+#            register.ip = "72.21.214.128"
+#
+#            register_str = base64.b64encode(register.SerializeToString())
+#            response = c.post('/api/registeragent/', {'msg': register_str})
+#
+#            logging.info("registration done")
+#
+#            #msg = base64.b64decode(response.content)
+#
+#            #registerres = messages_pb2.RegisterAgentResponse()
+#            #registerres.ParseFromString(msg)
+#
+#            #logging.info("Register Response " + registerres.)
+#
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        # get peers
+#        try:
+#            c = Client()
+#            getpeer = messages_pb2.GetPeerList()
+#            getpeer.header.token = "token"
+#            getpeer.header.agentID = 1309
+#
+#            getpeer_str = base64.b64encode(getpeer.SerializeToString())
+#            response = c.post('/api/getpeerlist/', {'msg': getpeer_str})
+#
+#            msg = base64.b64decode(response.content)
+#
+#            resp = messages_pb2.GetPeerListResponse()
+#            resp.ParseFromString(msg)
+#
+#            for peer in resp.knownPeers:
+#                msg = "Peer %s - %s:%s - %s (%s,%s)" % (peer.agentID, peer.agentIP, peer.agentPort, peer.peerStatus, peer.publicKey.mod, peer.publicKey.exp)
+#                logging.info(msg)
+#
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#
+#
+#        try:
+#            c = Client()
+#            getpeer = messages_pb2.GetSuperPeerList()
+#            getpeer.header.token = "token"
+#            getpeer.header.agentID = 103
+#            getpeer.count = 10
+#
+#            getpeer_str = base64.b64encode(getpeer.SerializeToString())
+#            logging.debug(getpeer_str)
+#            response = c.post('/api/getsuperpeerlist/', {'msg': getpeer_str})
+#
+#            msg = base64.b64decode(response.content)
+#
+#            resp = messages_pb2.GetSuperPeerListResponse()
+#            resp.ParseFromString(msg)
+#
+#            for peer in resp.knownPeers:
+#                logging.info("New peer" + str(peer.agentID))
+#
+#        except Exception, inst:
+#            logging.error(inst)
+#
+#        from geoip import core
+#        service = core.GeoIp()
+#
+#        return HttpResponse(str(service.getIPLocation('209.85.146.106')))
+
         try:
             c = Client()
-            suggestion = messages_pb2.WebsiteSuggestion()
-            suggestion.header.token = "token"
-            suggestion.header.agentID = 5
-            suggestion.websiteURL = "www.facebook.com"
-            suggestion.emailAddress = "diogopinheiro@ua.pt"
-            sug_str = base64.b64encode(suggestion.SerializeToString())
-            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
+            crypto = CryptoLib()
+
+            mod = 109916896023924130410814755146616820050848287195403807165245502023708307057182505344954954927069297885076677369989575235572225938578405052695849113605912075520043830304524405776689005895802218122674008335365710906635693457269579474788929265226007718176605597921238270933430352422527094012100555192243443310437
+            exp = 65537
+            d = 53225089572596125525843512131740616511492292813924040166456597139362240024103739980806956293552408080670588466616097320611022630892254518017345493694914613829109122334102313231580067697669558510530796064276699226938402801350068277390981376399696367398946370139716723891915686772368737964872397322242972049953
+            p = 9311922438153331754523459805685209527234133766003151707083260807995975127756369273827143717722693457161664179598414082626988492836607535481975170401420233
+            q = 11803888697952041452190425894815849667220518916298985642794987864683223570209190956951707407347610933271302068443002899691276141395264850489845154413900989
+            u = 4430245984407139797364141151557666474447820733910504072636286162751503313976630067126466513743819690811621510073670844704114936437585335006336955101762559
 
 
-        except Exception, inst:
-            logging.error(inst)
+            # generate AES key
+            AESKey = crypto.generateAESKey()
+            agentKey = RSAKey(mod, exp, d, p, q, u)
+            aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
+
+            registerMsg = messages_pb2.RegisterAgent()
+            registerMsg.versionNo = 1
+            registerMsg.agentType = "DESKTOP"
+            registerMsg.credentials.username = "zeux1"
+            registerMsg.credentials.password = "123"
+            registerMsg.agentPublicKey.mod = str(mod)
+            registerMsg.agentPublicKey.exp = str(exp)
+            registerMsg.ip = "192.168.2.1"
+
+            registerMsgSerialized = registerMsg.SerializeToString()
+            registerMsg_str = crypto.encodeAES(registerMsgSerialized, AESKey)
+
+            key_str = crypto.encodeRSAPublicKey(AESKey, aggregatorKey)
 
 
-        
-        try:
-            suggestion = messages_pb2.ServiceSuggestion()
-            suggestion.header.token = "token"
-            suggestion.header.agentID = 5
-            suggestion.serviceName = "torrent"
-            suggestion.emailAddress = "zeux@hotmail.com"
-            suggestion.ip = "80.92.156.29"
-            suggestion.hostName = "piratebay"
-            sug_str = base64.b64encode(suggestion.SerializeToString())
-            response = c.post('/api/servicesuggestion/', {'msg': sug_str})
-        except Exception, inst:
-            logging.error(inst)
+            response_str = c.post('/api/registeragent/', {'msg': registerMsg_str, 'key': key_str})
+
+
+            # REGISTRATION DONE
+            # BEGIN LOGIN STEP 1
+
+            response_decoded = crypto.decodeAES(response_str.content, AESKey)
+
+            response = messages_pb2.RegisterAgentResponse()
+            response.ParseFromString(response_decoded)
+
+            logging.info("Registered: %d" % response.agentID)
+
+            firstchallenge = crypto.generateChallenge()
+            logging.info("Challenge generated on agent: %s" % firstchallenge)
+
+            loginMsg = messages_pb2.Login()
+            loginMsg.agentID = response.agentID;
+            loginMsg.challenge = firstchallenge
+            loginMsg.port = 9090
+            loginMsg.ip = "209.85.169.99"
+
+            loginMsg_str = base64.b64encode(loginMsg.SerializeToString())
+
+            response_str = c.post('/api/loginagent/', {'msg': loginMsg_str})
+
+
+            # LOGIN STEP 1 done
+            # BEGIN LOGIN STEP 2
+
+            msg = base64.b64decode(response_str.content)
+
+            logging.info("Login step1 received")
+
+            response = messages_pb2.LoginStep1()
+            response.ParseFromString(msg)
+
+            challenge = response.challenge
+            cipheredChallenge = crypto.signRSA(challenge, agentKey)
+
+            logging.info("Challenge received from aggregator: %s" % challenge)
+
+            # check challenge
+            if crypto.verifySignatureRSA(firstchallenge, response.cipheredChallenge, aggregatorKey):
+                logging.info("AGENT: CHALLENGE OK")
+            else:
+                logging.info("AGENT: CHALLENGE NOT OK")
+
+            loginMsg = messages_pb2.LoginStep2()
+            loginMsg.processID = response.processID
+            loginMsg.cipheredChallenge = cipheredChallenge
+
+            loginMsg_str = base64.b64encode(loginMsg.SerializeToString())
+
+            response_str = c.post('/api/loginagent2/', {'msg': loginMsg_str})
+
+            logging.info("Login response received")
 
 
 
-        try:
-            c = Client()
-            newtests = messages_pb2.NewTests()
-            newtests.header.token = "token"
-            newtests.header.agentID = 5
-            newtests.currentTestVersionNo = 0
-            newt_str = base64.b64encode(newtests.SerializeToString())
-            response = c.post('/api/checktests/', {'msg': newt_str})
 
-            msg = base64.b64decode(response.content)
-            tests = messages_pb2.NewTestsResponse()
-            tests.ParseFromString(msg)
-
-            logging.info(tests)
-        except Exception, inst:
-            logging.error(inst)
-
-
-
-        try:
-            c = Client()
-            newversion = messages_pb2.NewVersion()
-            newversion.header.token = "token"
-            newversion.header.agentID = 5
-            newversion.agentVersionNo = 1
-            newversion.agentType = "MOBILE"
-            newt_str = base64.b64encode(newversion.SerializeToString())
-            response = c.post('http://icm-dev.appspot.com/api/checkversion/', {'msg': newt_str})
-
-            msg = base64.b64decode(response.content)
-            nv = messages_pb2.NewVersionResponse()
-            nv.ParseFromString(msg)
-
-            logging.info(nv)
-        except Exception, inst:
-            logging.error(inst)
-
-        
-        
-        # create website report
-        try:
-            c = Client()
-            wreport = messages_pb2.SendWebsiteReport()
-            wreport.header.token = "token"
-            wreport.header.agentID = 3
-            wreport.report.header.reportID = "45457"
-            wreport.report.header.agentID = 5
-            wreport.report.header.testID = 100
-            wreport.report.header.timeZone = -5
-            wreport.report.header.timeUTC = 1310396214
-            wreport.report.report.websiteURL = "www.google.com"
-            wreport.report.report.statusCode = 200
-            wreport.report.report.responseTime = 129
-            wreport.report.report.bandwidth = 2300
-
-            wreport.report.header.passedNode.append("node1")
-            wreport.report.header.passedNode.append("node2")
-
-            wreport.report.header.traceroute.target = "78.43.34.120"
-            wreport.report.header.traceroute.hops = 2
-            wreport.report.header.traceroute.packetSize = 200
-
-            trace = wreport.report.header.traceroute.traces.add()
-            trace.ip = "214.23.54.34"
-            trace.hop = 1
-            trace.packetsTiming.append(120)
-            trace.packetsTiming.append(129)
-
-            trace = wreport.report.header.traceroute.traces.add()
-            trace.ip = "24.63.54.128"
-            trace.hop = 2
-            trace.packetsTiming.append(120)
-
-            wreport_str = base64.b64encode(wreport.SerializeToString())
-            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
-        except Exception, inst:
-            logging.error(inst)
-
-
-        
-        # create service report
-        try:
-            c = Client()
-            sreport = messages_pb2.SendServiceReport()
-            sreport.header.token = "token"
-            sreport.header.agentID = 3
-            sreport.report.header.reportID = "newrep45457"
-            sreport.report.header.agentID = 5
-            sreport.report.header.testID = 100
-            sreport.report.header.timeZone = -5
-            sreport.report.header.timeUTC = 1310396214
-            sreport.report.report.serviceName = "p2p"
-            sreport.report.report.statusCode = 100
-            sreport.report.report.responseTime = 53
-            sreport.report.report.bandwidth = 9456
-
-            sreport.report.header.passedNode.append("node1")
-            sreport.report.header.passedNode.append("node2")
-
-            sreport.report.header.traceroute.target = "78.43.34.120"
-            sreport.report.header.traceroute.hops = 2
-            sreport.report.header.traceroute.packetSize = 200
-
-            trace = sreport.report.header.traceroute.traces.add()
-            trace.ip = "214.23.54.34"
-            trace.hop = 1
-            trace.packetsTiming.append(120)
-            trace.packetsTiming.append(129)
-
-            sreport_str = base64.b64encode(sreport.SerializeToString())
-            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
-        except Exception, inst:
-            logging.error(inst)
-
-        
-        
-        # check aggregator
-        try:
-            c = Client()
-            wreport = messages_pb2.CheckAggregator()
-            wreport.header.token = "token"
-            wreport.header.agentID = 3
-
-            wreport_str = base64.b64encode(wreport.SerializeToString())
-            response = c.post('/api/checkaggregator/', {'msg': wreport_str})
-
-            msg = base64.b64decode(response.content)
-
-            checkAggregator = messages_pb2.CheckAggregatorResponse()
-            checkAggregator.ParseFromString(msg)
-
-            logging.info("Aggregator is " + checkAggregator.status)
-
-        except Exception, inst:
-            logging.error(inst)
-
-        
-        
-        # register agent
-        try:
-            c = Client()
-            register = messages_pb2.RegisterAgent()
-            register.versionNo = 1
-            register.agentType = "DESKTOP"
-            register.ip = "72.21.214.128"
-
-            register_str = base64.b64encode(register.SerializeToString())
-            response = c.post('/api/registeragent/', {'msg': register_str})
-
-            logging.info("registration done")
-
-            #msg = base64.b64decode(response.content)
-
-            #registerres = messages_pb2.RegisterAgentResponse()
-            #registerres.ParseFromString(msg)
-
-            #logging.info("Register Response " + registerres.)
-
-        except Exception, inst:
-            logging.error(inst)
-        
-        
-        
-        # get peers
-        try:
-            c = Client()
-            getpeer = messages_pb2.GetPeerList()
-            getpeer.header.token = "token"
-            getpeer.header.agentID = 1309
-
-            getpeer_str = base64.b64encode(getpeer.SerializeToString())
-            response = c.post('/api/getpeerlist/', {'msg': getpeer_str})
-
-            msg = base64.b64decode(response.content)
-
-            resp = messages_pb2.GetPeerListResponse()
-            resp.ParseFromString(msg)
-
-            for peer in resp.knownPeers:
-                msg = "Peer %s - %s:%s - %s (%s,%s)" % (peer.agentID, peer.agentIP, peer.agentPort, peer.peerStatus, peer.publicKey.mod, peer.publicKey.exp)
-                logging.info(msg)
-
-        except Exception, inst:
-            logging.error(inst)
-
-        
-        
-        try:
-            c = Client()
-            getpeer = messages_pb2.GetSuperPeerList()
-            getpeer.header.token = "token"
-            getpeer.header.agentID = 103
-            getpeer.count = 10
-
-            getpeer_str = base64.b64encode(getpeer.SerializeToString())
-            logging.debug(getpeer_str)
-            response = c.post('/api/getsuperpeerlist/', {'msg': getpeer_str})
-
-            msg = base64.b64decode(response.content)
-
-            resp = messages_pb2.GetSuperPeerListResponse()
-            resp.ParseFromString(msg)
-
-            for peer in resp.knownPeers:
-                logging.info("New peer" + str(peer.agentID))
-
-        except Exception, inst:
-            logging.error(inst)
+        except Exception,e:
+            logging.error(e)
 
         
         return HttpResponse(str(IPRange.ip_location('209.85.146.106').dump()))
+

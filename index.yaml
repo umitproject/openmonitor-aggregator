@@ -170,6 +170,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: suggestions_servicelocationaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: suggestions_servicenameaggregation
   properties:
   - name: __key__
@@ -191,6 +196,11 @@ indexes:
     direction: desc
 
 - kind: suggestions_websiteaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: suggestions_websitelocationaggregation
   properties:
   - name: __key__
     direction: desc

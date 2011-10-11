@@ -20,7 +20,6 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import render_to_response
 from django.utils import simplejson as json
 from django.http import HttpResponse, Http404
@@ -45,11 +44,10 @@ SHOW_EVENT_LIMIT = 25
 VIEW_CACHE_TIME = 60 * 10
 
 
-#@cache_page(VIEW_CACHE_TIME)
 def home(request):
     return map(request)
 
-#@cache_page(VIEW_CACHE_TIME)
+
 def map(request):
     token = channel.create_channel('map')
     
@@ -61,6 +59,7 @@ def map(request):
     initialEvents = json.dumps(events_dict)
     return render_to_response('notificationsystem/map.html', {'token': token, 'initial_events': initialEvents})
 
+
 def realtimebox(request):
     token = channel.create_channel('realtimebox')
     events = Event.get_active_events(SHOW_EVENT_LIMIT)
@@ -69,6 +68,7 @@ def realtimebox(request):
         events_dict.append(event.getDict())
     initialEvents = json.dumps(events_dict)
     return render_to_response('notificationsystem/realtimebox.html', {'token': token, 'initial_events': initialEvents})
+
 
 def event(request, event_id):
     try:
@@ -81,13 +81,13 @@ def event(request, event_id):
 
     return render_to_response('events/event.html', {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes})
 
-@cache_page(VIEW_CACHE_TIME)
+
+
 def about(request):
     return render_to_response('gui/about.html', locals())
 
 
 @cant_repeat_form(SuggestServiceForm, ['service_name', 'host_name', 'port', 'location'])
-@csrf_protect
 def suggest_service(request, form, valid, *args, **kwargs):
     if (form is not None) and valid:
         service_name = form.cleaned_data['service_name']
@@ -117,7 +117,6 @@ provided all terms.',
 
 
 @cant_repeat_form(SuggestWebsiteForm, ['website', 'location'])
-@csrf_protect
 def suggest_website(request, form, valid, *args, **kwargs):
     if (form is not None) and valid:
         website = form.cleaned_data['website']
@@ -140,6 +139,7 @@ provided at least a valid website.',
     
     form = SuggestWebsiteForm()
     return render_to_response('gui/suggest_website.html', locals())
+
 
 def serve_media(request, id):
     upload = get_object_or_404(WebsiteReport, pk=id)

@@ -36,6 +36,7 @@ SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+CACHE_MIDDLEWARE_SECONDS = 30
 
 ENVIRONMENT = os.environ.get('SERVER_SOFTWARE', '')
 GAE = True
@@ -82,9 +83,12 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     # This loads the index definitions, so it has to come first
     'autoload.middleware.AutoloadMiddleware',
+    #'django.middleware.cache.UpdateCacheMiddleware', # CACHE
+    #'django.middleware.csrf.CsrfViewMiddleware', # CSRF
 
     'mediagenerator.middleware.MediaMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    #'django.middleware.common.CommonMiddleware', # CACHE
+    'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'djangologging.middleware.LoggingMiddleware',

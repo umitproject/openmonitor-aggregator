@@ -71,9 +71,12 @@ class cant_repeat_form(object):
                     
                     response = view(request, form, valid, *args, **kwargs)
                     
-                    result = json.loads(response.content)
-                    if result.get('status', 'FAILED') == 'OK':
-                        cache.set(request_key, form, DOUBLE_REQUEST_PERIOD)
+                    if response.status_code == 403:
+                        response = HttpResponse(json.dumps({'status':'FAILED', 'msg':'Sorry. Failed to check if you\'re sending from site.'}))
+                    else:
+                        result = json.loads(response.content)
+                        if result.get('status', 'FAILED') == 'OK':
+                            cache.set(request_key, form, DOUBLE_REQUEST_PERIOD)
                     
                     return response
             

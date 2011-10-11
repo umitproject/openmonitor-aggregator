@@ -21,6 +21,11 @@
 ##
 
 from django.db import models
+
+from dbextra.fields import ListField
+from dbextra.decorators import cache_model_method
+from geoip.models import Location
+
 from messages.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
 def add_to_aggregation(agg_model, fields, suggestion):
@@ -46,8 +51,14 @@ def add_to_aggregation(agg_model, fields, suggestion):
 class WebsiteSuggestion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     website_url = models.URLField(max_length=300)
-    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    location_id = models.IntegerField(null=True)
     email = models.EmailField(blank=True)
+
+    @cache_model_method('website_suggestion_', 300, 'location_id')
+    @property
+    def location(self):
+        if self.location_id is not None:
+            return Location.objects.get(id=self.location_id)
 
     @staticmethod
     def create(websiteSuggestionMsg):
@@ -64,13 +75,13 @@ class WebsiteSuggestion(models.Model):
         
         if new:
             WebsiteUrlAggregation.add_suggestion(self)
-            WebsiteRegionAggregation.add_suggestion(self)
+            WebsiteLocationAggregation.add_suggestion(self)
             WebsiteAggregation.add_suggestion(self)
 
         return res
 
     def __unicode__(self):
-        return "%s - %s" % (self.website_url, self.region)
+        return "%s - %s" % (self.website_url, self.location)
 
 class WebsiteUrlAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -86,34 +97,48 @@ class WebsiteUrlAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.website_url)
 
-class WebsiteRegionAggregation(models.Model):
+class WebsiteLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    location_id = models.IntegerField(null=True)
     suggestions = models.TextField()
     count = models.IntegerField(default=1)
     
+    @cache_model_method('website_location_aggregation_', 300, 'location_id')
+    @property
+    def location(self):
+        if self.location_id is not None:
+            return Location.objects.get(id=self.location_id)
+    
     @staticmethod
     def add_suggestion(suggestion):
-        return add_to_aggregation(WebsiteRegionAggregation, ['region'], suggestion)
+        return add_to_aggregation(WebsiteLocationAggregation,
+                                  ['location_id'], suggestion)
     
     def __unicode__(self):
-        return "(%s) %s" % (self.count, self.region)
+        return "(%s) %s" % (self.count, self.location)
 
 class WebsiteAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    location_id = models.IntegerField(null=True)
     website_url = models.URLField(max_length=300)
     suggestions = models.TextField()
     count = models.IntegerField(default=1)
     
+    @cache_model_method('website_aggregation_', 300, 'location_id')
+    @property
+    def location(self):
+        if self.location_id is not None:
+            return Location.objects.get(id=self.location_id)
+    
     @staticmethod
     def add_suggestion(suggestion):
-        return add_to_aggregation(WebsiteAggregation, ['website_url', 'region'], suggestion)
+        return add_to_aggregation(WebsiteAggregation,
+                                  ['website_url', 'location_id'], suggestion)
     
     def __unicode__(self):
-        return "(%s) %s - %s" % (self.count, self.region, self.website_url)
+        return "(%s) %s - %s" % (self.count, self.location, self.website_url)
 
 
 class ServiceSuggestion(models.Model):
@@ -122,8 +147,15 @@ class ServiceSuggestion(models.Model):
     host_name = models.CharField(max_length=100)
     ip = models.CharField(max_length=60)
     port = models.IntegerField()
-    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    location_id = models.IntegerField(null=True)
     email = models.EmailField(blank=True)
+
+    @cache_model_method('service_suggestion_', 300, 'location_id')
+    @property
+    def location(self):
+        if self.location_id is not None:
+            return Location.objects.get(id=self.location_id)
+
 
     @staticmethod
     def create(serviceSuggestionMsg):
@@ -145,7 +177,7 @@ class ServiceSuggestion(models.Model):
             ServiceHostAggregation.add_suggestion(self)
             ServiceIPAggregation.add_suggestion(self)
             ServicePortAggregation.add_suggestion(self)
-            ServiceRegionAggregation.add_suggestion(self)
+            ServiceLocationAggregation.add_suggestion(self)
             ServiceAggregation.add_suggestion(self)
 
         return res
@@ -209,24 +241,31 @@ class ServicePortAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.port)
 
-class ServiceRegionAggregation(models.Model):
+class ServiceLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    location_id = models.IntegerField(null=True)
     suggestions = models.TextField()
     count = models.IntegerField(default=1)
     
+    @cache_model_method('service_location_aggregation_', 300, 'location_id')
+    @property
+    def location(self):
+        if self.location_id is not None:
+            return Location.objects.filter(id=self.location_id)
+    
     @staticmethod
     def add_suggestion(suggestion):
-        return add_to_aggregation(ServiceRegionAggregation, ['region'], suggestion)
+        return add_to_aggregation(ServiceLocationAggregation,
+                                  ['location_id'], suggestion)
     
     def __unicode__(self):
-        return "(%s) %s" % (self.count, self.region)
+        return "(%s) %s" % (self.count, self.location)
 
 class ServiceAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    region = models.ForeignKey('geodata.Region', blank=True, null=True)
+    location_id = models.IntegerField(null=True)
     port = models.IntegerField()
     ip = models.CharField(max_length=60)
     host_name = models.CharField(max_length=100)
@@ -234,10 +273,16 @@ class ServiceAggregation(models.Model):
     suggestions = models.TextField()
     count = models.IntegerField(default=1)
     
+    @cache_model_method('service_aggregation', 300, 'location_id')
+    @property
+    def location(self):
+        if self.location_id is not None:
+            return Location.objects.filter(id=self.location_id)
+    
     @staticmethod
     def add_suggestion(suggestion):
         return add_to_aggregation(ServiceAggregation,
-            ['region', 'port', 'ip', 'host_name', 'service_name'], suggestion)
+            ['location_id', 'port', 'ip', 'host_name', 'service_name'], suggestion)
     
     def __unicode__(self):
-        return "(%s) %s" % (self.count, self.region)
+        return "(%s) %s" % (self.count, self.location)

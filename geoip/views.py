@@ -20,6 +20,7 @@
 ##
 
 import datetime
+import logging
 
 from decimal import Decimal
 
@@ -34,18 +35,40 @@ def save_geoip(request):
     geoip = json.loads(request.POST['geoip'])
     
     for gip in geoip:
+        logging.critical(gip)
+        
+        gip['country_name'] = gip['country_name'] if gip['country_name'] is not None else ''
+        
+        location = Location.objects.filter(id=gip['loc_id'])
+        if not location:
+            location = Location()
+            location.id = gip['loc_id']
+            location.name = "%s, %s" % (gip['city'], gip['country_name']) if gip['city'] != '' else gip['country_name']
+            location.country = gip['country_name']
+            location.country_code = gip['country_code']
+            location.state_region = gip['state_region']
+            location.city = gip['city']
+            location.zipcode = gip['zipcode']
+            location.lat = Decimal(gip['latitude']) if gip['latitude'] != '' else Decimal("0.0")
+            location.lon = Decimal(gip['longitude']) if gip['longitude'] != '' else Decimal("0.0")
+            location.save()
+            
         ip = IPRange()
         ip.location_id = gip['loc_id']
         ip.start_number = gip['start_number']
         ip.end_number = gip['end_number']
         ip.name = "%s, %s" % (gip['city'], gip['country_name']) if gip['city'] != '' else gip['country_name']
-        ip.country = gip['country']
+        ip.country = gip['country_name']
         ip.country_code = gip['country_code']
         ip.state_region = gip['state_region']
         ip.city = gip['city']
         ip.zipcode = gip['zipcode']
-        ip.lat = gip['latitude']
-        ip.lon = gip['longitude']
+        ip.lat = Decimal(gip['latitude']) if gip['latitude'] != '' else Decimal("0.0")
+        ip.lon = Decimal(gip['longitude']) if gip['longitude'] != '' else Decimal("0.0")
+        
+        print ip.lat, ip.lon
+        logging.critical("%s, %s" % (ip.lat, ip.lon))
+        
         ip.save()
         
         ############################################################

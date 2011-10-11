@@ -25,6 +25,7 @@ import zipfile
 import csv
 import json
 import urllib
+import codecs
 
 from os.path import join, dirname, exists
 
@@ -63,16 +64,17 @@ def download():
         downloader(GEO_LITE, GEO_FILE_ZIP)
     
     zip = zipfile.ZipFile(join(CUR_DIR, GEO_FILE_ZIP))
-    zip.extract(GEO_EXTRACT_DIR)
+    zip.extract(GEO_BLOCK_CSV)
+    zip.extract(GEO_LOCATION_CSV)
 
 def lookup_location(id):
-    locations = csv.reader(open(GEO_LOCATION_CSV, 'rb'), delimiter=',')
+    locations = csv.reader(open(join(CUR_DIR, GEO_LOCATION_CSV), 'rUb'), delimiter=',')
     for row in locations:
         if id == row[0]:
             return row
 
 def lookup_country_name(country_code):
-    countries = csv.reader(open(COUNTRY_CODE_CSV, 'rb'), delimiter=';')
+    countries = csv.reader(open(join(CUR_DIR, COUNTRY_CODE_CSV), 'rUb'), delimiter=';')
     for row in countries:
         if country_code.upper() == row[1]:
             if row[1].upper() == "KR":
@@ -85,12 +87,17 @@ def lookup_country_name(country_code):
 def load_data():
     print "Loading data..."
     csv.field_size_limit(1000000000)
-    entries = csv.reader(open(GEO_BLOCK_CSV, 'rb'), delimiter='\t')
+    entries = csv.reader(open(join(CUR_DIR, GEO_BLOCK_CSV), 'rUb'))
     
     num = 0
     batch = []
     print "Sending data..."
     for row in entries:
+        if num <= 1:
+            # In order to skip the headers
+            num += 1
+            continue
+        
         print "Sending %s #%s..." % (row[2], num),
         if len(batch) >= BATCH_SIZE:
             print urllib.urlopen(SAVE_GEOIP_URL,
@@ -102,13 +109,13 @@ def load_data():
         batch.append(dict(loc_id=row[2],
                           start_number=row[0],
                           end_number=row[1],
-                          country=lookup_country_name(loc[3]),
-                          country_code=loc[3],
-                          state_region=loc[4],
-                          city=loc[5],
-                          zipcode=loc[6],
-                          latitude=loc[7],
-                          longitude=loc[8]))
+                          country_name=lookup_country_name(loc[3]),
+                          country_code=loc[1],
+                          state_region=loc[2],
+                          city=loc[3],
+                          zipcode=loc[4],
+                          latitude=loc[5],
+                          longitude=loc[6]))
         
         num += 1
     

@@ -56,6 +56,10 @@ class Location(models.Model):
         
         self.aggregations.append(aggregation.id)
         self.save()
+        
+    def __unicode__(self):
+        return "%s, %s" % (self.city, self.country_name) \
+                                if self.city != '' else self.country_code
 
     @staticmethod
     def retrieve_location(name):
@@ -162,6 +166,12 @@ class IPRange(models.Model):
     zipcode = models.CharField(max_length=6)
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
+    
+    def __unicode__(self):
+        return "%s - %s (%s)" % (convert_int_ip(self.start_number),
+                                     convert_int_ip(self.end_number),
+                                     "%s, %s" % (self.city, self.country_code) \
+                                        if self.city != '' else self.country_code)
     
     @staticmethod
     def ip_location(ip):

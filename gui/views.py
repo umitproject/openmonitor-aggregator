@@ -55,7 +55,7 @@ def map(request):
     events = Event.get_active_events(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:
-        events_dict.append(event.getDict())
+        events_dict.append(event.get_dict())
     initialEvents = json.dumps(events_dict)
     return render_to_response('notificationsystem/map.html', {'token': token, 'initial_events': initialEvents})
 

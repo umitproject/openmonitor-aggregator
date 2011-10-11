@@ -41,7 +41,7 @@ class EventType:
     Censor, Throttling, Offline = range(3)
 
     @staticmethod
-    def getEventType(id):
+    def get_event_type(id):
         if id==EventType.Censor:
             return "Censor"
         elif id==EventType.Throttling:
@@ -55,7 +55,7 @@ class TargetType:
     Website, Service = range(2)
 
     @staticmethod
-    def getTargetType(id):
+    def get_target_type(id):
         if id==TargetType.Website:
             return "Website"
         elif id==TargetType.Service:
@@ -121,11 +121,19 @@ class Event(models.Model):
           'firstdetection': self.first_detection_utc.ctime(),
           'lastdetection': self.last_detection_utc.ctime(),
           'active': self.active,
-          'location': {'region_id':self.region_id,
-                       'name': self.region_name,
-                       'country': self.region_country_code,
-                       'lat': self.lat,
-                       'lng': self.lon}
+          'locations': [dict((('location_id', locset[0]),
+                          ('location_name', locset[1]),
+                          ('location_country_name', locset[2]),
+                          ('location_country_code', locset[3]),
+                          ('lat', locset[4]),
+                          ('lon', locset[5]),
+                          ('isp', locset[6]))) for locset in zip(self.location_ids,
+                                                                 self.location_names,
+                                                                 self.location_country_names,
+                                                                 self.location_country_codes,
+                                                                 self.lats,
+                                                                 self.lons,
+                                                                 self.isps)]
         }
         
         return event

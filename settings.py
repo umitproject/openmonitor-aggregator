@@ -70,7 +70,7 @@ INSTALLED_APPS = (
     'suggestions',
     'events',
     'versions',
-    'ICMtests',
+    'icm_tests',
     'twitter',
     'notificationsystem',
     'registration',

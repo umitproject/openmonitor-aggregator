@@ -20,8 +20,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from ICMtests.models import WebsiteTest, ServiceTest
+from icm_tests.models import *
 from django.contrib import admin
 
 admin.site.register(WebsiteTest)
 admin.site.register(ServiceTest)
+admin.site.register(WebsiteTestUpdateAggregation)
+admin.site.register(ServiceTestUpdateAggregation)

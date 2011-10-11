@@ -33,7 +33,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from versions.models import DesktopAgentVersion, MobileAgentVersion
-from ICMtests.models import Test, WebsiteTest, ServiceTest
+from icm_tests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
 from agents.CryptoLib import *
@@ -518,10 +518,12 @@ class CheckNewTestHandler(BaseHandler):
 
             if isinstance(newTest, WebsiteTest):
                 test.testType = "WEB"
-                test.websiteURL = newTest.websiteURL
+                test.website.url = newTest.website_url
             elif isinstance(newTest, ServiceTest):
                 test.testType = "SERVICE"
-                test.serviceCode = newTest.serviceCode
+                test.service.name = newTest.service_name
+                test.service.port = newTest.port
+                test.service.ip = newTest.ip
 
         # send back response
         response_str = agent.encodeMessage(response.SerializeToString())
@@ -545,7 +547,7 @@ class WebsiteSuggestionHandler(BaseHandler):
         receivedWebsiteSuggestion.ParseFromString(msg)
 
         # create the suggestion
-        webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion)
+        webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion, agent.user)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -586,7 +588,7 @@ class ServiceSuggestionHandler(BaseHandler):
         receivedServiceSuggestion.ParseFromString(msg)
 
         # create the suggestion
-        serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion)
+        serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion, agent.user)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -815,30 +817,6 @@ class TestsHandler(BaseHandler):
 #        except Exception, inst:
 #            logging.error(inst)
 #
-#
-#
-#        # register agent
-#        try:
-#            c = Client()
-#            register = messages_pb2.RegisterAgent()
-#            register.versionNo = 1
-#            register.agentType = "DESKTOP"
-#            register.ip = "72.21.214.128"
-#
-#            register_str = base64.b64encode(register.SerializeToString())
-#            response = c.post('/api/registeragent/', {'msg': register_str})
-#
-#            logging.info("registration done")
-#
-#            #msg = base64.b64decode(response.content)
-#
-#            #registerres = messages_pb2.RegisterAgentResponse()
-#            #registerres.ParseFromString(msg)
-#
-#            #logging.info("Register Response " + registerres.)
-#
-#        except Exception, inst:
-#            logging.error(inst)
 #
 #
 #

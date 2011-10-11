@@ -100,6 +100,7 @@ def suggest_service(request, form, valid, *args, **kwargs):
         suggestion.host_name = host_name
         suggestion.port = port
         suggestion.location = location
+        suggestion.user = request.user
         suggestion.save()
         
         return HttpResponse(json.dumps(dict(status='OK',
@@ -125,6 +126,7 @@ def suggest_website(request, form, valid, *args, **kwargs):
         suggestion = WebsiteSuggestion()
         suggestion.website_url = website
         suggestion.location = location
+        suggestion.user = request.user
         suggestion.save()
         
         return HttpResponse(json.dumps(dict(status='OK',

@@ -53,6 +53,7 @@ class WebsiteSuggestion(models.Model):
     website_url = models.URLField(max_length=300)
     location_id = models.IntegerField(null=True)
     email = models.EmailField(blank=True)
+    user = models.ForeignKey('auth.user')
 
     @cache_model_method('website_suggestion_', 300, 'location_id')
     @property
@@ -61,10 +62,11 @@ class WebsiteSuggestion(models.Model):
             return Location.objects.get(id=self.location_id)
 
     @staticmethod
-    def create(websiteSuggestionMsg):
+    def create(websiteSuggestionMsg, user):
         suggestion = WebsiteSuggestion()
         suggestion.website_url = websiteSuggestionMsg.websiteURL
         suggestion.email = websiteSuggestionMsg.emailAddress
+        suggestion.user = user
         suggestion.save()
         return suggestion
     
@@ -149,6 +151,7 @@ class ServiceSuggestion(models.Model):
     port = models.IntegerField()
     location_id = models.IntegerField(null=True)
     email = models.EmailField(blank=True)
+    user = models.ForeignKey('auth.user')
 
     @cache_model_method('service_suggestion_', 300, 'location_id')
     @property
@@ -158,12 +161,13 @@ class ServiceSuggestion(models.Model):
 
 
     @staticmethod
-    def create(serviceSuggestionMsg):
+    def create(serviceSuggestionMsg, user):
         suggestion = ServiceSuggestion()
         suggestion.service_name = serviceSuggestionMsg.serviceName
         suggestion.host_name = serviceSuggestionMsg.hostName
         suggestion.ip = serviceSuggestionMsg.ip
         suggestion.email = serviceSuggestionMsg.emailAddress
+        suggestion.user = user
         suggestion.save()
         return suggestion
 

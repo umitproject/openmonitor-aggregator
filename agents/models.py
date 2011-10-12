@@ -150,15 +150,6 @@ class Agent(models.Model):
             agent.activated = True
 
             # get country by geoip
-
-
-
-
-
-
-
-
-
             iprange = IPRange.ip_location(ip)
             agent.country = iprange.country_code
             agent.latitude = iprange.lat

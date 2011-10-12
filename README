@@ -1,0 +1,9 @@
+
+For developers:
+
+How to deploy it in AppEngine?
+
+    1. Create an application in appspot.com
+    2. change application name in app.yaml
+    3. python manage.py deploy -e youremail@gmail.com
+

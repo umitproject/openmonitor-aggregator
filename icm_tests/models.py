@@ -29,6 +29,9 @@ class Test(models.Model):
     version = models.IntegerField(default=1)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
     
     def save(self, *args, **kwargs):
         new = self.id is None

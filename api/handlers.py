@@ -378,7 +378,7 @@ class SendWebsiteReportHandler(BaseHandler):
         receivedWebsiteReport.ParseFromString(msg)
 
         # add website report
-        webSiteReport = WebsiteReport.create(receivedWebsiteReport)
+        webSiteReport = WebsiteReport.create(receivedWebsiteReport, agent.user)
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
 
@@ -418,7 +418,7 @@ class SendServiceReportHandler(BaseHandler):
         receivedServiceReport.ParseFromString(msg)
 
         # add service report
-        serviceReport = ServiceReport.create(receivedServiceReport)
+        serviceReport = ServiceReport.create(receivedServiceReport, agent.user)
 
         # send report to decision system
         DecisionSystem.newReport(serviceReport)

@@ -62,10 +62,10 @@ class Test(models.Model):
         return None
 
     @staticmethod
-    def get_updated_tests():
+    def get_updated_tests(last_test_id=0):
         new_tests = []
-        website_tests = WebsiteTest.get_updated_tests()
-        service_tests = ServiceTest.get_updated_tests()
+        website_tests = WebsiteTest.get_updated_tests(last_test_id)
+        service_tests = ServiceTest.get_updated_tests(last_test_id)
         new_tests.extend(website_tests)
         new_tests.extend(service_tests)
         return new_tests
@@ -75,8 +75,8 @@ class WebsiteTest(Test):
     website_url = models.URLField()
 
     @staticmethod
-    def get_updated_tests():
-        return WebsiteTestUpdateAggregation.objects.filter(active=True)
+    def get_updated_tests(last_test_id=0):
+        return WebsiteTestUpdateAggregation.objects.filter(active=True, test_id__gt=last_test_id)
     
     def save(self, *args, **kwargs):
         super(WebsiteTest, self).save(*args, **kwargs)
@@ -133,8 +133,8 @@ class ServiceTest(Test):
     port  = models.PositiveIntegerField()
 
     @staticmethod
-    def get_updated_tests():
-        return ServiceTestUpdateAggregation.objects.filter(active=True)
+    def get_updated_tests(last_test_id=0):
+        return ServiceTestUpdateAggregation.objects.filter(active=True, test_id__gt=last_test_id)
     
     def save(self, *args, **kwargs):
         super(ServiceTest, self).save(*args, **kwargs)

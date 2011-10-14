@@ -36,7 +36,6 @@ PREFIX_KEY = "region_prefix_%s"
 CLOSEST_LOCATION_KEY='closest_location_%s_%s'
 CLOSEST_LOCATIONS_KEY='closes_locationss_%s_%s'
 
-LocationAggregation = None
 
 class Location(models.Model):
     ip_range_ids = ListField(py_type=int)

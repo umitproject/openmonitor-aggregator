@@ -46,7 +46,20 @@ class Test(models.Model):
 
     @staticmethod
     def get_last_test():
-        return Test.objects.order_by('created_at')[0:1].get()
+        website_test = WebsiteTest.objects.order_by('created_at')[0:1]
+        service_test = ServiceTest.objects.order_by('created_at')[0:1]
+
+        if len(website_test)==0:
+            return service_test.get()
+        elif len(service_test)==0:
+            return website_test.get()
+        elif len(website_test)>0 and len(service_test)>0:
+            if website_test.get().created_at > service_test.get().created_at:
+                return website_test.get()
+            else:
+                return service_test.get()
+
+        return None
 
     @staticmethod
     def get_updated_tests():
@@ -118,6 +131,10 @@ class ServiceTest(Test):
     service_name = models.TextField()
     ip = models.TextField()
     port  = models.PositiveIntegerField()
+
+    @staticmethod
+    def get_updated_tests():
+        return ServiceTestUpdateAggregation.objects.filter(active=True)
     
     def save(self, *args, **kwargs):
         super(ServiceTest, self).save(*args, **kwargs)

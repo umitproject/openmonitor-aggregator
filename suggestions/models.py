@@ -191,6 +191,7 @@ class ServiceSuggestion(models.Model):
         suggestion.service_name = serviceSuggestionMsg.serviceName
         suggestion.host_name = serviceSuggestionMsg.hostName
         suggestion.ip = serviceSuggestionMsg.ip
+        suggestion.port = serviceSuggestionMsg.port
         suggestion.user_id = user.id
         suggestion.save()
         return suggestion
@@ -212,7 +213,7 @@ class ServiceSuggestion(models.Model):
         return res
 
     def __unicode__(self):
-        return self.serviceName
+        return self.service_name
 
 class ServiceNameAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

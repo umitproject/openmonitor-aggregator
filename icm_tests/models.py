@@ -25,10 +25,13 @@ from django.db import models
 class Test(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    test_id = models.IntegerField()
+    test_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
     
     def save(self, *args, **kwargs):
         new = self.id is None
@@ -78,7 +81,7 @@ class WebsiteTestUpdateAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     test_id = models.IntegerField()
-    website_test_id = models.IntegerField()
+    website_test_id = models.IntegerField(null=True)
     version = models.IntegerField(default=0)
     description = models.TextField(blank=True)
     website_url = models.URLField()
@@ -112,14 +115,16 @@ class WebsiteTestUpdateAggregation(models.Model):
                                  "Active" if self.active else "Inactive")
 
 class ServiceTest(Test):
-    service_code = models.PositiveIntegerField()
+    service_name = models.TextField()
+    ip = models.TextField()
+    port  = models.PositiveIntegerField()
     
     def save(self, *args, **kwargs):
         super(ServiceTest, self).save(*args, **kwargs)
         ServiceTestUpdateAggregation.update_aggregation(self)
 
     def __unicode__(self):
-        return "%s (%s) - %s" % (self.description, self.service_code,
+        return "%s (%s) - %s" % (self.description, self.service_name,
                                  "Active" if self.active else "Inactive")
 
 class ServiceTestUpdateAggregation(models.Model):
@@ -130,10 +135,12 @@ class ServiceTestUpdateAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     test_id = models.IntegerField()
-    service_test_id = models.IntegerField()
+    service_test_id = models.IntegerField(null=True)
     version = models.IntegerField(default=0)
     description = models.TextField(blank=True)
-    service_code = models.PositiveIntegerField()
+    service_name = models.TextField()
+    ip = models.TextField()
+    port = models.PositiveIntegerField()
     active = models.BooleanField(default=False)
     
     @property
@@ -147,7 +154,9 @@ class ServiceTestUpdateAggregation(models.Model):
             agg.version = service_test.version
             agg.service_test_id = service_test.id
             agg.description = service_test.description
-            agg.service_code = service_test.service_code
+            agg.service_name = service_test.service_name
+            agg.ip = service_test.ip
+            agg.port = service_test.port
             agg.active = service_test.active
             created = True
         elif agg.active != service_test.active:
@@ -160,5 +169,5 @@ class ServiceTestUpdateAggregation(models.Model):
         return agg
 
     def __unicode__(self):
-        return "%s (%s) - %s" % (self.description, self.service_code,
+        return "%s (%s) - %s" % (self.description, self.service_name,
                                  "Active" if self.active else "Inactive")

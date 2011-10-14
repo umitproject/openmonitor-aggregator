@@ -196,6 +196,7 @@ class UserReport(models.Model):
     response_time = models.PositiveIntegerField(null=True)
     bandwidth = models.FloatField(null=True)
     nodes = ListField()
+    user_id = models.IntegerField()
     
     #############
     # Traceroute
@@ -229,6 +230,10 @@ class UserReport(models.Model):
     def location(self):
         """The location of the reporting node"""
         return Location.objects.get(id=self.location_id)
+
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
     
     @cache_model_method('user_report_', 300, 'id')
     def get_blocked_node(self):
@@ -259,7 +264,7 @@ class WebsiteReport(UserReport):
         return WebsiteReportMedia.objects.filter(id__in=self.media_ids)
 
     @staticmethod
-    def create(websiteReportMsg):
+    def create(websiteReportMsg, user):
         report = WebsiteReport()
 
         website_report = websiteReportMsg.report
@@ -294,6 +299,8 @@ class WebsiteReport(UserReport):
                 ##################################################################
                 # TODO: Need to adapt the html code to link to these media files #
                 ##################################################################
+
+        report.user_id = user.id
 
         # read ICMReport
         report.report_id = icm_report.reportID
@@ -345,7 +352,7 @@ class ServiceReport(UserReport):
     status_code = models.PositiveSmallIntegerField()
     
     @staticmethod
-    def create(serviceReportMsg):
+    def create(serviceReportMsg, user):
         report = ServiceReport()
 
         service_report = serviceReportMsg.report
@@ -359,6 +366,8 @@ class ServiceReport(UserReport):
             report.response_time = service_report_detail.responseTime
         if service_report_detail.HasField('bandwidth'):
             report.bandwidth = service_report_detail.bandwidth
+
+        report.user_id = user.id
 
         # read ICMReport
         try:

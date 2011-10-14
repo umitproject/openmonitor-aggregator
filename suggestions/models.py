@@ -30,11 +30,9 @@ from messages.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
 def add_to_aggregation(agg_model, fields, suggestion):
     agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))
-    suggestions = []
     if agg:
         agg = agg[0]
-        suggestions = agg.suggestions.split(',')
-        if str(suggestion.id) in suggestions:
+        if suggestion.id in agg.suggestions:
             return agg
         agg.count += 1
     else:
@@ -42,8 +40,7 @@ def add_to_aggregation(agg_model, fields, suggestion):
         for f in fields:
             setattr(agg, f, getattr(suggestion, f))
     
-    suggestions.append(str(suggestion.id))
-    agg.suggestions = ','.join(suggestions)
+    agg.suggestions.append(suggestion.id)
     agg.save()
     
     return agg
@@ -52,7 +49,7 @@ class WebsiteSuggestion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     website_url = models.URLField(max_length=300)
     location_id = models.IntegerField(null=True)
-    email = models.EmailField(blank=True)
+    user_id = models.IntegerField()
 
     @cache_model_method('website_suggestion_', 300, 'location_id')
     @property
@@ -60,11 +57,15 @@ class WebsiteSuggestion(models.Model):
         if self.location_id is not None:
             return Location.objects.get(id=self.location_id)
 
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
+
     @staticmethod
-    def create(websiteSuggestionMsg):
+    def create(websiteSuggestionMsg, user):
         suggestion = WebsiteSuggestion()
         suggestion.website_url = websiteSuggestionMsg.websiteURL
-        suggestion.email = websiteSuggestionMsg.emailAddress
+        suggestion.user_id = user.id
         suggestion.save()
         return suggestion
     
@@ -77,17 +78,36 @@ class WebsiteSuggestion(models.Model):
             WebsiteUrlAggregation.add_suggestion(self)
             WebsiteLocationAggregation.add_suggestion(self)
             WebsiteAggregation.add_suggestion(self)
+            WebsiteUserAggregation.add_suggestion(self)
 
         return res
 
     def __unicode__(self):
         return "%s - %s" % (self.website_url, self.location)
 
+class WebsiteUserAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user_id = models.IntegerField()
+    suggestions = ListField(py_type=int)
+    count = models.IntegerField(default=1)
+
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
+
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(WebsiteUserAggregation, ['user_id'], suggestion)
+
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.user_id)
+
 class WebsiteUrlAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     website_url = models.URLField(max_length=300)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -101,7 +121,7 @@ class WebsiteLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @cache_model_method('website_location_aggregation_', 300, 'location_id')
@@ -123,7 +143,8 @@ class WebsiteAggregation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
     website_url = models.URLField(max_length=300)
-    suggestions = models.TextField()
+    user_id = models.IntegerField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @cache_model_method('website_aggregation_', 300, 'location_id')
@@ -131,14 +152,18 @@ class WebsiteAggregation(models.Model):
     def location(self):
         if self.location_id is not None:
             return Location.objects.get(id=self.location_id)
+
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
     
     @staticmethod
     def add_suggestion(suggestion):
         return add_to_aggregation(WebsiteAggregation,
-                                  ['website_url', 'location_id'], suggestion)
+                                  ['website_url', 'location_id', 'user_id'], suggestion)
     
     def __unicode__(self):
-        return "(%s) %s - %s" % (self.count, self.location, self.website_url)
+        return "(%s) %s - %s" % (self.count, self.location, self.website_url, self.user_id)
 
 
 class ServiceSuggestion(models.Model):
@@ -148,7 +173,7 @@ class ServiceSuggestion(models.Model):
     ip = models.CharField(max_length=60)
     port = models.IntegerField()
     location_id = models.IntegerField(null=True)
-    email = models.EmailField(blank=True)
+    user_id = models.IntegerField()
 
     @cache_model_method('service_suggestion_', 300, 'location_id')
     @property
@@ -156,14 +181,17 @@ class ServiceSuggestion(models.Model):
         if self.location_id is not None:
             return Location.objects.get(id=self.location_id)
 
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
 
     @staticmethod
-    def create(serviceSuggestionMsg):
+    def create(serviceSuggestionMsg, user):
         suggestion = ServiceSuggestion()
         suggestion.service_name = serviceSuggestionMsg.serviceName
         suggestion.host_name = serviceSuggestionMsg.hostName
         suggestion.ip = serviceSuggestionMsg.ip
-        suggestion.email = serviceSuggestionMsg.emailAddress
+        suggestion.user_id = user.id
         suggestion.save()
         return suggestion
 
@@ -178,6 +206,7 @@ class ServiceSuggestion(models.Model):
             ServiceIPAggregation.add_suggestion(self)
             ServicePortAggregation.add_suggestion(self)
             ServiceLocationAggregation.add_suggestion(self)
+            ServiceUserAggregation.add_suggestion(self)
             ServiceAggregation.add_suggestion(self)
 
         return res
@@ -189,7 +218,7 @@ class ServiceNameAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     service_name = models.CharField(max_length=100)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -203,7 +232,7 @@ class ServiceHostAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     host_name = models.CharField(max_length=100)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -217,7 +246,7 @@ class ServiceIPAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     ip = models.CharField(max_length=60)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -231,7 +260,7 @@ class ServicePortAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     port = models.IntegerField()
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -245,7 +274,7 @@ class ServiceLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @cache_model_method('service_location_aggregation_', 300, 'location_id')
@@ -262,6 +291,24 @@ class ServiceLocationAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.location)
 
+class ServiceUserAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user_id = models.IntegerField()
+    suggestions = ListField(py_type=int)
+    count = models.IntegerField(default=1)
+
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
+
+    @staticmethod
+    def add_suggestion(suggestion):
+        return add_to_aggregation(ServiceUserAggregation, ['user_id'], suggestion)
+
+    def __unicode__(self):
+        return "(%s) %s" % (self.count, self.user_id)
+
 class ServiceAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -269,8 +316,9 @@ class ServiceAggregation(models.Model):
     port = models.IntegerField()
     ip = models.CharField(max_length=60)
     host_name = models.CharField(max_length=100)
+    user_id = models.IntegerField()
     service_name = models.CharField(max_length=100)
-    suggestions = models.TextField()
+    suggestions = ListField(py_type=int)
     count = models.IntegerField(default=1)
     
     @cache_model_method('service_aggregation', 300, 'location_id')
@@ -278,11 +326,15 @@ class ServiceAggregation(models.Model):
     def location(self):
         if self.location_id is not None:
             return Location.objects.filter(id=self.location_id)
+
+    @property
+    def user(self):
+        return models.User.objects.get(id=self.user_id)
     
     @staticmethod
     def add_suggestion(suggestion):
         return add_to_aggregation(ServiceAggregation,
-            ['location_id', 'port', 'ip', 'host_name', 'service_name'], suggestion)
+            ['location_id', 'port', 'ip', 'host_name', 'service_name', 'user_id'], suggestion)
     
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.location)

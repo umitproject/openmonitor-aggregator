@@ -82,7 +82,11 @@ class RegisterAgentHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         m = hashlib.sha1()
         m.update(agent.publicKeyMod)
@@ -92,7 +96,7 @@ class RegisterAgentHandler(BaseHandler):
         try:
             response = messages_pb2.RegisterAgentResponse()
             response.header.currentVersionNo = softwareVersion.version
-            response.header.currentTestVersionNo = testVersion.testID
+            response.header.currentTestVersionNo = testVersion
             response.agentID = agent.agentID
             response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash, aggregatorKey)
         except Exception,e:
@@ -171,12 +175,16 @@ class Login2Handler(BaseHandler):
                 softwareVersion = MobileAgentVersion.getLastVersionNo()
 
             # get last test id
-            testVersion = Test.getLastTestNo()
+            last_test = Test.get_last_test()
+            if last_test!=None:
+                testVersion = last_test.test_id
+            else:
+                testVersion = 0
 
             # create the response
             response = messages_pb2.LoginResponse()
             response.header.currentVersionNo = softwareVersion.version
-            response.header.currentTestVersionNo = testVersion.testID
+            response.header.currentTestVersionNo = testVersion
 
             # send back response
             response_str = base64.b64encode(response.SerializeToString())
@@ -224,7 +232,11 @@ class GetPeerListHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         if receivedMsg.HasField('count'):
             totalPeers = receivedMsg.count
@@ -236,7 +248,7 @@ class GetPeerListHandler(BaseHandler):
         # create the response
         response = messages_pb2.GetPeerListResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         for peer in peers:
             knownPeer = response.knownPeers.add()
@@ -285,7 +297,11 @@ class GetSuperPeerListHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         if receivedMsg.HasField('count'):
             totalPeers = receivedMsg.count
@@ -297,7 +313,7 @@ class GetSuperPeerListHandler(BaseHandler):
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
@@ -344,12 +360,16 @@ class GetEventsHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.GetEventsResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
         event = response.events.add()
         event.testType = "WEB"
         event.eventType = "CENSOR"
@@ -389,12 +409,16 @@ class SendWebsiteReportHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = agent.encodeMessage(response.SerializeToString())
@@ -430,12 +454,16 @@ class SendServiceReportHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.SendReportResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = agent.encodeMessage(response.SerializeToString())
@@ -460,12 +488,16 @@ class CheckNewVersionHandler(BaseHandler):
         # TODO: throw exception if not desktop neither mobile
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.NewVersionResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
         response.versionNo = softwareVersion.version
 
         if response.versionNo > receivedMsg.agentVersionNo:
@@ -502,13 +534,17 @@ class CheckNewTestHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.NewTestsResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
-        response.testVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
+        response.testVersionNo = testVersion
 
         for newTest in newTests:
             test = response.tests.add()
@@ -546,6 +582,8 @@ class WebsiteSuggestionHandler(BaseHandler):
         receivedWebsiteSuggestion = messages_pb2.WebsiteSuggestion()
         receivedWebsiteSuggestion.ParseFromString(msg)
 
+        logging.info("Aggregator: registering website suggestion %s from agent %s" % (receivedWebsiteSuggestion.websiteURL, agentID))
+
         # create the suggestion
         webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion, agent.user)
 
@@ -556,15 +594,16 @@ class WebsiteSuggestionHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        try:
-            testVersion = Test.getLastTestNo()
-        except Exception, e:
-            logging.error(e)
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = agent.encodeMessage(response.SerializeToString())
@@ -587,6 +626,10 @@ class ServiceSuggestionHandler(BaseHandler):
         receivedServiceSuggestion = messages_pb2.ServiceSuggestion()
         receivedServiceSuggestion.ParseFromString(msg)
 
+        logging.info("Aggregator: registering service suggestion %s on %s(%s):%s from agent %s" %
+                     (receivedServiceSuggestion.serviceName, receivedServiceSuggestion.hostName,
+                         receivedServiceSuggestion.ip, receivedServiceSuggestion.port, agentID))
+
         # create the suggestion
         serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion, agent.user)
 
@@ -597,12 +640,16 @@ class ServiceSuggestionHandler(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.TestSuggestionResponse()
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = agent.encodeMessage(response.SerializeToString())
@@ -618,13 +665,7 @@ class CheckAggregator(BaseHandler):
         msg = base64.b64decode(request.POST['msg'])
 
         checkAggregator = messages_pb2.CheckAggregator()
-        try:
-            checkAggregator.ParseFromString(msg)
-        except Exception, err:
-            logging.critical(str(err))
-            raise err
-
-        logging.critical(">>> PARSED! %s" % checkAggregator)
+        checkAggregator.ParseFromString(msg)
 
         # get software version information
         if checkAggregator.agentType=='DESKTOP':
@@ -633,13 +674,17 @@ class CheckAggregator(BaseHandler):
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        testVersion = Test.getLastTestNo()
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # create the response
         response = messages_pb2.CheckAggregatorResponse()
         response.status = "ON"
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion.testID
+        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = base64.b64encode(response.SerializeToString())
@@ -650,75 +695,6 @@ class TestsHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     def read(self, request):
-#        try:
-#            c = Client()
-#            suggestion = messages_pb2.WebsiteSuggestion()
-#            suggestion.header.token = "token"
-#            suggestion.header.agentID = 5
-#            suggestion.websiteURL = "www.facebook.com"
-#            suggestion.emailAddress = "diogopinheiro@ua.pt"
-#            sug_str = base64.b64encode(suggestion.SerializeToString())
-#            response = c.post('/api/websitesuggestion/', {'msg': sug_str})
-#
-#
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#
-#
-#        try:
-#            suggestion = messages_pb2.ServiceSuggestion()
-#            suggestion.header.token = "token"
-#            suggestion.header.agentID = 5
-#            suggestion.serviceName = "torrent"
-#            suggestion.emailAddress = "zeux@hotmail.com"
-#            suggestion.ip = "80.92.156.29"
-#            suggestion.hostName = "piratebay"
-#            sug_str = base64.b64encode(suggestion.SerializeToString())
-#            response = c.post('/api/servicesuggestion/', {'msg': sug_str})
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#
-#
-#        try:
-#            c = Client()
-#            newtests = messages_pb2.NewTests()
-#            newtests.header.token = "token"
-#            newtests.header.agentID = 5
-#            newtests.currentTestVersionNo = 0
-#            newt_str = base64.b64encode(newtests.SerializeToString())
-#            response = c.post('/api/checktests/', {'msg': newt_str})
-#
-#            msg = base64.b64decode(response.content)
-#            tests = messages_pb2.NewTestsResponse()
-#            tests.ParseFromString(msg)
-#
-#            logging.info(tests)
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#
-#
-#        try:
-#            c = Client()
-#            newversion = messages_pb2.NewVersion()
-#            newversion.header.token = "token"
-#            newversion.header.agentID = 5
-#            newversion.agentVersionNo = 1
-#            newversion.agentType = "MOBILE"
-#            newt_str = base64.b64encode(newversion.SerializeToString())
-#            response = c.post('http://icm-dev.appspot.com/api/checkversion/', {'msg': newt_str})
-#
-#            msg = base64.b64decode(response.content)
-#            nv = messages_pb2.NewVersionResponse()
-#            nv.ParseFromString(msg)
-#
-#            logging.info(nv)
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#
 #
 #        # create website report
 #        try:
@@ -794,28 +770,7 @@ class TestsHandler(BaseHandler):
 #            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
 #        except Exception, inst:
 #            logging.error(inst)
-#
-#
-#
-#        # check aggregator
-#        try:
-#            c = Client()
-#            wreport = messages_pb2.CheckAggregator()
-#            wreport.header.token = "token"
-#            wreport.header.agentID = 3
-#
-#            wreport_str = base64.b64encode(wreport.SerializeToString())
-#            response = c.post('/api/checkaggregator/', {'msg': wreport_str})
-#
-#            msg = base64.b64decode(response.content)
-#
-#            checkAggregator = messages_pb2.CheckAggregatorResponse()
-#            checkAggregator.ParseFromString(msg)
-#
-#            logging.info("Aggregator is " + checkAggregator.status)
-#
-#        except Exception, inst:
-#            logging.error(inst)
+
 #
 #
 #

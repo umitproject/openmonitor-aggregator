@@ -28,11 +28,14 @@ from django.core.cache import cache
 
 from geoip.models import Location
 from dbextra.fields import ListField
+import logging
 
+SINGLE_EVENT_CACHE_TIME = 30
 EVENT_CACHE_TIME = 30 # Leave it cached for half a minute
 LOCATION_CACHE_TIME = 60*10 # Cache it for 10 minutes
 EVENT_LIST_CACHE_KEY = "events_list"
 LOCATION_CACHE_KEY = "location_%s"
+EVENT_CACHE_KEY = 'event_%s'
 
 eventType = ["Censor", "Throttling", "Offline"]
 targetType = ["Website", "Service"]
@@ -63,13 +66,14 @@ class TargetType:
         else:
             return "Unknown"
 
+
 class Event(models.Model):
     target_type = models.PositiveSmallIntegerField()
     event_type = models.PositiveSmallIntegerField()
     first_detection_utc = models.DateTimeField()
     last_detection_utc = models.DateTimeField()
     target = models.TextField()
-    active = models.BooleanField() # indicate if the event is still happening
+    active = models.BooleanField(default=True) # indicate if the event is still happening
     
     ############################################################################
     # We need to keep the basic region data here to make it faster to retrieve.
@@ -105,6 +109,15 @@ class Event(models.Model):
             cache.set(EVENT_LIST_CACHE_KEY, events, EVENT_CACHE_TIME)
         
         return events
+
+    @staticmethod
+    def get_active_events_region(regions, limit=20):
+        result = []
+        for country_code in regions:
+            locationagg = EventLocationAggregation.objects.filter(location_country_code__exact=country_code).order_by("last_detection_utc")[:limit]
+            if len(locationagg)>0:
+                result.extend(locationagg[0].get_events())
+        return result
     
     def get_target_type(self):
         return TargetType.get_target_type(self.target_type)
@@ -153,3 +166,55 @@ class Event(models.Model):
         event['blockingNodes'] = blockedNodes
         return event
 
+    def save(self, *args, **kwargs):
+        new = self.id is None
+
+        res = super(Event, self).save(*args, **kwargs)
+
+        if new:
+            EventLocationAggregation.add_event(self)
+
+        return res
+
+    def __unicode__(self):
+        return "Event in %s" % self.location_country_codes
+
+
+class EventLocationAggregation(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_detection_utc = models.DateTimeField(auto_now=True)
+    location_country_code = models.CharField(max_length=2)
+    events = ListField(py_type=int)
+    count = models.IntegerField(default=1)
+
+    @staticmethod
+    def add_event(event):
+        for country_code in event.location_country_codes:
+            agg = EventLocationAggregation.objects.filter(location_country_code__exact=country_code)
+            add = False
+            if agg:
+                agg = agg[0]
+                if event.id not in agg.events:
+                    agg.count += 1
+                    add = True
+            else:
+                agg = EventLocationAggregation()
+                agg.location_country_code = country_code
+                add = True
+
+            if add:
+                agg.events.append(event.id)
+                agg.save()
+
+    def get_events(self):
+        events = []
+        for event_id in self.events:
+            event = cache.get(EVENT_CACHE_KEY % event_id, False)
+            if not event:
+                event = Event.objects.get(id=event_id)
+                cache.set(EVENT_CACHE_KEY % event_id, SINGLE_EVENT_CACHE_TIME)
+            events.append(event)
+        return events
+
+    def __unicode__(self):
+        return "Event in %s - %s" % (self.location_country_code, self.count)

@@ -37,6 +37,43 @@ CLOSEST_LOCATION_KEY='closest_location_%s_%s'
 CLOSEST_LOCATIONS_KEY='closes_locationss_%s_%s'
 
 
+class LocationAggregation(models.Model):
+    lat = models.DecimalField(decimal_places=20, max_digits=23) # Base Latitude
+    lon = models.DecimalField(decimal_places=20, max_digits=23) # Base Longitude
+    locations = ListField(py_type=int)
+
+    def add(self, location):
+        if location.id in self.locations:
+            return
+        
+        self.locations.append(location.id)
+        self.save()
+
+    @staticmethod
+    def add_location(location):
+        """Is going to add the location to the aggregation ranges so we can link
+        locations that are close to each other.
+        """
+        lat = int(location.lat)
+        lon = int(location.lon)
+        
+        aggs = LocationAggregation.objects.filter(lat=lat, lon=lon)
+        
+        if not aggs:
+            # There are no aggregations for such region. Let's create them now then
+            agg = LocationAggregation()
+            agg.lat = int(location.lat)
+            agg.lon = int(location.lon)
+            agg.save()
+                
+            agg.add(location)
+            location.add_aggregation(agg)
+        else:
+            agg = agg[0]
+            agg.add(location)
+            location.add_aggregation(agg)
+
+
 class Location(models.Model):
     ip_range_ids = ListField(py_type=int)
     name = models.CharField(max_length=300)
@@ -222,43 +259,6 @@ class IPRange(models.Model):
                     start_ip=convert_int_ip(self.start_number),
                     end_ip=convert_int_ip(self.end_number)
                     )
-
-
-class LocationAggregation(models.Model):
-    lat = models.DecimalField(decimal_places=20, max_digits=23) # Base Latitude
-    lon = models.DecimalField(decimal_places=20, max_digits=23) # Base Longitude
-    locations = ListField(py_type=int)
-
-    def add(self, location):
-        if location.id in self.locations:
-            return
-        
-        self.locations.append(location.id)
-        self.save()
-
-    @staticmethod
-    def add_location(location):
-        """Is going to add the location to the aggregation ranges so we can link
-        locations that are close to each other.
-        """
-        lat = int(location.lat)
-        lon = int(location.lon)
-        
-        aggs = LocationAggregation.objects.filter(lat=lat, lon=lon)
-        
-        if not aggs:
-            # There are no aggregations for such region. Let's create them now then
-            agg = LocationAggregation()
-            agg.lat = int(location.lat)
-            agg.lon = int(location.lon)
-            agg.save()
-                
-            agg.add(location)
-            location.add_aggregation(agg)
-        else:
-            agg = agg[0]
-            agg.add(location)
-            location.add_aggregation(agg)
 
 
 class LocationNamesAggregation(models.Model):

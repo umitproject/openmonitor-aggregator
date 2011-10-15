@@ -53,20 +53,27 @@ class RegisterAgentHandler(BaseHandler):
     def create(self, request):
         logging.info("registerAgent received")
 
+        logging.warning("Creating the crypto instance")
         crypto = CryptoLib()
         aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
+        logging.warning("Generated the aggregator key")
+
 
         AESKey = crypto.decodeRSAPrivateKey(request.POST['key'], aggregatorKey)
         msg = crypto.decodeAES(request.POST['msg'], AESKey)
+        logging.warning("Decoded AES from agent")
 
         receivedAgentRegister = messages_pb2.RegisterAgent()
         receivedAgentRegister.ParseFromString(msg)
+        logging.warning("Parsed registeragent message")
 
         # get agent ip
         if receivedAgentRegister.HasField('ip'):
             agentIp = receivedAgentRegister.ip
         else:
             agentIp = request.META['REMOTE_ADDR']
+        
+        logging.warning("Agent IP: %s" % agentIp)
 
         # create agent
         publicKeyMod = receivedAgentRegister.agentPublicKey.mod
@@ -74,12 +81,15 @@ class RegisterAgentHandler(BaseHandler):
         username = receivedAgentRegister.credentials.username
         password = receivedAgentRegister.credentials.password
         agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp, publicKeyMod, publicKeyExp, username, password, AESKey)
+        logging.warning("Created agent instance")
 
         # get software version information
         if receivedAgentRegister.agentType=="DESKTOP":
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         elif receivedAgentRegister.agentType=="MOBILE":
             softwareVersion = MobileAgentVersion.getLastVersionNo()
+        
+        logging.warning("Software version: %s" % softwareVersion)
 
         # get last test id
         last_test = Test.get_last_test()
@@ -87,10 +97,14 @@ class RegisterAgentHandler(BaseHandler):
             testVersion = last_test.test_id
         else:
             testVersion = 0
+        
+        logging.warning("Test version: %s" % testVersion)
 
         m = hashlib.sha1()
         m.update(agent.publicKeyMod)
         publicKeyHash = m.digest()
+        
+        logging.warning("Public key hash: %s" % publicKeyHash)
 
         # create the response
         try:

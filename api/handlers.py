@@ -184,8 +184,6 @@ class Login2Handler(BaseHandler):
         agent = Agent.finishLogin(loginAgent.processID, loginAgent.cipheredChallenge)
 
         if agent is not None:
-            logging.info("PASSED TEST")
-
             # get software version information
             if agent.agentType=='DESKTOP':
                 softwareVersion = DesktopAgentVersion.getLastVersionNo()
@@ -261,7 +259,7 @@ class GetPeerListHandler(BaseHandler):
         else:
             totalPeers = 100
 
-        peers = Agent.getPeers(agent.agentID, agent.getCurrentLocation(), totalPeers)
+        peers = agent.getPeers(totalPeers)
 
         # create the response
         response = messages_pb2.GetPeerListResponse()
@@ -326,7 +324,7 @@ class GetSuperPeerListHandler(BaseHandler):
         else:
             totalPeers = 100
 
-        superpeers = Agent.getSuperPeers(agent.agentID, agent.getCurrentLocation(), totalPeers)
+        superpeers = agent.getSuperPeers(totalPeers)
 
         # create the response
         response = messages_pb2.GetSuperPeerListResponse()
@@ -713,137 +711,6 @@ class TestsHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     def read(self, request):
-#
-#        # create website report
-#        try:
-#            c = Client()
-#            wreport = messages_pb2.SendWebsiteReport()
-#            wreport.header.token = "token"
-#            wreport.header.agentID = 3
-#            wreport.report.header.reportID = "45457"
-#            wreport.report.header.agentID = 5
-#            wreport.report.header.testID = 100
-#            wreport.report.header.timeZone = -5
-#            wreport.report.header.timeUTC = 1310396214
-#            wreport.report.report.websiteURL = "www.google.com"
-#            wreport.report.report.statusCode = 200
-#            wreport.report.report.responseTime = 129
-#            wreport.report.report.bandwidth = 2300
-#
-#            wreport.report.header.passedNode.append("node1")
-#            wreport.report.header.passedNode.append("node2")
-#
-#            wreport.report.header.traceroute.target = "78.43.34.120"
-#            wreport.report.header.traceroute.hops = 2
-#            wreport.report.header.traceroute.packetSize = 200
-#
-#            trace = wreport.report.header.traceroute.traces.add()
-#            trace.ip = "214.23.54.34"
-#            trace.hop = 1
-#            trace.packetsTiming.append(120)
-#            trace.packetsTiming.append(129)
-#
-#            trace = wreport.report.header.traceroute.traces.add()
-#            trace.ip = "24.63.54.128"
-#            trace.hop = 2
-#            trace.packetsTiming.append(120)
-#
-#            wreport_str = base64.b64encode(wreport.SerializeToString())
-#            response = c.post('/api/sendwebsitereport/', {'msg': wreport_str})
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#
-#
-#        # create service report
-#        try:
-#            c = Client()
-#            sreport = messages_pb2.SendServiceReport()
-#            sreport.header.token = "token"
-#            sreport.header.agentID = 3
-#            sreport.report.header.reportID = "newrep45457"
-#            sreport.report.header.agentID = 5
-#            sreport.report.header.testID = 100
-#            sreport.report.header.timeZone = -5
-#            sreport.report.header.timeUTC = 1310396214
-#            sreport.report.report.serviceName = "p2p"
-#            sreport.report.report.statusCode = 100
-#            sreport.report.report.responseTime = 53
-#            sreport.report.report.bandwidth = 9456
-#
-#            sreport.report.header.passedNode.append("node1")
-#            sreport.report.header.passedNode.append("node2")
-#
-#            sreport.report.header.traceroute.target = "78.43.34.120"
-#            sreport.report.header.traceroute.hops = 2
-#            sreport.report.header.traceroute.packetSize = 200
-#
-#            trace = sreport.report.header.traceroute.traces.add()
-#            trace.ip = "214.23.54.34"
-#            trace.hop = 1
-#            trace.packetsTiming.append(120)
-#            trace.packetsTiming.append(129)
-#
-#            sreport_str = base64.b64encode(sreport.SerializeToString())
-#            response = c.post('/api/sendservicereport/', {'msg': sreport_str})
-#        except Exception, inst:
-#            logging.error(inst)
-
-#
-#
-#
-#
-#        # get peers
-#        try:
-#            c = Client()
-#            getpeer = messages_pb2.GetPeerList()
-#            getpeer.header.token = "token"
-#            getpeer.header.agentID = 1309
-#
-#            getpeer_str = base64.b64encode(getpeer.SerializeToString())
-#            response = c.post('/api/getpeerlist/', {'msg': getpeer_str})
-#
-#            msg = base64.b64decode(response.content)
-#
-#            resp = messages_pb2.GetPeerListResponse()
-#            resp.ParseFromString(msg)
-#
-#            for peer in resp.knownPeers:
-#                msg = "Peer %s - %s:%s - %s (%s,%s)" % (peer.agentID, peer.agentIP, peer.agentPort, peer.peerStatus, peer.publicKey.mod, peer.publicKey.exp)
-#                logging.info(msg)
-#
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#
-#
-#        try:
-#            c = Client()
-#            getpeer = messages_pb2.GetSuperPeerList()
-#            getpeer.header.token = "token"
-#            getpeer.header.agentID = 103
-#            getpeer.count = 10
-#
-#            getpeer_str = base64.b64encode(getpeer.SerializeToString())
-#            logging.debug(getpeer_str)
-#            response = c.post('/api/getsuperpeerlist/', {'msg': getpeer_str})
-#
-#            msg = base64.b64decode(response.content)
-#
-#            resp = messages_pb2.GetSuperPeerListResponse()
-#            resp.ParseFromString(msg)
-#
-#            for peer in resp.knownPeers:
-#                logging.info("New peer" + str(peer.agentID))
-#
-#        except Exception, inst:
-#            logging.error(inst)
-#
-#        from geoip import core
-#        service = core.GeoIp()
-#
-#        return HttpResponse(str(service.getIPLocation('209.85.146.106')))
-
         try:
             c = Client()
             crypto = CryptoLib()
@@ -933,8 +800,6 @@ class TestsHandler(BaseHandler):
             response_str = c.post('/api/loginagent2/', {'msg': loginMsg_str})
 
             logging.info("Login response received")
-
-
 
 
         except Exception,e:

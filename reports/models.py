@@ -35,7 +35,7 @@ from geoip.models import Location, IPRange
 
 REPORT_PERIOD = datetime.timedelta(days=1)
 
-def Trace(object):
+class Trace(object):
     def __init__(self, hop, ip, timings, location_id=None, location_name=None,
                  country_name=None, country_code=None, state_region=None,
                  city=None, zipcode=None, lat=None, lon=None):
@@ -56,8 +56,8 @@ def Trace(object):
             self.lon = decimal.Decimal(lon)
         else:
             iprange = IPRange.ip_location(ip)
-            self.location_id = iprange.location_ip
-            self.location_name = iprange.location_name
+            self.location_id = iprange.location_id
+            self.location_name = iprange.name
             self.country_name = iprange.country_name
             self.country_code = iprange.country_code
             self.state_region = iprange.state_region
@@ -315,20 +315,17 @@ class WebsiteReport(UserReport):
 
         # read ICMReport TraceRoute
         if icm_report.HasField('traceroute'):
-            try:
-                report.target = icm_report.traceroute.target
-                report.hops = icm_report.traceroute.hops
-                report.packet_size = icm_report.traceroute.packetSize
+            report.target = icm_report.traceroute.target
+            report.hops = icm_report.traceroute.hops
+            report.packet_size = icm_report.traceroute.packetSize
 
-                # read ICMReport TraceRoute Traces
-                for rcvTrace in icm_report.traceroute.traces:
-                    report.trace.append(
-                            Trace(hop=rcvTrace.hop,
-                                  ip=rcvTrace.ip,
-                                  timings=[t for t in rcvTrace.packetsTiming])
-                    )
-            except Exception,ex:
-                logging.error(ex)
+            # read ICMReport TraceRoute Traces
+            for rcvTrace in icm_report.traceroute.traces:
+                report.trace.append(
+                        Trace(hop=rcvTrace.hop,
+                              ip=rcvTrace.ip,
+                              timings=[t for t in rcvTrace.packetsTiming])
+                )
 
         report.save()
         

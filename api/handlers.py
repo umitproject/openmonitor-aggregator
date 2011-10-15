@@ -370,7 +370,9 @@ class GetEventsHandler(BaseHandler):
         receivedMsg = messages_pb2.GetEvents()
         receivedMsg.ParseFromString(msg)
 
-        # TODO: get events
+        regions = receivedMsg.locations
+        logging.info(regions)
+        events = Event.get_active_events_region(regions)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -389,11 +391,17 @@ class GetEventsHandler(BaseHandler):
         response = messages_pb2.GetEventsResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion
-        event = response.events.add()
-        event.testType = "WEB"
-        event.eventType = "CENSOR"
-        event.timeUTC = 20
-        event.sinceTimeUTC = 10
+
+        for event in events:
+            e = response.events.add()
+            e.testType = event.get_target_type()
+            e.eventType = event.get_event_type()
+            e.timeUTC = event.last_detection_utc
+            e.sinceTimeUTC = event.first_detection_utc
+            for i in range(0,len(event.lats)):
+                location = e.locations.add()
+                location.longitude = event.lons[i]
+                location.latitude = event.lats[i]
 
         # send back response
         response_str = agent.encodeMessage(response.SerializeToString())

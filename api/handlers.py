@@ -38,10 +38,7 @@ from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
 from agents.CryptoLib import *
 
-from django.conf import settings
 import hashlib
-import logging
-import base64
 
 from geoip.models import IPRange
 
@@ -58,18 +55,18 @@ class RegisterAgentHandler(BaseHandler):
         aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
         logging.warning("Generated the aggregator key")
 
-
-        
         AESKey = crypto.decodeRSAPrivateKey(request.POST['key'], aggregatorKey)
+        logging.critical("AESKey: %s" % AESKey)
+        
         msg = crypto.decodeAES(request.POST['msg'], AESKey)
     
         logging.critical("Key: %s" % request.POST['key'])
         logging.critical("Aggregator Key: %s" % aggregatorKey)
         logging.critical("Msg: %s" % request.POST['msg'])
-        logging.critical("AESKey: %s" % AESKey)
+        
         
         logging.warning("Decoded AES from agent")
-
+        
         receivedAgentRegister = messages_pb2.RegisterAgent()
         receivedAgentRegister.ParseFromString(msg)
         logging.warning("Parsed registeragent message")

@@ -33,7 +33,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from versions.models import DesktopAgentVersion, MobileAgentVersion
-from icm_tests.models import Test, WebsiteTest, ServiceTest
+from icm_tests.models import Test, WebsiteTestUpdateAggregation, ServiceTestUpdateAggregation
 from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
 from agents.CryptoLib import *
@@ -539,7 +539,7 @@ class CheckNewTestHandler(BaseHandler):
         receivedMsg = messages_pb2.NewTests()
         receivedMsg.ParseFromString(msg)
 
-        newTests = Test.getUpdatedTests(receivedMsg.currentTestVersionNo)
+        newTests = Test.get_updated_tests(receivedMsg.currentTestVersionNo)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -562,14 +562,14 @@ class CheckNewTestHandler(BaseHandler):
 
         for newTest in newTests:
             test = response.tests.add()
-            test.testID = newTest.test.testID
+            test.testID = newTest.test_id
             # TODO: get execution time
             test.executeAtTimeUTC = 4000
 
-            if isinstance(newTest, WebsiteTest):
+            if isinstance(newTest, WebsiteTestUpdateAggregation):
                 test.testType = "WEB"
                 test.website.url = newTest.website_url
-            elif isinstance(newTest, ServiceTest):
+            elif isinstance(newTest, ServiceTestUpdateAggregation):
                 test.testType = "SERVICE"
                 test.service.name = newTest.service_name
                 test.service.port = newTest.port

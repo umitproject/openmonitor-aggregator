@@ -50,6 +50,8 @@ class LoggedAgent(models.Model):
     agentInfo     = models.ForeignKey('Agent')
     superPeer     = models.BooleanField()
     AESKey        = models.TextField()
+    publicKeyMod  = models.TextField()
+    publicKeyExp  = models.TextField()
 
     def getAgent(agentID):
         return LoggedAgent.objects.get(agentID=agentID)
@@ -193,32 +195,24 @@ class Agent(models.Model):
         # check challenge
         if agent.checkChallenge(str(loginProcess.challenge), cipheredChallenge):
 
-            logging.info("CHALLENGE MATCHS!")
-
             # delete already logged agent info
             LoggedAgent.objects.filter(agentID=agent.agentID).delete()
+
             loggedAgent = LoggedAgent()
             loggedAgent.agentID = agent.agentID
             loggedAgent.agentInfo = agent
             loggedAgent.current_ip = loginProcess.ip
             loggedAgent.port = loginProcess.port
             loggedAgent.superPeer = agent.superPeer
+            loggedAgent.publicKeyMod = agent.publicKeyMod
+            loggedAgent.publicKeyExp = agent.publicKeyExp
             loggedAgent.AESKey = agent.AESKey
 
             # get country by geoip
-
-
-
-
-
-
-
-            iprange = IPRange.ip_location(ip)
+            iprange = IPRange.ip_location(loginProcess.ip)
             loggedAgent.country = iprange.country_code
             loggedAgent.latitude = iprange.lat
             loggedAgent.longitude = iprange.lon
-
-
             loggedAgent.save()
 
             # update agent information
@@ -242,23 +236,16 @@ class Agent(models.Model):
         # TODO: update uptime
         LoggedAgent.objects.filter(agentID=self.agentID).delete()
 
-    def getPeers(agentID, country, totalPeers=100):
+    def getPeers(self, totalPeers=100):
         #return Agent._getPeers(country, False, totalPeers)
-        return LoggedAgent._getPeers(agentID, country, False, totalPeers)
+        return LoggedAgent._getPeers(self.agentID, self.lastKnownCountry, False, totalPeers)
 
-    def getSuperPeers(agentID, country, totalPeers=100):
+    def getSuperPeers(self, totalPeers=100):
         #return Agent._getPeers(country, True, totalPeers)
-        return LoggedAgent._getPeers(agentID, country, True, totalPeers)
+        return LoggedAgent._getPeers(self.agentID, self.lastKnownCountry, True, totalPeers)
 
     def getAgent(agentID):
         return Agent.objects.get(agentID=agentID)
-
-    def getCurrentLocation(self):
-        try:
-            loggedAgent = LoggedAgent.getAgent(self.agentID)
-        except Exception, e:
-            logging.error(e)
-        return loggedAgent.country
 
     def encodeMessage(self, message):
         # get cryptolib instance
@@ -290,7 +277,5 @@ class Agent(models.Model):
         return "Agent %s (%s %s) - %s at %s - up %s" % (self.agentID, self.agentType, self.agentVersion, self.registered_ip, self.country, self.uptime)
 
     create = staticmethod(create)
-    getPeers = staticmethod(getPeers)
-    getSuperPeers = staticmethod(getSuperPeers)
     getAgent = staticmethod(getAgent)
     finishLogin = staticmethod(finishLogin)

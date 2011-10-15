@@ -427,25 +427,20 @@ class AgentTests():
         logging.info("Report sent")
 
 
-    def getEvents(self):
+    def getEvents(self, locations=['pt']):
         msg = messages_pb2.GetEvents()
-        msg.geoLat = 20
-        msg.geoLon = 10
-        msg.locations.append("location1")
-        msg_encoded = base64.b64encode(msg.SerializeToString())
+        for location in locations:
+            msg.locations.append(location)
+        msg_encoded = crypto.encodeAES(msg.SerializeToString(), self.AESKey)
 
-        response = self.client.post('/api/getevents/', {'msg': msg_encoded})
+        response = self.client.post('/api/getevents/', {'agentID': self.agentID, 'msg': msg_encoded})
 
+        msg = crypto.decodeAES(response.content, self.AESKey)
         response_msg = messages_pb2.GetEventsResponse()
-        response_msg.ParseFromString(base64.b64decode(response.content))
+        response_msg.ParseFromString(msg)
 
-        currentVersionNo = response_msg.header.currentVersionNo
-        currentTestVersionNo = response_msg.header.currentTestVersionNo
-        event = response_msg.events[0]
-        testType = event.testType
-        eventType = event.eventType
-        timeUTC = event.timeUTC
-        sinceTimeUTC = event.sinceTimeUTC
+        logging.info("Events:")
+        logging.info(response_msg)
 
 
 class APITestCase(TestCase):

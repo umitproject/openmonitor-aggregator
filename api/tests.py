@@ -61,6 +61,7 @@ class AgentTests():
         self.login_ip = "209.85.169.99"
         self.port = 9090
         self.last_test = 0
+        self.current_report_id = 1
 
         # need to registerAgent ?
         if agentID==None:
@@ -217,14 +218,234 @@ class AgentTests():
         newt_str = crypto.encodeAES(newtests.SerializeToString(), self.AESKey)
         response = self.client.post('/api/checktests/', {'agentID': self.agentID, 'msg': newt_str})
 
-        logging.info(response.content)
-
         msg = crypto.decodeAES(response.content, self.AESKey)
         tests = messages_pb2.NewTestsResponse()
         tests.ParseFromString(msg)
 
         logging.info("Last available test is %s" % tests.testVersionNo)
         logging.info("New tests are: %s" % tests.tests)
+
+
+    def logout(self):
+        logging.info("Agent: logout")
+        msg = messages_pb2.Logout()
+        msg.agentID = self.agentID
+
+        msg_str = crypto.encodeAES(msg.SerializeToString(), self.AESKey)
+        response = self.client.post('/api/logoutagent/', {'agentID': self.agentID, 'msg': msg_str})
+
+        logging.info("Agent logged out")
+
+
+    def getPeerList(self, count=20):
+        logging.info("Agent: getting peer list")
+        getpeer = messages_pb2.GetPeerList()
+        getpeer.count = count
+        getpeer_str = crypto.encodeAES(getpeer.SerializeToString(), self.AESKey)
+        response = self.client.post('/api/getpeerlist/', {'agentID': self.agentID, 'msg': getpeer_str})
+
+        msg = crypto.decodeAES(response.content, self.AESKey)
+        resp = messages_pb2.GetPeerListResponse()
+        resp.ParseFromString(msg)
+
+        logging.info("Peers:")
+
+        for peer in resp.knownPeers:
+            msg = "Peer %s - %s:%s - %s" % (peer.agentID, peer.agentIP, peer.agentPort, peer.peerStatus)
+            logging.info(msg)
+
+
+    def getSuperPeerList(self, count=20):
+        logging.info("Agent: getting superpeer list")
+        getpeer = messages_pb2.GetSuperPeerList()
+        getpeer.count = count
+        getpeer_str = crypto.encodeAES(getpeer.SerializeToString(), self.AESKey)
+        response = self.client.post('/api/getsuperpeerlist/', {'agentID': self.agentID, 'msg': getpeer_str})
+
+        msg = crypto.decodeAES(response.content, self.AESKey)
+        resp = messages_pb2.GetSuperPeerListResponse()
+        resp.ParseFromString(msg)
+
+        logging.info("SuperPeers:")
+
+        for peer in resp.knownSuperPeers:
+            msg = "SuperPeer %s - %s:%s - %s" % (peer.agentID, peer.agentIP, peer.agentPort, peer.peerStatus)
+            logging.info(msg)
+
+
+    def __getSampleWebsiteReport(self):
+        report = {}
+        report['test_id'] = 1
+        report['timezone'] = -1
+        report['time'] = 1310396214
+        report['website'] = "www.site.com"
+        report['status_code'] = 404
+        report['response_time'] = 75
+        report['bandwidth'] = 1240
+        passedNodes = []
+        passedNodes.append(str(300))
+        passedNodes.append(str(320))
+        report['passed_nodes'] = passedNodes
+        report['target_ip'] = "78.43.34.120"
+        report['number_hops'] = 2
+        report['packet_size'] = 200
+        traces = []
+        trace = {}
+        timings = []
+        timings.append(20)
+        timings.append(28)
+        trace['ip'] = "24.63.54.128"
+        trace['hop'] = 1
+        trace['timings'] = timings
+        traces.append(trace)
+        trace = {}
+        timings = []
+        timings.append(46)
+        timings.append(53)
+        trace['ip'] = "214.23.54.34"
+        trace['hop'] = 2
+        trace['timings'] = timings
+        traces.append(trace)
+        report['traces'] = traces
+        return report
+
+
+    def __getSampleServiceReport(self):
+        report = {}
+        report['test_id'] = 1
+        report['timezone'] = -1
+        report['time'] = 1310396214
+        report['service_name'] = "ftp"
+        report['status_code'] = 404
+        report['response_time'] = 75
+        report['bandwidth'] = 1240
+        passedNodes = []
+        passedNodes.append(str(300))
+        passedNodes.append(str(320))
+        report['passed_nodes'] = passedNodes
+        report['target_ip'] = "78.43.34.120"
+        report['number_hops'] = 2
+        report['packet_size'] = 200
+        traces = []
+        trace = {}
+        timings = []
+        timings.append(20)
+        timings.append(28)
+        trace['ip'] = "24.63.54.128"
+        trace['hop'] = 1
+        trace['timings'] = timings
+        traces.append(trace)
+        trace = {}
+        timings = []
+        timings.append(46)
+        timings.append(53)
+        trace['ip'] = "214.23.54.34"
+        trace['hop'] = 2
+        trace['timings'] = timings
+        traces.append(trace)
+        report['traces'] = traces
+        return report
+
+
+    def sendWebsiteReport(self, report=None):
+
+        if report==None:
+            report = self.__getSampleWebsiteReport()
+
+        wreport = messages_pb2.SendWebsiteReport()
+        wreport.report.header.reportID = str(self.current_report_id)
+        wreport.report.header.agentID = self.agentID
+        wreport.report.header.testID = report['test_id']
+        wreport.report.header.timeZone = report['timezone']
+        wreport.report.header.timeUTC = report['time']
+        wreport.report.report.websiteURL = report['website']
+        wreport.report.report.statusCode = report['status_code']
+        wreport.report.report.responseTime = report['response_time']
+        wreport.report.report.bandwidth = report['bandwidth']
+
+        for node in report['passed_nodes']:
+            wreport.report.header.passedNode.append(node)
+
+        wreport.report.header.traceroute.target = report['target_ip']
+        wreport.report.header.traceroute.hops = report['number_hops']
+        wreport.report.header.traceroute.packetSize = report['packet_size']
+
+        for _trace in report['traces']:
+            trace = wreport.report.header.traceroute.traces.add()
+            trace.ip = _trace['ip']
+            trace.hop = _trace['hop']
+            for timing in _trace['timings']:
+                trace.packetsTiming.append(timing)
+
+        self.current_report_id = self.current_report_id+1
+
+        wreport_str = crypto.encodeAES(wreport.SerializeToString(), self.AESKey)
+        response = self.client.post('/api/sendwebsitereport/', {'agentID': self.agentID, 'msg': wreport_str})
+
+        logging.info(response.content)
+
+        logging.info("Report sent")
+
+
+    def sendServiceReport(self, report=None):
+
+        if report==None:
+            report = self.__getSampleServiceReport()
+
+        wreport = messages_pb2.SendServiceReport()
+        wreport.report.header.reportID = str(self.current_report_id)
+        wreport.report.header.agentID = self.agentID
+        wreport.report.header.testID = report['test_id']
+        wreport.report.header.timeZone = report['timezone']
+        wreport.report.header.timeUTC = report['time']
+        wreport.report.report.serviceName = report['service_name']
+        wreport.report.report.statusCode = report['status_code']
+        wreport.report.report.responseTime = report['response_time']
+        wreport.report.report.bandwidth = report['bandwidth']
+
+        for node in report['passed_nodes']:
+            wreport.report.header.passedNode.append(node)
+
+        wreport.report.header.traceroute.target = report['target_ip']
+        wreport.report.header.traceroute.hops = report['number_hops']
+        wreport.report.header.traceroute.packetSize = report['packet_size']
+
+        for _trace in report['traces']:
+            trace = wreport.report.header.traceroute.traces.add()
+            trace.ip = _trace['ip']
+            trace.hop = _trace['hop']
+            for timing in _trace['timings']:
+                trace.packetsTiming.append(timing)
+
+        self.current_report_id = self.current_report_id+1
+
+        wreport_str = crypto.encodeAES(wreport.SerializeToString(), self.AESKey)
+        response = self.client.post('/api/sendservicereport/', {'agentID': self.agentID, 'msg': wreport_str})
+
+        logging.info(response.content)
+
+        logging.info("Report sent")
+
+
+    def getEvents(self):
+        msg = messages_pb2.GetEvents()
+        msg.geoLat = 20
+        msg.geoLon = 10
+        msg.locations.append("location1")
+        msg_encoded = base64.b64encode(msg.SerializeToString())
+
+        response = self.client.post('/api/getevents/', {'msg': msg_encoded})
+
+        response_msg = messages_pb2.GetEventsResponse()
+        response_msg.ParseFromString(base64.b64decode(response.content))
+
+        currentVersionNo = response_msg.header.currentVersionNo
+        currentTestVersionNo = response_msg.header.currentTestVersionNo
+        event = response_msg.events[0]
+        testType = event.testType
+        eventType = event.eventType
+        timeUTC = event.timeUTC
+        sinceTimeUTC = event.sinceTimeUTC
 
 
 class APITestCase(TestCase):

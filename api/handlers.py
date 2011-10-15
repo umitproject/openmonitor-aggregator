@@ -22,6 +22,7 @@
 
 import logging
 import base64
+import time
 
 from piston.handler import BaseHandler
 from messages import messages_pb2
@@ -32,6 +33,7 @@ from django.test.client import Client
 from django.http import HttpResponse
 from django.conf import settings
 
+from events.models import Event
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from icm_tests.models import Test, WebsiteTestUpdateAggregation, ServiceTestUpdateAggregation
 from decision.decisionSystem import DecisionSystem
@@ -393,8 +395,8 @@ class GetEventsHandler(BaseHandler):
             e = response.events.add()
             e.testType = event.get_target_type()
             e.eventType = event.get_event_type()
-            e.timeUTC = event.last_detection_utc
-            e.sinceTimeUTC = event.first_detection_utc
+            e.timeUTC = int(event.last_detection_utc.strftime("%s"))
+            e.sinceTimeUTC = int(event.first_detection_utc.strftime("%s"))
             for i in range(0,len(event.lats)):
                 location = e.locations.add()
                 location.longitude = event.lons[i]

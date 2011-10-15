@@ -21,7 +21,7 @@
 
 import csv
 import decimal
-import cStringIO
+import cStringIO, StringIO
 
 from django.db import models
 
@@ -52,9 +52,9 @@ class ListField(models.TextField):
 
         if value in ['', None]:
             return []
-        
-        valueio = cStringIO.StringIO(value)
-        
+
+        valueio = StringIO.StringIO(value)
+
         return [self.py_converter(v[0]) for v in csv.reader(valueio, delimiter=',')]
 
     def get_prep_value(self, value):

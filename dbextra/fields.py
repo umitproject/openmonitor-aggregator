@@ -53,8 +53,7 @@ class ListField(models.TextField):
         if value in ['', None]:
             return []
         
-        valueio = cStringIO.StringIO()
-        valueio.write(value)
+        valueio = cStringIO.StringIO(value)
         
         return [self.py_converter(v[0]) for v in csv.reader(valueio, delimiter=',')]
 

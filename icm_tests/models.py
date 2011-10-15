@@ -49,9 +49,9 @@ class Test(models.Model):
         website_test = WebsiteTest.objects.order_by('created_at')[0:1]
         service_test = ServiceTest.objects.order_by('created_at')[0:1]
 
-        if len(website_test)==0:
+        if len(website_test)==0 and len(service_test)>0:
             return service_test.get()
-        elif len(service_test)==0:
+        elif len(service_test)==0 and len(website_test)>0:
             return website_test.get()
         elif len(website_test)>0 and len(service_test)>0:
             if website_test.get().created_at > service_test.get().created_at:

@@ -59,8 +59,16 @@ class RegisterAgentHandler(BaseHandler):
         logging.warning("Generated the aggregator key")
 
 
-        AESKey = crypto.decodeRSAPrivateKey(request.POST['key'], aggregatorKey)
-        msg = crypto.decodeAES(request.POST['msg'], AESKey)
+        try:
+            AESKey = crypto.decodeRSAPrivateKey(request.POST['key'], aggregatorKey)
+            msg = crypto.decodeAES(request.POST['msg'], AESKey)
+        except Exception, e:
+            logging.critical("Key: %s" % request.POST['key'])
+            logging.critical("Aggregator Key: %s" % aggregatorKey)
+            logging.critical("Msg: %s" % request.POST['msg'])
+            logging.critical("AESKey: %s" % AESKey)
+            logging.critical(e)
+        
         logging.warning("Decoded AES from agent")
 
         receivedAgentRegister = messages_pb2.RegisterAgent()

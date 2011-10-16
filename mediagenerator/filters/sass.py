@@ -64,7 +64,8 @@ class Sass(Filter):
     def _compile(self, debug=False):
         extensions = os.path.join(os.path.dirname(__file__), 'sass_compass.rb')
         extensions = extensions.replace('\\', '/')
-        run = ['sass', '-C', '-t', 'expanded', '--require', extensions]
+        run = ['sass', '-C', '-t', 'expanded',
+               '--require', extensions]
         for framework in SASS_FRAMEWORKS:
             # Some frameworks are loaded by default
             if framework in ('blueprint', 'compass'):
@@ -82,6 +83,9 @@ class Sass(Filter):
             module = self.main_module.rsplit('.', 1)[0]
             output, error = cmd.communicate('@import "%s"' % module)
             assert cmd.wait() == 0, 'Command returned bad result:\n%s' % error
+            output = output.decode('utf-8')
+            if output.startswith('@charset '):
+                output = output.split(';', 1)[1]
             return output
         except Exception, e:
             raise ValueError("Failed to execute Sass. Please make sure that "

@@ -1,0 +1,22 @@
+<!-- AddThis Button BEGIN -->
+<div class="addthis_toolbox {% block addthis_class %}addthis_default_style addthis_16x16_style{% endblock %}">
+
+{% block buttons %}
+	<a class="addthis_button_preferred_1"></a>
+	<a class="addthis_button_preferred_2"></a>
+	<a class="addthis_button_preferred_3"></a>
+	<a class="addthis_button_preferred_4"></a>
+	<a class="addthis_button_compact"></a>
+	<a class="addthis_counter addthis_bubble_style"></a>
+{% endblock %}
+
+</div>
+<script type="text/javascript">
+	var addthis_share = {
+		{% if url %}url: "{{ url }}",{% endif %}
+		{% if title %}title: "{{ title }}",{% endif %}
+		{% if description %}description: "{{ description }}",{% endif %}
+	}
+</script>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4e5b65d47abf3c75"></script>
+<!-- AddThis Button END -->

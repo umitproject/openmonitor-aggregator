@@ -53,7 +53,9 @@ class URLRewriter(object):
                         return 'url(data:%s;base64,%s)' % (mime, data)
                 url = media_url(rebased_url)
             except:
-                logging.error('URL not found: %s' % url)
+                #logging.error('URL not found: %s' % url)
+                # If it can't find, don't worry... will figure.
+                pass
         return 'url(%s%s)' % (url, hashid)
 
 class CSSURL(Filter):

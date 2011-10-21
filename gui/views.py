@@ -86,6 +86,7 @@ def event(request, event_id):
 
 
 def about(request):
+    user = request.user
     return render_to_response('gui/about.html', locals())
 
 
@@ -128,7 +129,7 @@ def suggest_website(request, form, valid, *args, **kwargs):
         suggestion = WebsiteSuggestion()
         suggestion.website_url = website
         suggestion.location = location
-        suggestion.user = request.user
+        #suggestion.user = request.user
         suggestion.save()
         
         return HttpResponse(json.dumps(dict(status='OK',

@@ -60,7 +60,7 @@ class RealtimeBox(NotificationInterface):
     def eventReceived(self, event):
         logging.info("event received on realtimebox")
         try:
-            message = simplejson.dumps(event.getDict())
+            message = simplejson.dumps(event.get_dict())
             channel.send_message('realtimebox', message)
         except Exception,ex:
             logging.error(ex)
@@ -70,7 +70,7 @@ class RealtimeMap(NotificationInterface):
     def eventReceived(self, event):
         logging.info("event received on realtimemap")
         try:
-            message = simplejson.dumps(event.getDict())
+            message = simplejson.dumps(event.get_dict())
             channel.send_message('map', message)
         except Exception,ex:
             logging.error(ex)

@@ -124,7 +124,8 @@ MEDIA_BUNDLES = (
          'js/common.js',
          'js/realtimebox.js',
          'js/map.js',
-         'js/suggestion.js', ),
+         'js/suggestion.js',
+         'js/events.js',),
 )
 
 MEDIA_DEV_MODE = DEBUG

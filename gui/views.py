@@ -148,15 +148,11 @@ provided at least a valid website.',
 
 @cant_repeat_form(WebsiteEventForm, ['website', 'first_detection', 'event_type', 'location'])
 def create_website_event(request, form, valid, *args, **kwargs):
-    logging.critical("create_website_event")
-    logging.critical(form)
     if (form is not None):
         website = form.cleaned_data['website']
         first_detection = form.cleaned_data['first_detection']
         event_type = form.cleaned_data['event_type']
         location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
-
-        logging.info("creating website event")
 
         event = Event()
         event.active = True
@@ -177,13 +173,15 @@ def create_website_event(request, form, valid, *args, **kwargs):
                 event.event_type = EventType.Offline
         else:
             event.event_type = EventType.Offline
-        event.location_ids.append(location.id)
-        event.location_names.append(location.name)
-        event.location_country_names.append(location.country_name)
-        event.location_country_codes.append(location.country_code)
-        event.lats.append(location.lat)
-        event.lons.append(location.lon)
-        event.isps.append('')
+
+        if location!=None:
+            event.location_ids.append(location.id)
+            event.location_names.append(location.name)
+            event.location_country_names.append(location.country_name)
+            event.location_country_codes.append(location.country_code)
+            event.lats.append(location.lat)
+            event.lons.append(location.lon)
+            event.isps.append('')
 
         event.save()
         NotificationSystem.publishEvent(event)
@@ -227,13 +225,15 @@ def create_service_event(request, form, valid, *args, **kwargs):
                 event.event_type = EventType.Offline
         else:
             event.event_type = EventType.Offline
-        event.location_ids.append(location.id)
-        event.location_names.append(location.name)
-        event.location_country_names.append(location.country_name)
-        event.location_country_codes.append(location.country_code)
-        event.lats.append(location.lat)
-        event.lons.append(location.lon)
-        event.isps.append('')
+
+        if location!=None:
+            event.location_ids.append(location.id)
+            event.location_names.append(location.name)
+            event.location_country_names.append(location.country_name)
+            event.location_country_codes.append(location.country_code)
+            event.lats.append(location.lat)
+            event.lons.append(location.lon)
+            event.isps.append('')
 
         event.save()
         NotificationSystem.publishEvent(event)

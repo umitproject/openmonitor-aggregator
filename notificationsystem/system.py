@@ -49,11 +49,13 @@ class NotificationSystem:
     def publishEvent(event):
         logging.info(NotificationSystem.subscribers)
         logging.info(">>> Publishing events: %s" % event)
-        try:
-            for subscriber in NotificationSystem.subscribers:
+
+        for subscriber in NotificationSystem.subscribers:
+            try:
                 subscriber.eventReceived(event)
-        except Exception,ex:
-            logging.error(ex)
+            except Exception,ex:
+                logging.error("Error on notification system: %s" % subscriber)
+                logging.error(ex)
 
 
 class RealtimeBox(NotificationInterface):

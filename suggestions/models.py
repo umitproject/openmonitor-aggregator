@@ -153,9 +153,11 @@ class WebsiteAggregation(models.Model):
         if self.location_id is not None:
             return Location.objects.get(id=self.location_id)
 
-    @property
-    def user(self):
+    def get_user(self):
         return models.User.objects.get(id=self.user_id)
+    
+    def set_user(self, user):
+        self.user_id = user.id
     
     @staticmethod
     def add_suggestion(suggestion):
@@ -164,6 +166,8 @@ class WebsiteAggregation(models.Model):
     
     def __unicode__(self):
         return "(%s) %s - %s" % (self.count, self.location, self.website_url, self.user_id)
+    
+    user = property(get_user, set_user)
 
 
 class ServiceSuggestion(models.Model):
@@ -181,9 +185,11 @@ class ServiceSuggestion(models.Model):
         if self.location_id is not None:
             return Location.objects.get(id=self.location_id)
 
-    @property
-    def user(self):
+    def get_user(self):
         return models.User.objects.get(id=self.user_id)
+    
+    def set_user(self, user):
+        self.user_id = user.id
 
     @staticmethod
     def create(serviceSuggestionMsg, user):
@@ -214,6 +220,8 @@ class ServiceSuggestion(models.Model):
 
     def __unicode__(self):
         return self.service_name
+    
+    user = property(get_user, set_user)
 
 class ServiceNameAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

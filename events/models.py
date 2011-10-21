@@ -173,6 +173,10 @@ class Event(models.Model):
 
         if new:
             EventLocationAggregation.add_event(self)
+        else:
+            cache.delete(EVENT_CACHE_KEY % self.id)
+
+        cache.delete(EVENT_LIST_CACHE_KEY)
 
         return res
 
@@ -205,6 +209,8 @@ class EventLocationAggregation(models.Model):
             if add:
                 agg.events.append(event.id)
                 agg.save()
+
+            # TODO: delete LOCATION_CACHE
 
     def get_events(self):
         events = []

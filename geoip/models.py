@@ -74,6 +74,51 @@ class LocationAggregation(models.Model):
             location.add_aggregation(agg)
 
 
+class LocationNamesAggregation(models.Model):
+    prefix = models.CharField(max_length=200)
+    names = ListField()
+    locations = ListField(py_type=int)
+
+    @staticmethod
+    def add_location(location):
+        for i in xrange(1, len(location.name)):
+            prefix = location.name[:i].lower()
+
+            agg = LocationNamesAggregation.objects.filter(prefix=prefix)
+
+            if agg:
+                agg = agg[0]
+                if location.id in agg.locations:
+                    continue
+
+                agg.names.append(location.name)
+                agg.locations.append(location.id)
+            else:
+                agg = LocationNamesAggregation()
+                agg.prefix = prefix
+                agg.names = [location.name]
+                agg.locations = [location.id]
+
+            agg.save()
+
+    @staticmethod
+    def get_names(prefix):
+        prefix = prefix.lower()
+        names = cache.get(PREFIX_KEY % prefix, [])
+        if names:
+            return names
+
+        agg = LocationNamesAggregation.objects.filter(prefix=prefix)
+        if agg:
+            names = agg[0].names
+
+        cache.set(PREFIX_KEY, names)
+        return names
+
+    def __unicode__(self):
+        return self.prefix
+
+
 class Location(models.Model):
     ip_range_ids = ListField(py_type=int)
     name = models.CharField(max_length=300)
@@ -214,7 +259,7 @@ class IPRange(models.Model):
         if type(ip) != type(0):
             ip = convert_ip(ip)
         
-        iprange = IPRange.objects.filter(start_number__lte=ip).order_by('start_number')
+        iprange = IPRange.objects.filter(start_number__lte=ip).order_by('-start_number')
         if iprange:
             return iprange[0]
         iprange = IPRange.objects.filter(end_number__gte=ip).order_by('end_number')
@@ -259,48 +304,3 @@ class IPRange(models.Model):
                     start_ip=convert_int_ip(self.start_number),
                     end_ip=convert_int_ip(self.end_number)
                     )
-
-
-class LocationNamesAggregation(models.Model):
-    prefix = models.CharField(max_length=200)
-    names = ListField()
-    locations = ListField(py_type=int)
-    
-    @staticmethod
-    def add_location(location):
-        for i in xrange(1, len(location.name)):
-            prefix = location.name[:i].lower()
-            
-            agg = LocationNamesAggregation.objects.filter(prefix=prefix)
-            
-            if agg:
-                agg = agg[0]
-                if location.id in agg.locations:
-                    continue
-                
-                agg.names.append(location.name)
-                agg.locations.append(location.id)
-            else:
-                agg = LocationNamesAggregation()
-                agg.prefix = prefix
-                agg.names = [location.name]
-                agg.locations = [location.id]
-            
-            agg.save()
-    
-    @staticmethod
-    def get_names(prefix):
-        prefix = prefix.lower()
-        names = cache.get(PREFIX_KEY % prefix, [])
-        if names:
-            return names
-        
-        agg = LocationNamesAggregation.objects.filter(prefix=prefix)
-        if agg:
-            names = agg[0].names
-        
-        cache.set(PREFIX_KEY, names)
-        return names
-    
-    def __unicode__(self):
-        return self.prefix

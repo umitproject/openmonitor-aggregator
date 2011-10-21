@@ -6,7 +6,6 @@
 	<div id='msg'></div>
 	<div id='error'></div>
 	<form method="POST" action="/create_service_event/" id='service_event_form'>
-		{% csrf_token %}
 		{{ form.as_p }}
 		<input type="submit" value="Create" name="create" id="service_event_button"/>
 	</form>

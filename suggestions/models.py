@@ -196,8 +196,6 @@ class ServiceSuggestion(UserModel):
 
     def __unicode__(self):
         return self.service_name
-    
-    user = property(get_user, set_user)
 
 class ServiceNameAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

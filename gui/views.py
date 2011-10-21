@@ -119,14 +119,9 @@ provided all terms.',
 
 @cant_repeat_form(SuggestWebsiteForm, ['website', 'location'])
 def suggest_website(request, form, valid, *args, **kwargs):
-    import pdb; pdb.set_trace()
-    logging.critical("Suggest website")
     if (form is not None) and valid:
         website = form.cleaned_data['website']
-        logging.critical("Website: %s" % website)
         location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
-        logging.critical("Location: %s" % location)
-        logging.critical("User: %s" % request.user)
         
         suggestion = WebsiteSuggestion()
         suggestion.website_url = website

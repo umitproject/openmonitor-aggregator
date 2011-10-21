@@ -28,6 +28,7 @@ import decimal
 from django.db import models
 from django.utils import simplejson as json
 from django.core.files import File
+from icm_utils.json import ICMJSONEncoder
 
 from dbextra.fields import ListField
 from dbextra.decorators import cache_model_method
@@ -68,7 +69,8 @@ class Trace(object):
     
     @staticmethod
     def from_dump(dump):
-        return Trace(**json.loads(dump))
+        dump = eval(dump)
+        return Trace(**json.loads(dump[0]))
     
     @cache_model_method('trace_', 300, 'location_id')
     @property
@@ -76,10 +78,13 @@ class Trace(object):
         return Location.objects.get(id=self.location_id)
     
     def __unicode__(self):
+        return self.toJson()
+
+    def toJson(self):
         return json.dumps(dict(hop=self.hop,
                                ip=self.ip,
-                               timing=self.timing,
-                               location_ip=self.location_ip,
+                               timings=self.timings,
+                               location_id=self.location_id,
                                location_name=self.location_name,
                                country_name=self.country_name,
                                country_code=self.country_code,
@@ -87,13 +92,18 @@ class Trace(object):
                                city=self.city,
                                zipcode=self.zipcode,
                                lat=self.lat,
-                               lon=self.lon))
+                               lon=self.lon), cls=ICMJSONEncoder)
 
 def py_convert_trace(trace):
     return Trace.from_dump(trace)
 
-def db_convert_trace(trace):
-    return str(trace)
+def db_convert_trace(traces):
+    traces_json = []
+    if not isinstance(traces, list):
+        traces = [traces]
+    for trace in traces:
+        traces_json.append(trace.toJson())
+    return traces_json
 
 
 class Report(models.Model):
@@ -118,20 +128,33 @@ class Report(models.Model):
     
     #################################
     # Location of the reporting node
-    ip = models.CharField(max_length=100)
-    location_id = models.IntegerField()
-    location_name = models.CharField(max_length=300)
-    country_name = models.CharField(max_length=100)
-    country_code = models.CharField(max_length=2)
-    state_region = models.CharField(max_length=2)
-    city = models.CharField(max_length=255)
-    zipcode = models.CharField(max_length=6)
-    lat = models.DecimalField(decimal_places=20, max_digits=23)
-    lon = models.DecimalField(decimal_places=20, max_digits=23)
+    agent_ip = models.CharField(max_length=100)
+    agent_location_id = models.IntegerField()
+    agent_location_name = models.CharField(max_length=300)
+    agent_country_name = models.CharField(max_length=100)
+    agent_country_code = models.CharField(max_length=2)
+    agent_state_region = models.CharField(max_length=2)
+    agent_city = models.CharField(max_length=255)
+    agent_zipcode = models.CharField(max_length=6)
+    agent_lat = models.DecimalField(decimal_places=20, max_digits=23)
+    agent_lon = models.DecimalField(decimal_places=20, max_digits=23)
+
+    #########################
+    # Location of the target
+    target = models.CharField(max_length=100, null=True)
+    target_location_id = models.IntegerField(null=True)
+    target_location_name = models.CharField(max_length=300, null=True)
+    target_country_name = models.CharField(max_length=100, null=True)
+    target_country_code = models.CharField(max_length=2, null=True)
+    target_state_region = models.CharField(max_length=2, null=True)
+    target_city = models.CharField(max_length=255, null=True)
+    target_zipcode = models.CharField(max_length=6, null=True)
+    target_lat = models.DecimalField(decimal_places=20, max_digits=23, null=True)
+    target_lon = models.DecimalField(decimal_places=20, max_digits=23, null=True)
     
     #################################
     # Occurrences of similar reports
-    count = models.IntegerField()
+    count = models.IntegerField(default=1)
     
     user_reports_ids = ListField(py_type=int)
     
@@ -150,7 +173,7 @@ class Report(models.Model):
     def create_or_count(user_report):
         report = Report.objects.filter(
                         test_id=user_report.test_id,
-                        location_id=user_report.location_id,
+                        agent_location_id=user_report.agent_location_id,
                         created_at__gte=user_report.created_at-REPORT_PERIOD,
                         created_at__lte=user_report.created_at+REPORT_PERIOD
         )
@@ -160,28 +183,40 @@ class Report(models.Model):
             report.time = user_report.time
             report.time_zone = user_report.time_zone
             report.response_time = user_report.response_time
-            report.nodes = user_report.nodes
+            nodes = user_report.nodes
+            report.nodes.append(nodes)
             report.target = user_report.target
             report.hops = user_report.hops
             report.packet_size = user_report.packet_size
-            report.trace = user_report.trace
-            report.ip = user_report.ip
-            report.location_id = user_report.location_id
-            report.location_name = user_report.location_name
-            report.country_name = user_report.country_name
-            report.country_code = user_report.country_code
-            report.state_region = user_report.state_region
-            report.city = user_report.city
-            report.zipcode = user_report.zipcode
-            report.lat = user_report.lat
-            report.lon = user_report.lon
+            trace = user_report.trace
+            report.trace.append(trace)
+            report.agent_ip = user_report.agent_ip
+            report.agent_location_id = user_report.agent_location_id
+            report.agent_location_name = user_report.agent_location_name
+            report.agent_country_name = user_report.agent_country_name
+            report.agent_country_code = user_report.agent_country_code
+            report.agent_state_region = user_report.agent_state_region
+            report.agent_city = user_report.agent_city
+            report.agent_zipcode = user_report.agent_zipcode
+            report.agent_lat = user_report.agent_lat
+            report.agent_lon = user_report.agent_lon
+            report.target_location_id = user_report.target_location_id
+            report.target_location_name = user_report.target_location_name
+            report.target_country_name = user_report.target_country_name
+            report.target_country_code = user_report.target_country_code
+            report.target_state_region = user_report.target_state_region
+            report.target_city = user_report.target_city
+            report.target_zipcode = user_report.target_zipcode
+            report.target_lat = user_report.target_lat
+            report.target_lon = user_report.target_lon
             report.count = 1
-            report.user_reports_ids = [user_report.id]
+            report.user_reports_ids.append(user_report.id)
         else:
+            report = report[0]
             report.count += 1
             report.user_reports_ids.append(user_report.id)
             report.response_time = (report.response_time + user_report.response_time)/2
-        
+
         report.save()
         return Report
 
@@ -200,9 +235,22 @@ class UserReport(models.Model):
     
     #############
     # Traceroute
-    target = models.CharField(max_length=255)
+    target = models.CharField(max_length=255, null=True)
     hops = models.PositiveSmallIntegerField()
     packet_size = models.PositiveIntegerField()
+
+    #########################
+    # Location of the target
+    target_location_id = models.IntegerField(null=True)
+    target_location_name = models.CharField(max_length=300, null=True)
+    target_country_name = models.CharField(max_length=100, null=True)
+    target_country_code = models.CharField(max_length=2, null=True)
+    target_state_region = models.CharField(max_length=2, null=True)
+    target_city = models.CharField(max_length=255, null=True)
+    target_zipcode = models.CharField(max_length=6, null=True)
+    target_lat = models.DecimalField(decimal_places=20, max_digits=23, null=True)
+    target_lon = models.DecimalField(decimal_places=20, max_digits=23, null=True)
+
     
     #############################
     # Trace Nodes
@@ -211,16 +259,16 @@ class UserReport(models.Model):
     
     #################################
     # Location of the reporting node
-    ip = models.CharField(max_length=100)
-    location_id = models.IntegerField()
-    location_name = models.CharField(max_length=300)
-    country_name = models.CharField(max_length=100)
-    country_code = models.CharField(max_length=2)
-    state_region = models.CharField(max_length=2)
-    city = models.CharField(max_length=255)
-    zipcode = models.CharField(max_length=6)
-    lat = models.DecimalField(decimal_places=20, max_digits=23)
-    lon = models.DecimalField(decimal_places=20, max_digits=23)
+    agent_ip = models.CharField(max_length=100)
+    agent_location_id = models.IntegerField()
+    agent_location_name = models.CharField(max_length=300)
+    agent_country_name = models.CharField(max_length=100)
+    agent_country_code = models.CharField(max_length=2)
+    agent_state_region = models.CharField(max_length=2)
+    agent_city = models.CharField(max_length=255)
+    agent_zipcode = models.CharField(max_length=6)
+    agent_lat = models.DecimalField(decimal_places=20, max_digits=23)
+    agent_lon = models.DecimalField(decimal_places=20, max_digits=23)
     
     class Meta:
         abstract = True
@@ -264,7 +312,7 @@ class WebsiteReport(UserReport):
         return WebsiteReportMedia.objects.filter(id__in=self.media_ids)
 
     @staticmethod
-    def create(websiteReportMsg, user):
+    def create(websiteReportMsg, agent):
         report = WebsiteReport()
 
         website_report = websiteReportMsg.report
@@ -300,7 +348,7 @@ class WebsiteReport(UserReport):
                 # TODO: Need to adapt the html code to link to these media files #
                 ##################################################################
 
-        report.user_id = user.id
+        report.user_id = agent.user.id
 
         # read ICMReport
         report.report_id = icm_report.reportID
@@ -327,6 +375,31 @@ class WebsiteReport(UserReport):
                               timings=[t for t in rcvTrace.packetsTiming])
                 )
 
+            # update target location
+            iprange = IPRange.ip_location(report.target)
+            report.target_country_code = iprange.country_code
+            report.target_country_name = iprange.country_name
+            report.target_lat = iprange.lat
+            report.target_lon = iprange.lon
+            report.target_location_id = iprange.location_id
+            report.target_location_name = iprange.location.name
+            report.target_zipcode = iprange.zipcode
+            report.target_state_region = iprange.state_region
+            report.target_city = iprange.city
+
+        # get info about target ip
+        loggedAgent = agent.getLoginInfo()
+        report.agent_ip = loggedAgent.current_ip
+        report.agent_location_id = loggedAgent.location_id
+        report.agent_location_name = loggedAgent.location_name
+        report.agent_country_name = loggedAgent.country_name
+        report.agent_country_code = loggedAgent.country_code
+        report.agent_state_region = loggedAgent.state_region
+        report.agent_city = loggedAgent.city
+        report.agent_zipcode = loggedAgent.zipcode
+        report.agent_lat = loggedAgent.latitude
+        report.agent_lon = loggedAgent.longitude
+
         report.save()
         
         return report
@@ -349,7 +422,7 @@ class ServiceReport(UserReport):
     status_code = models.PositiveSmallIntegerField()
     
     @staticmethod
-    def create(serviceReportMsg, user):
+    def create(serviceReportMsg, agent):
         report = ServiceReport()
 
         service_report = serviceReportMsg.report
@@ -359,12 +432,13 @@ class ServiceReport(UserReport):
         # read ServiceReportDetail
         report.service_name = service_report_detail.serviceName
         report.status_code = service_report_detail.statusCode
+        report.port = service_report_detail.port
         if service_report_detail.HasField('responseTime'):
             report.response_time = service_report_detail.responseTime
         if service_report_detail.HasField('bandwidth'):
             report.bandwidth = service_report_detail.bandwidth
 
-        report.user_id = user.id
+        report.user_id = agent.user.id
 
         # read ICMReport
         try:
@@ -393,6 +467,31 @@ class ServiceReport(UserReport):
                               ip=rcvTrace.ip,
                               timings=[t for t in rcvTrace.packetsTiming])
                 )
+
+            # update target location
+            iprange = IPRange.ip_location(report.target)
+            report.target_country_code = iprange.country_code
+            report.target_country_name = iprange.country_name
+            report.target_lat = iprange.lat
+            report.target_lon = iprange.lon
+            report.target_location_id = iprange.location_id
+            report.target_location_name = iprange.location.name
+            report.target_zipcode = iprange.zipcode
+            report.target_state_region = iprange.state_region
+            report.target_city = iprange.city
+
+        # get info about target ip
+        loggedAgent = agent.getLoginInfo()
+        report.agent_ip = loggedAgent.current_ip
+        report.agent_location_id = loggedAgent.location_id
+        report.agent_location_name = loggedAgent.location_name
+        report.agent_country_name = loggedAgent.country_name
+        report.agent_country_code = loggedAgent.country_code
+        report.agent_state_region = loggedAgent.state_region
+        report.agent_city = loggedAgent.city
+        report.agent_zipcode = loggedAgent.zipcode
+        report.agent_lat = loggedAgent.latitude
+        report.agent_lon = loggedAgent.longitude
         
         report.save()
         return report

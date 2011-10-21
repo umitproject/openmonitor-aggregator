@@ -26,7 +26,7 @@ from django.core.cache import cache
 USER_KEY = "user_%s"
 
 class UserModel(models.Model):
-    user_id = models.IntegerField()
+    user_id = models.IntegerField(null=True, default=None)
     
     class Meta:
         abstract = True

@@ -84,6 +84,7 @@ def event(request, event_id):
 
 
 def about(request):
+    user = request.user
     return render_to_response('gui/about.html', locals())
 
 

@@ -424,7 +424,9 @@ class SendWebsiteReportHandler(BaseHandler):
         receivedWebsiteReport.ParseFromString(msg)
 
         # add website report
-        webSiteReport = WebsiteReport.create(receivedWebsiteReport, agent.user)
+        webSiteReport = WebsiteReport.create(receivedWebsiteReport, agent)
+
+        logging.info("report created")
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
 
@@ -468,7 +470,7 @@ class SendServiceReportHandler(BaseHandler):
         receivedServiceReport.ParseFromString(msg)
 
         # add service report
-        serviceReport = ServiceReport.create(receivedServiceReport, agent.user)
+        serviceReport = ServiceReport.create(receivedServiceReport, agent)
 
         # send report to decision system
         DecisionSystem.newReport(serviceReport)
@@ -721,100 +723,100 @@ class TestsHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     def read(self, request):
-        try:
-            c = Client()
-            crypto = CryptoLib()
-
-            mod = 109916896023924130410814755146616820050848287195403807165245502023708307057182505344954954927069297885076677369989575235572225938578405052695849113605912075520043830304524405776689005895802218122674008335365710906635693457269579474788929265226007718176605597921238270933430352422527094012100555192243443310437
-            exp = 65537
-            d = 53225089572596125525843512131740616511492292813924040166456597139362240024103739980806956293552408080670588466616097320611022630892254518017345493694914613829109122334102313231580067697669558510530796064276699226938402801350068277390981376399696367398946370139716723891915686772368737964872397322242972049953
-            p = 9311922438153331754523459805685209527234133766003151707083260807995975127756369273827143717722693457161664179598414082626988492836607535481975170401420233
-            q = 11803888697952041452190425894815849667220518916298985642794987864683223570209190956951707407347610933271302068443002899691276141395264850489845154413900989
-            u = 4430245984407139797364141151557666474447820733910504072636286162751503313976630067126466513743819690811621510073670844704114936437585335006336955101762559
-
-
-            # generate AES key
-            AESKey = crypto.generateAESKey()
-            agentKey = RSAKey(mod, exp, d, p, q, u)
-            aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
-
-            registerMsg = messages_pb2.RegisterAgent()
-            registerMsg.versionNo = 1
-            registerMsg.agentType = "DESKTOP"
-            registerMsg.credentials.username = "zeux1"
-            registerMsg.credentials.password = "123"
-            registerMsg.agentPublicKey.mod = str(mod)
-            registerMsg.agentPublicKey.exp = str(exp)
-            registerMsg.ip = "192.168.2.1"
-
-            registerMsgSerialized = registerMsg.SerializeToString()
-            registerMsg_str = crypto.encodeAES(registerMsgSerialized, AESKey)
-
-            key_str = crypto.encodeRSAPublicKey(AESKey, aggregatorKey)
-
-
-            response_str = c.post('/api/registeragent/', {'msg': registerMsg_str, 'key': key_str})
-
-
-            # REGISTRATION DONE
-            # BEGIN LOGIN STEP 1
-
-            response_decoded = crypto.decodeAES(response_str.content, AESKey)
-
-            response = messages_pb2.RegisterAgentResponse()
-            response.ParseFromString(response_decoded)
-
-            logging.info("Registered: %d" % response.agentID)
-
-            firstchallenge = crypto.generateChallenge()
-            logging.info("Challenge generated on agent: %s" % firstchallenge)
-
-            loginMsg = messages_pb2.Login()
-            loginMsg.agentID = response.agentID;
-            loginMsg.challenge = firstchallenge
-            loginMsg.port = 9090
-            loginMsg.ip = "209.85.169.99"
-
-            loginMsg_str = base64.b64encode(loginMsg.SerializeToString())
-
-            response_str = c.post('/api/loginagent/', {'msg': loginMsg_str})
-
-
-            # LOGIN STEP 1 done
-            # BEGIN LOGIN STEP 2
-
-            msg = base64.b64decode(response_str.content)
-
-            logging.info("Login step1 received")
-
-            response = messages_pb2.LoginStep1()
-            response.ParseFromString(msg)
-
-            challenge = response.challenge
-            cipheredChallenge = crypto.signRSA(challenge, agentKey)
-
-            logging.info("Challenge received from aggregator: %s" % challenge)
-
-            # check challenge
-            if crypto.verifySignatureRSA(firstchallenge, response.cipheredChallenge, aggregatorKey):
-                logging.info("AGENT: CHALLENGE OK")
-            else:
-                logging.info("AGENT: CHALLENGE NOT OK")
-
-            loginMsg = messages_pb2.LoginStep2()
-            loginMsg.processID = response.processID
-            loginMsg.cipheredChallenge = cipheredChallenge
-
-            loginMsg_str = base64.b64encode(loginMsg.SerializeToString())
-
-            response_str = c.post('/api/loginagent2/', {'msg': loginMsg_str})
-
-            logging.info("Login response received")
-
-
-        except Exception,e:
-            logging.error(e)
+#        try:
+#            c = Client()
+#            crypto = CryptoLib()
+#
+#            mod = 109916896023924130410814755146616820050848287195403807165245502023708307057182505344954954927069297885076677369989575235572225938578405052695849113605912075520043830304524405776689005895802218122674008335365710906635693457269579474788929265226007718176605597921238270933430352422527094012100555192243443310437
+#            exp = 65537
+#            d = 53225089572596125525843512131740616511492292813924040166456597139362240024103739980806956293552408080670588466616097320611022630892254518017345493694914613829109122334102313231580067697669558510530796064276699226938402801350068277390981376399696367398946370139716723891915686772368737964872397322242972049953
+#            p = 9311922438153331754523459805685209527234133766003151707083260807995975127756369273827143717722693457161664179598414082626988492836607535481975170401420233
+#            q = 11803888697952041452190425894815849667220518916298985642794987864683223570209190956951707407347610933271302068443002899691276141395264850489845154413900989
+#            u = 4430245984407139797364141151557666474447820733910504072636286162751503313976630067126466513743819690811621510073670844704114936437585335006336955101762559
+#
+#
+#            # generate AES key
+#            AESKey = crypto.generateAESKey()
+#            agentKey = RSAKey(mod, exp, d, p, q, u)
+#            aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
+#
+#            registerMsg = messages_pb2.RegisterAgent()
+#            registerMsg.versionNo = 1
+#            registerMsg.agentType = "DESKTOP"
+#            registerMsg.credentials.username = "zeux1"
+#            registerMsg.credentials.password = "123"
+#            registerMsg.agentPublicKey.mod = str(mod)
+#            registerMsg.agentPublicKey.exp = str(exp)
+#            registerMsg.ip = "192.168.2.1"
+#
+#            registerMsgSerialized = registerMsg.SerializeToString()
+#            registerMsg_str = crypto.encodeAES(registerMsgSerialized, AESKey)
+#
+#            key_str = crypto.encodeRSAPublicKey(AESKey, aggregatorKey)
+#
+#
+#            response_str = c.post('/api/registeragent/', {'msg': registerMsg_str, 'key': key_str})
+#
+#
+#            # REGISTRATION DONE
+#            # BEGIN LOGIN STEP 1
+#
+#            response_decoded = crypto.decodeAES(response_str.content, AESKey)
+#
+#            response = messages_pb2.RegisterAgentResponse()
+#            response.ParseFromString(response_decoded)
+#
+#            logging.info("Registered: %d" % response.agentID)
+#
+#            firstchallenge = crypto.generateChallenge()
+#            logging.info("Challenge generated on agent: %s" % firstchallenge)
+#
+#            loginMsg = messages_pb2.Login()
+#            loginMsg.agentID = response.agentID;
+#            loginMsg.challenge = firstchallenge
+#            loginMsg.port = 9090
+#            loginMsg.ip = "209.85.169.99"
+#
+#            loginMsg_str = base64.b64encode(loginMsg.SerializeToString())
+#
+#            response_str = c.post('/api/loginagent/', {'msg': loginMsg_str})
+#
+#
+#            # LOGIN STEP 1 done
+#            # BEGIN LOGIN STEP 2
+#
+#            msg = base64.b64decode(response_str.content)
+#
+#            logging.info("Login step1 received")
+#
+#            response = messages_pb2.LoginStep1()
+#            response.ParseFromString(msg)
+#
+#            challenge = response.challenge
+#            cipheredChallenge = crypto.signRSA(challenge, agentKey)
+#
+#            logging.info("Challenge received from aggregator: %s" % challenge)
+#
+#            # check challenge
+#            if crypto.verifySignatureRSA(firstchallenge, response.cipheredChallenge, aggregatorKey):
+#                logging.info("AGENT: CHALLENGE OK")
+#            else:
+#                logging.info("AGENT: CHALLENGE NOT OK")
+#
+#            loginMsg = messages_pb2.LoginStep2()
+#            loginMsg.processID = response.processID
+#            loginMsg.cipheredChallenge = cipheredChallenge
+#
+#            loginMsg_str = base64.b64encode(loginMsg.SerializeToString())
+#
+#            response_str = c.post('/api/loginagent2/', {'msg': loginMsg_str})
+#
+#            logging.info("Login response received")
+#
+#
+#        except Exception,e:
+#            logging.error(e)
 
         
-        return HttpResponse(str(IPRange.ip_location('209.85.146.106').dump()))
+        return HttpResponse(str(IPRange.ip_location('78.43.34.120').dump()))
 

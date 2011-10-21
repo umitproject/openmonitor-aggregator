@@ -317,6 +317,7 @@ class AgentTests():
         report['time'] = 1310396214
         report['service_name'] = "ftp"
         report['status_code'] = 404
+        report['port'] = 9090
         report['response_time'] = 75
         report['bandwidth'] = 1240
         passedNodes = []
@@ -400,6 +401,7 @@ class AgentTests():
         wreport.report.header.timeUTC = report['time']
         wreport.report.report.serviceName = report['service_name']
         wreport.report.report.statusCode = report['status_code']
+        wreport.report.report.port = report['port']
         wreport.report.report.responseTime = report['response_time']
         wreport.report.report.bandwidth = report['bandwidth']
 

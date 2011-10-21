@@ -19,7 +19,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import datetime
 from django import forms
+
+EVENT_TYPE = (
+    ('censor', 'Censor'),
+    ('throttling', 'Throttling'),
+    ('offline', 'Offline'),
+)
 
 class SuggestWebsiteForm(forms.Form):
     website = forms.CharField(max_length=300, required=True)
@@ -30,3 +37,15 @@ class SuggestServiceForm(forms.Form):
     service_name = forms.CharField(max_length=20, required=True)
     port = forms.IntegerField(required=True)
     location = forms.CharField(max_length=300, required=False)
+
+class WebsiteEventForm(forms.Form):
+    website = forms.CharField(max_length=300, required=True)
+    location = forms.CharField(max_length=300, required=True)
+    first_detection = forms.DateTimeField(initial=datetime.date.today, required=False)
+    event_type = forms.ChoiceField(choices=EVENT_TYPE, required=False)
+
+class ServiceEventForm(forms.Form):
+    service = forms.CharField(max_length=300, required=True)
+    location = forms.CharField(max_length=300, required=True)
+    first_detection = forms.DateTimeField(initial=datetime.date.today, required=False)
+    event_type = forms.ChoiceField(choices=EVENT_TYPE, required=False)

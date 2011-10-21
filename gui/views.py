@@ -28,12 +28,14 @@ from django.shortcuts import get_object_or_404
 
 from google.appengine.api import channel
 
-from events.models import Event
-from gui.forms import SuggestServiceForm, SuggestWebsiteForm
+import datetime, logging
+from gui.forms import SuggestServiceForm, SuggestWebsiteForm, WebsiteEventForm, ServiceEventForm
 from gui.decorators import cant_repeat_form
 from geoip.models import Location
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
+from events.models import Event, TargetType, EventType
 from reports.models import WebsiteReport
+from notificationsystem.system import NotificationSystem
 from filetransfers.api import serve_file
 
 
@@ -65,7 +67,7 @@ def realtimebox(request):
     events = Event.get_active_events(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:
-        events_dict.append(event.getDict())
+        events_dict.append(event.get_dict())
     initialEvents = json.dumps(events_dict)
     return render_to_response('notificationsystem/realtimebox.html', {'token': token, 'initial_events': initialEvents})
 
@@ -141,6 +143,110 @@ provided at least a valid website.',
     
     form = SuggestWebsiteForm()
     return render_to_response('gui/suggest_website.html', locals())
+
+
+@cant_repeat_form(WebsiteEventForm, ['website', 'first_detection', 'event_type', 'location'])
+def create_website_event(request, form, valid, *args, **kwargs):
+    logging.critical("create_website_event")
+    logging.critical(form)
+    if (form is not None):
+        website = form.cleaned_data['website']
+        first_detection = form.cleaned_data['first_detection']
+        event_type = form.cleaned_data['event_type']
+        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
+
+        logging.info("creating website event")
+
+        event = Event()
+        event.active = True
+        if first_detection:
+            event.first_detection_utc = first_detection
+        else:
+            event.first_detection_utc = datetime.datetime.now()
+        event.last_detection_utc  = datetime.datetime.now()
+        event.target = website
+        event.target_type = TargetType.Website
+        if event_type:
+            # 'censor', 'throttling', 'offline'
+            if event_type == 'censor':
+                event.event_type = EventType.Censor
+            elif event_type == 'throttling':
+                event.event_type = EventType.Throttling
+            else:
+                event.event_type = EventType.Offline
+        else:
+            event.event_type = EventType.Offline
+        event.location_ids.append(location.id)
+        event.location_names.append(location.name)
+        event.location_country_names.append(location.country_name)
+        event.location_country_codes.append(location.country_code)
+        event.lats.append(location.lat)
+        event.lons.append(location.lon)
+        event.isps.append('')
+
+        event.save()
+        NotificationSystem.publishEvent(event)
+
+        return HttpResponse(json.dumps(dict(status='OK',
+                   msg='Website event added successfully!',
+                   errors=None)))
+    elif (form is not None) and (not valid):
+        return HttpResponse(json.dumps(dict(status='FAILED',
+                msg='Failed to add event.',
+                errors=form.errors)))
+    
+    form = WebsiteEventForm()
+    return render_to_response('gui/create_website_event.html', locals())
+
+
+@cant_repeat_form(ServiceEventForm, ['service', 'first_detection', 'event_type', 'location'])
+def create_service_event(request, form, valid, *args, **kwargs):
+    if (form is not None) and valid:
+        service = form.cleaned_data['service']
+        first_detection = form.cleaned_data['first_detection']
+        event_type = form.cleaned_data['event_type']
+        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
+
+        event = Event()
+        event.active = True
+        if first_detection:
+            event.first_detection_utc = first_detection
+        else:
+            event.first_detection_utc = datetime.datetime.now()
+        event.last_detection_utc  = datetime.datetime.now()
+        event.target = service
+        event.target_type = TargetType.Service
+        if event_type:
+            # 'censor', 'throttling', 'offline'
+            if event_type == 'censor':
+                event.event_type = EventType.Censor
+            elif event_type == 'throttling':
+                event.event_type = EventType.Throttling
+            else:
+                event.event_type = EventType.Offline
+        else:
+            event.event_type = EventType.Offline
+        event.location_ids.append(location.id)
+        event.location_names.append(location.name)
+        event.location_country_names.append(location.country_name)
+        event.location_country_codes.append(location.country_code)
+        event.lats.append(location.lat)
+        event.lons.append(location.lon)
+        event.isps.append('')
+
+        event.save()
+        NotificationSystem.publishEvent(event)
+
+        return HttpResponse(json.dumps(dict(status='OK',
+                   msg='Website event added successfully!',
+                   errors=None)))
+    elif (form is not None) and (not valid):
+        return HttpResponse(json.dumps(dict(status='FAILED',
+                msg='Failed to add event.',
+                errors=form.errors)))
+
+    form = ServiceEventForm()
+    return render_to_response('gui/create_service_event.html', locals())
 
 
 def serve_media(request, id):

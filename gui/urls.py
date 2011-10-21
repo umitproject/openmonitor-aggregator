@@ -27,4 +27,6 @@ urlpatterns = patterns('',
     url('^suggest_service/?$', 'gui.views.suggest_service', name='suggest_service'),
     url('^suggest_website/?$', 'gui.views.suggest_website', name='suggest_website'),
     url('^wsrdata/(?P<id>\d+)/?$', 'gui.views.serve_media', name='serve_media'),
+    url('^create_website_event/?$', 'gui.views.create_website_event', name='create_website_event'),
+    url('^create_service_event/?$', 'gui.views.create_service_event', name='create_service_event'),
 )

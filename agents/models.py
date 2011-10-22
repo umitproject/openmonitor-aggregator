@@ -42,9 +42,15 @@ class LoginProcess(models.Model):
 
 class LoggedAgent(models.Model):
     agentID       = models.IntegerField(primary_key=True)
-    country       = models.CharField(max_length=2)
-    latitude      = models.FloatField()
-    longitude     = models.FloatField()
+    country_code  = models.CharField(max_length=2)
+    country_name  = models.CharField(max_length=100)
+    location_id   = models.IntegerField()
+    location_name = models.CharField(max_length=300)
+    state_region  = models.CharField(max_length=2)
+    city          = models.CharField(max_length=255)
+    zipcode       = models.CharField(max_length=6)
+    latitude      = models.DecimalField(decimal_places=20, max_digits=23)
+    longitude     = models.DecimalField(decimal_places=20, max_digits=23)
     current_ip    = models.CharField(max_length=255)
     port          = models.PositiveIntegerField()
     agentInfo     = models.ForeignKey('Agent')
@@ -56,13 +62,13 @@ class LoggedAgent(models.Model):
     def getAgent(agentID):
         return LoggedAgent.objects.get(agentID=agentID)
 
-    def _getPeers(agentID, country, superPeer, totalPeers):
+    def _getPeers(agentID, country_code, superPeer, totalPeers):
         selectedPeers = []
         # create list with already selected agent ids
         peersIDs = [agentID]
 
         # select near peers
-        nearPeers = list(LoggedAgent.objects.filter(Q(country=country), Q(superPeer=superPeer), ~Q(agentID__in=peersIDs)))
+        nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code), Q(superPeer=superPeer), ~Q(agentID__in=peersIDs)))
 
         # if more peers are needed, get far peers
         neededPeers = totalPeers-len(nearPeers)
@@ -105,7 +111,7 @@ class LoggedAgent(models.Model):
         return selectedPeers
 
     def __unicode__(self):
-        return "Agent %s at %s" % (self.agentID, self.country)
+        return "Agent %s at %s" % (self.agentID, self.country_name)
 
     getAgent = staticmethod(getAgent)
     _getPeers = staticmethod(_getPeers)
@@ -129,8 +135,8 @@ class Agent(models.Model):
     lastKnownIP   = models.CharField(max_length=255, null=True)
     lastKnownPort = models.PositiveIntegerField(null=True)
     lastKnownCountry   = models.CharField(max_length=2, null=True)
-    lastKnownLatitude  = models.FloatField(null=True)
-    lastKnownLongitude = models.FloatField(null=True)
+    lastKnownLatitude  = models.DecimalField(decimal_places=20, max_digits=23, null=True)
+    lastKnownLongitude = models.DecimalField(decimal_places=20, max_digits=23, null=True)
     # flag to know if agent has finished the register process
     activated     = models.BooleanField(default=False)
     # flag to mark agent as blocked (if blocked agent will not be able to login)
@@ -210,9 +216,15 @@ class Agent(models.Model):
 
             # get country by geoip
             iprange = IPRange.ip_location(loginProcess.ip)
-            loggedAgent.country = iprange.country_code
+            loggedAgent.country_code = iprange.country_code
+            loggedAgent.country_name = iprange.country_name
             loggedAgent.latitude = iprange.lat
             loggedAgent.longitude = iprange.lon
+            loggedAgent.location_id = iprange.location_id
+            loggedAgent.location_name = iprange.location.name
+            loggedAgent.zipcode = iprange.zipcode
+            loggedAgent.state_region = iprange.state_region
+            loggedAgent.city = iprange.city
             loggedAgent.save()
 
             # update agent information
@@ -271,6 +283,9 @@ class Agent(models.Model):
         crypt = CryptoLib()
         publicKey = RSAKey(self.publicKeyMod, self.publicKeyExp)
         return crypt.verifySignatureRSA(originalChallenge, cipheredChallenge, publicKey)
+
+    def getLoginInfo(self):
+        return LoggedAgent.getAgent(self.agentID)
         
 
     def __unicode__(self):

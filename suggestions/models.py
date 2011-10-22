@@ -149,7 +149,7 @@ class WebsiteAggregation(UserModel):
                                   ['website_url', 'location_id', 'user_id'], suggestion)
     
     def __unicode__(self):
-        return "(%s) %s - %s" % (self.count, self.location, self.website_url, self.user_id)
+        return "(%s) %s - %s" % (self.count, self.location, self.website_url)
 
 
 

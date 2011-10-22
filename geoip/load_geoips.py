@@ -68,7 +68,7 @@ def download():
     zip.extract(GEO_LOCATION_CSV)
 
 def lookup_location(id):
-    locations = csv.reader(open(join(CUR_DIR, GEO_LOCATION_CSV), 'rUb'), delimiter=',')
+    locations = unicode_reader(open(join(CUR_DIR, GEO_LOCATION_CSV), 'rUb'), delimiter=',')
     for row in locations:
         if id == row[0]:
             return row
@@ -122,6 +122,13 @@ def load_data():
 
 def load_cities():
     pass
+
+
+def unicode_reader(csv_data, dialect=csv.excel, **kwargs):
+    csv_reader = csv.reader(csv_data, dialect, **kwargs)
+    for row in csv_reader:
+        yield [unicode(cell, 'latin1') for cell in row]
+
 
 if __name__ == "__main__":
     download()

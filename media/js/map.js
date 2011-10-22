@@ -42,7 +42,7 @@ function placeNewEvent(type, event, latitude, longitude, alertEvent)
 
     var marker = new google.maps.Marker({
         position: new google.maps.LatLng(latitude, longitude),
-        title:"Shutdown!",
+        //title:"Shutdown!",
         icon: icon
     });
 
@@ -88,13 +88,14 @@ function addEventToMap(event, appear)
     for(i=0; i<event.locations.length; i++)
     {
         localInfo = "";
-        if(event.locations[i].city!="")
-            localInfo = event.locations[i].city + ", ";
-        localInfo += event.locations[i].country;
+        if(event.locations[i].location_name!="")
+            localInfo = event.locations[i].location_name + ", ";
+        localInfo += event.locations[i].location_country_name;
 
         eventInfo = baseInfo + localInfo;
 
-        placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lng, appear)
+        placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lon, appear)
+        //console.info(event.type, event.locations[i].lat, event.locations[i].lon)
     }
     // TODO: format information; show all information
 }
@@ -110,8 +111,8 @@ function onMapMessage(m) {
 }
 
 function onMapError(error) {
-    alert(error);
-    console.debug(error);
+    //alert(error);
+    //console.debug(error);
     $("#map_status").html("Error loading events")
 }
 

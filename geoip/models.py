@@ -26,6 +26,7 @@ from django.core.cache import cache
 
 from dbextra.fields import ListField
 from geoip.ip import convert_ip, convert_int_ip
+from django.utils.encoding import smart_str
 
 CACHE_EXPIRATION = 60*60 # 1 hour, since this doesn't change any often
 LOCATION_CACHE_KEY = "location_%s"
@@ -79,7 +80,8 @@ class LocationNamesAggregation(models.Model):
 
     @staticmethod
     def add_location(location):
-        for i in xrange(1, len(location.name)):
+        lname = smart_str(location.name)
+        for i in xrange(1, len(lname)):
             prefix = location.name[:i].lower()
 
             agg = LocationNamesAggregation.objects.filter(prefix=prefix)
@@ -89,12 +91,12 @@ class LocationNamesAggregation(models.Model):
                 if location.id in agg.locations:
                     continue
 
-                agg.names.append(location.name)
+                agg.names.append(lname)
                 agg.locations.append(location.id)
             else:
                 agg = LocationNamesAggregation()
                 agg.prefix = prefix
-                agg.names.append(location.name)
+                agg.names.append(lname)
                 agg.locations.append(location.id)
 
             agg.save()

@@ -175,27 +175,25 @@ class Location(models.Model):
             location.save()
             return location
         
-        location = Location()
-        location.ip_range_ids = [ip_range.id]
-        location.country_code = ip_range.country_code
-        location.state_region = ip_range.state_region
-        location.city = ip_range.city
-        location.zipcode = ip_range.zipcode
-        location.lat = ip_range.lat
-        location.lon = ip_range.lon
-        location.save()
+        #location = Location()
+        #location.ip_range_ids = [ip_range.id]
+        #location.country_code = ip_range.country_code
+        #location.state_region = ip_range.state_region
+        #location.city = ip_range.city
+        #location.zipcode = ip_range.zipcode
+        #location.lat = ip_range.lat
+        #location.lon = ip_range.lon
+        #location.save()
         
         return location
 
     def save(self, *args, **kwargs):
-        if self!=None:
-            loc = Location.objects.filter(id=self.id)
-            super(Location, self).save(*args, **kwargs)
+        super(Location, self).save(*args, **kwargs)
 
-            if len(loc)==0:
-                # Create proper aggregation for the current lat/lon
-                LocationAggregation.add_location(self)
-                LocationNamesAggregation.add_location(self)
+    def generateAggregations(self):
+        # Create proper aggregation for the current lat/lon
+        LocationAggregation.add_location(self)
+        LocationNamesAggregation.add_location(self)
     
     @staticmethod
     def closest_location(lat, lon):
@@ -291,8 +289,8 @@ class IPRange(models.Model):
         
         super(IPRange, self).save(*args, **kwargs)
         
-        if new:
-            Location.add_ip_range(self)
+        #if new:
+        Location.add_ip_range(self)
     
     def dump(self):
         return dict(city=self.city,

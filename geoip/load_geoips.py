@@ -109,7 +109,7 @@ def load_data():
         batch.append(dict(loc_id=row[2],
                           start_number=row[0],
                           end_number=row[1],
-                          country_name=lookup_country_name(loc[3]),
+                          country_name=lookup_country_name(loc[1]),
                           country_code=loc[1],
                           state_region=loc[2],
                           city=loc[3],

@@ -44,7 +44,7 @@ def save_geoip(request):
             location = Location()
             location.id = gip['loc_id']
             location.name = "%s, %s" % (gip['city'], gip['country_name']) if gip['city'] != '' else gip['country_name']
-            location.country = gip['country_name']
+            location.country_name = gip['country_name']
             location.country_code = gip['country_code']
             location.state_region = gip['state_region']
             location.city = gip['city']
@@ -52,13 +52,14 @@ def save_geoip(request):
             location.lat = Decimal(gip['latitude']) if gip['latitude'] != '' else Decimal("0.0")
             location.lon = Decimal(gip['longitude']) if gip['longitude'] != '' else Decimal("0.0")
             location.save()
+            location.generateAggregations()
             
         ip = IPRange()
         ip.location_id = gip['loc_id']
         ip.start_number = gip['start_number']
         ip.end_number = gip['end_number']
         ip.name = "%s, %s" % (gip['city'], gip['country_name']) if gip['city'] != '' else gip['country_name']
-        ip.country = gip['country_name']
+        ip.country_name = gip['country_name']
         ip.country_code = gip['country_code']
         ip.state_region = gip['state_region']
         ip.city = gip['city']

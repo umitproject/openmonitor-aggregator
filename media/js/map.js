@@ -10,7 +10,7 @@ function initializeMap()
 {
     var latlng = new google.maps.LatLng(0, 0);
     var myOptions = {
-        zoom: 2,
+        zoom: 3,
         center: latlng,
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
@@ -42,7 +42,7 @@ function placeNewEvent(type, event, latitude, longitude, alertEvent)
 
     var marker = new google.maps.Marker({
         position: new google.maps.LatLng(latitude, longitude),
-        title:"Shutdown!",
+        //title:"Shutdown!",
         icon: icon
     });
 
@@ -88,45 +88,18 @@ function addEventToMap(event, appear)
     for(i=0; i<event.locations.length; i++)
     {
         localInfo = "";
-        if(event.locations[i].city!="")
-            localInfo = event.locations[i].city + ", ";
-        localInfo += event.locations[i].country;
+        if(event.locations[i].location_name!="")
+            localInfo = event.locations[i].location_name + ", ";
+        localInfo += event.locations[i].location_country_name;
 
-        eventInfo = baseInfo + localInfo;
+        eventInfo = "<div class='tooltip'>" + baseInfo + localInfo + "</div>";
 
-        placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lng, appear)
+        placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lon, appear)
+        //console.info(event.type, event.locations[i].lat, event.locations[i].lon)
     }
+
+    //mapCluster.resetViewport()
     // TODO: format information; show all information
-}
-
-function onMapOpened() {
-    $("#map_status").html("Waiting for events...")
-};
-
-function onMapMessage(m) {
-    event = JSON.parse(m.data)
-    //$("#map_status").html("New event")
-    addEventToMap(event, true)
-}
-
-function onMapError(error) {
-    alert(error);
-    console.debug(error);
-    $("#map_status").html("Error loading events")
-}
-
-function onMapOpenChannel(token) {
-    var channel = new goog.appengine.Channel(token);
-    var handler = {
-      'onopen': onMapOpened,
-      'onmessage': onMapMessage,
-      'onerror': onMapError,
-      'onclose': function() {}
-    };
-    var socket = channel.open(handler);
-    socket.onopen = onMapOpened;
-    socket.onmessage = onMapMessage;
-    socket.onerror = onMapError;
 }
 
 function updateInitialMapEvents(m)
@@ -138,8 +111,7 @@ function updateInitialMapEvents(m)
     }
 }
 
-function initializeMapSystem(token, initial_events) {
+function initializeMapSystem(initial_events) {
     initializeMap();
-    onMapOpenChannel(token);
     updateInitialMapEvents({data: initial_events});
 }

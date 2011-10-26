@@ -58,7 +58,7 @@ def map(request):
     events_dict = []
     for event in events:
         events_dict.append(event.get_dict())
-    initialEvents = json.dumps(events_dict)
+    initialEvents = json.dumps(events_dict, use_decimal=True)
     return render_to_response('notificationsystem/map.html', {'token': token, 'initial_events': initialEvents})
 
 
@@ -68,7 +68,7 @@ def realtimebox(request):
     events_dict = []
     for event in events:
         events_dict.append(event.get_dict())
-    initialEvents = json.dumps(events_dict)
+    initialEvents = json.dumps(events_dict, use_decimal=True)
     return render_to_response('notificationsystem/realtimebox.html', {'token': token, 'initial_events': initialEvents})
 
 
@@ -146,105 +146,111 @@ provided at least a valid website.',
     return render_to_response('gui/suggest_website.html', locals())
 
 
-@cant_repeat_form(WebsiteEventForm, ['website', 'first_detection', 'event_type', 'location'])
-def create_website_event(request, form, valid, *args, **kwargs):
-    if (form is not None):
-        website = form.cleaned_data['website']
-        first_detection = form.cleaned_data['first_detection']
-        event_type = form.cleaned_data['event_type']
-        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
+def create_website_event(request):
+    if request.method == 'POST':
+        form = WebsiteEventForm(request.POST)
+        if form.is_valid():
+            website = form.cleaned_data['website']
+            first_detection = form.cleaned_data['first_detection']
+            event_type = form.cleaned_data['event_type']
+            location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
 
-        event = Event()
-        event.active = True
-        if first_detection:
-            event.first_detection_utc = first_detection
-        else:
-            event.first_detection_utc = datetime.datetime.now()
-        event.last_detection_utc  = datetime.datetime.now()
-        event.target = website
-        event.target_type = TargetType.Website
-        if event_type:
-            # 'censor', 'throttling', 'offline'
-            if event_type == 'censor':
-                event.event_type = EventType.Censor
-            elif event_type == 'throttling':
-                event.event_type = EventType.Throttling
+            logging.info(location)
+
+            event = Event()
+            event.active = True
+            if first_detection:
+                event.first_detection_utc = first_detection
+            else:
+                event.first_detection_utc = datetime.datetime.now()
+            event.last_detection_utc  = datetime.datetime.now()
+            event.target = website
+            event.target_type = TargetType.Website
+            if event_type:
+                # 'censor', 'throttling', 'offline'
+                if event_type == 'censor':
+                    event.event_type = EventType.Censor
+                elif event_type == 'throttling':
+                    event.event_type = EventType.Throttling
+                else:
+                    event.event_type = EventType.Offline
             else:
                 event.event_type = EventType.Offline
+
+            logging.info(location)
+
+            if location!=None:
+                event.location_ids.append(location.id)
+                event.location_names.append(location.name)
+                event.location_country_names.append(location.country_name)
+                event.location_country_codes.append(location.country_code)
+                event.lats.append(location.lat)
+                event.lons.append(location.lon)
+                event.isps.append('')
+
+            event.save()
+            NotificationSystem.publishEvent(event)
+
+            return HttpResponse(json.dumps(dict(status='OK',
+                       msg='Website event added successfully!',
+                       errors=None)))
         else:
-            event.event_type = EventType.Offline
-
-        if location!=None:
-            event.location_ids.append(location.id)
-            event.location_names.append(location.name)
-            event.location_country_names.append(location.country_name)
-            event.location_country_codes.append(location.country_code)
-            event.lats.append(location.lat)
-            event.lons.append(location.lon)
-            event.isps.append('')
-
-        event.save()
-        NotificationSystem.publishEvent(event)
-
-        return HttpResponse(json.dumps(dict(status='OK',
-                   msg='Website event added successfully!',
-                   errors=None)))
-    elif (form is not None) and (not valid):
-        return HttpResponse(json.dumps(dict(status='FAILED',
-                msg='Failed to add event.',
-                errors=form.errors)))
+            return HttpResponse(json.dumps(dict(status='FAILED',
+                    msg='Failed to add event.',
+                    errors=form.errors)))
     
     form = WebsiteEventForm()
     return render_to_response('gui/create_website_event.html', locals())
 
 
-@cant_repeat_form(ServiceEventForm, ['service', 'first_detection', 'event_type', 'location'])
-def create_service_event(request, form, valid, *args, **kwargs):
-    if (form is not None) and valid:
-        service = form.cleaned_data['service']
-        first_detection = form.cleaned_data['first_detection']
-        event_type = form.cleaned_data['event_type']
-        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
+def create_service_event(request):
+    if request.method == 'POST':
+        form = ServiceEventForm(request.POST)
+        if form.is_valid():
+            service = form.cleaned_data['service']
+            first_detection = form.cleaned_data['first_detection']
+            event_type = form.cleaned_data['event_type']
+            location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
 
-        event = Event()
-        event.active = True
-        if first_detection:
-            event.first_detection_utc = first_detection
-        else:
-            event.first_detection_utc = datetime.datetime.now()
-        event.last_detection_utc  = datetime.datetime.now()
-        event.target = service
-        event.target_type = TargetType.Service
-        if event_type:
-            # 'censor', 'throttling', 'offline'
-            if event_type == 'censor':
-                event.event_type = EventType.Censor
-            elif event_type == 'throttling':
-                event.event_type = EventType.Throttling
+            event = Event()
+            event.active = True
+            if first_detection:
+                event.first_detection_utc = first_detection
+            else:
+                event.first_detection_utc = datetime.datetime.now()
+            event.last_detection_utc  = datetime.datetime.now()
+            event.target = service
+            event.target_type = TargetType.Service
+            if event_type:
+                # 'censor', 'throttling', 'offline'
+                if event_type == 'censor':
+                    event.event_type = EventType.Censor
+                elif event_type == 'throttling':
+                    event.event_type = EventType.Throttling
+                else:
+                    event.event_type = EventType.Offline
             else:
                 event.event_type = EventType.Offline
+
+            if location!=None:
+                event.location_ids.append(location.id)
+                event.location_names.append(location.name)
+                event.location_country_names.append(location.country_name)
+                event.location_country_codes.append(location.country_code)
+                event.lats.append(location.lat)
+                event.lons.append(location.lon)
+                event.isps.append('')
+
+            event.save()
+            NotificationSystem.publishEvent(event)
+
+            return HttpResponse(json.dumps(dict(status='OK',
+                       msg='Website event added successfully!',
+                       errors=None)))
         else:
-            event.event_type = EventType.Offline
-
-        if location!=None:
-            event.location_ids.append(location.id)
-            event.location_names.append(location.name)
-            event.location_country_names.append(location.country_name)
-            event.location_country_codes.append(location.country_code)
-            event.lats.append(location.lat)
-            event.lons.append(location.lon)
-            event.isps.append('')
-
-        event.save()
-        NotificationSystem.publishEvent(event)
-
-        return HttpResponse(json.dumps(dict(status='OK',
-                   msg='Website event added successfully!',
-                   errors=None)))
-    elif (form is not None) and (not valid):
-        return HttpResponse(json.dumps(dict(status='FAILED',
-                msg='Failed to add event.',
-                errors=form.errors)))
+            return HttpResponse(json.dumps(dict(status='FAILED',
+                    msg='Failed to add event.',
+                    errors=form.errors)))
 
     form = ServiceEventForm()
     return render_to_response('gui/create_service_event.html', locals())

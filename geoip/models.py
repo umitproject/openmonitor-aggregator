@@ -19,9 +19,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-
 import decimal
-import logging
 
 from django.db import models
 from django.core.cache import cache
@@ -69,7 +67,7 @@ class LocationAggregation(models.Model):
             agg.add(location)
             location.add_aggregation(agg)
         else:
-            agg = agg[0]
+            agg = aggs[0]
             agg.add(location)
             location.add_aggregation(agg)
 
@@ -96,8 +94,8 @@ class LocationNamesAggregation(models.Model):
             else:
                 agg = LocationNamesAggregation()
                 agg.prefix = prefix
-                agg.names = [location.name]
-                agg.locations = [location.id]
+                agg.names.append(location.name)
+                agg.locations.append(location.id)
 
             agg.save()
 
@@ -149,9 +147,10 @@ class Location(models.Model):
         coordinates. If successful, we create a new entry. Otherwise, we
         consider the suggestion to be world wide.
         """
-        location = Location.objects.filter(name=name)
+        location = Location.objects.filter(name__startswith=name)
         if not location:
-            location = Location.objects.filter(name=name)
+            # TODO
+            location = Location.objects.filter(name__startswith=name)
         
         if location:
             return location[0]
@@ -176,27 +175,25 @@ class Location(models.Model):
             location.save()
             return location
         
-        location = Location()
-        location.ip_range_ids = [ip_range.id]
-        location.country_code = ip_range.country_code
-        location.state_region = ip_range.state_region
-        location.city = ip_range.city
-        location.zipcode = ip_range.zipcode
-        location.lat = ip_range.lat
-        location.lon = ip_range.lon
-        location.save()
+        #location = Location()
+        #location.ip_range_ids = [ip_range.id]
+        #location.country_code = ip_range.country_code
+        #location.state_region = ip_range.state_region
+        #location.city = ip_range.city
+        #location.zipcode = ip_range.zipcode
+        #location.lat = ip_range.lat
+        #location.lon = ip_range.lon
+        #location.save()
         
         return location
 
     def save(self, *args, **kwargs):
-        new = self.id is None
-        
         super(Location, self).save(*args, **kwargs)
-        
-        if new:
-            # Create proper aggregation for the current lat/lon
-            LocationAggregation.add_location(self)
-            LocationNamesAggregation.add_location(self)
+
+    def generateAggregations(self):
+        # Create proper aggregation for the current lat/lon
+        LocationAggregation.add_location(self)
+        LocationNamesAggregation.add_location(self)
     
     @staticmethod
     def closest_location(lat, lon):
@@ -226,14 +223,14 @@ class Location(models.Model):
         return locations
 
 
-UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
-                                                  country_name='Unknown',
-                                                  country_code='UN',
-                                                  state_region='UN',
-                                                  city='Unknown',
-                                                  zipcode='',
-                                                  lat=decimal.Decimal('0.0'),
-                                                  lon=decimal.Decimal('0.0'))[0]
+#UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
+#                                                  country_name='Unknown',
+#                                                  country_code='UN',
+#                                                  state_region='UN',
+#                                                  city='Unknown',
+#                                                  zipcode='',
+#                                                  lat=decimal.Decimal('0.0'),
+#                                                  lon=decimal.Decimal('0.0'))[0]
 
 class IPRange(models.Model):
     location_id = models.IntegerField()
@@ -292,8 +289,8 @@ class IPRange(models.Model):
         
         super(IPRange, self).save(*args, **kwargs)
         
-        if new:
-            Location.add_ip_range(self)
+        #if new:
+        Location.add_ip_range(self)
     
     def dump(self):
         return dict(city=self.city,

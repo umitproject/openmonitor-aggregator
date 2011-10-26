@@ -294,3 +294,9 @@ dd {
 #map_canvas {
 	
 }
+
+.tooltip
+{
+    text-align: left;
+    font-size: 12px;
+}

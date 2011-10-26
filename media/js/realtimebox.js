@@ -4,9 +4,9 @@ function addEventToList(event, appear)
     content = "<a href='" + event.url + "'>" + event.targetType + " " + event.type + " " + event.target + "</a><br />First Detection: " + formatDate(event.firstdetection) + "<br />Last Detection: " + formatDate(event.lastdetection) + "<br />Location: ";
     for(i=0; i<event.locations.length; i++)
     {
-        if(event.locations[i].city!="")
-            content += event.locations[i].city + ", ";
-        content += event.locations[i].country;
+        if(event.locations[i].location_name!="")
+            content += event.locations[i].location_name + ", ";
+        content += event.locations[i].location_country_name;
         if(i!=event.locations.length-1)
             content += "; ";
     }
@@ -25,34 +25,6 @@ function addEventToList(event, appear)
     // TODO: format information; show all information
 }
 
-function onRealTimeOpened() {
-    $("#realtime_status").html("Waiting for new events")
-};
-
-function onRealTimeMessage(m) {
-    event = JSON.parse(m.data)
-    $("#realtime_status").html("New event")
-    addEventToList(event, true)
-}
-
-function onRealTimeError() {
-    $("#realtime_status").html("Error loading events")
-}
-
-function onRealTimeChannelOpen(token) {
-    var channel = new goog.appengine.Channel(token);
-    var handler = {
-      'onopen': onRealTimeOpened,
-      'onmessage': onRealTimeMessage,
-      'onerror': onRealTimeError,
-      'onclose': function() {}
-    };
-    var socket = channel.open(handler);
-    socket.onopen = onRealTimeOpened;
-    socket.onmessage = onRealTimeMessage;
-    socket.onerror = onRealTimeError;
-}
-
 updateInitialRealTimeEvents = function(m)
 {
     events = JSON.parse(m.data)
@@ -62,7 +34,6 @@ updateInitialRealTimeEvents = function(m)
     }
 }
 
-function initializeRealTime(token, initial_events) {
-    onRealTimeChannelOpen(token);
+function initializeRealTime(initial_events) {
     updateInitialRealTimeEvents({data: initial_events});
 }

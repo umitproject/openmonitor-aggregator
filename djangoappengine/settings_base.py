@@ -1,6 +1,6 @@
 # Initialize App Engine SDK if necessary
 try:
-    from google.appengine.api import api_proxy_stub_map
+    from google.appengine.api import apiproxy_stub_map
 except ImportError:
     from .boot import setup_env
     setup_env()
@@ -23,6 +23,19 @@ DATABASES = {
 
         # Switch to the App Engine for Business domain
         # 'DOMAIN': 'googleplex.com',
+
+        'DEV_APPSERVER_OPTIONS': {
+            # Optional parameters for development environment
+
+            # Emulate the high-replication datastore locally
+            # 'high_replication' : True,
+
+            # Use the SQLite backend for local storage (instead of default
+            # in-memory datastore). Useful for testing with larger datasets
+            # or when debugging concurrency/async issues (separate processes
+            # will share a common db state, rather than syncing on startup).
+            # 'use_sqlite': True,
+            }
     },
 }
 

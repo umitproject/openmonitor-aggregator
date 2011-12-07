@@ -7,6 +7,10 @@ How to deploy it in AppEngine?
     2. change application name in app.yaml
     3. python manage.py deploy -e youremail@gmail.com
 
+How to run locally?
+
+$ python manager.py runserver
+
 Links available to test the app:
  - http://icm-dev.appspot.com/map (show events on map)
  - http://icm-dev.appspot.com/realtimebox (show events on realtime box)

@@ -83,11 +83,11 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     # This loads the index definitions, so it has to come first
     'autoload.middleware.AutoloadMiddleware',
-    #'django.middleware.cache.UpdateCacheMiddleware', # CACHE
+    'django.middleware.cache.UpdateCacheMiddleware', # CACHE
     #'django.middleware.csrf.CsrfViewMiddleware', # CSRF
 
     'mediagenerator.middleware.MediaMiddleware',
-    #'django.middleware.common.CommonMiddleware', # CACHE
+    'django.middleware.common.CommonMiddleware', # CACHE
     'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

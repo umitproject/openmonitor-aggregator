@@ -5,6 +5,7 @@ from mediagenerator.utils import get_media_dirs, read_text_file
 from pyjs.translator import import_compiler, Translator, LIBRARY_PATH
 from textwrap import dedent
 import os
+import sys
 
 try:
     from cStringIO import StringIO
@@ -100,7 +101,7 @@ class Pyjs(Filter):
 
     @classmethod
     def from_default(cls, name):
-        return {'main_module': name.rsplit('.', 1)[0]}
+        return {'main_module': name.rsplit('.', 1)[0].replace('/', '.')}
 
     def get_output(self, variation):
         self._collect_all_modules()
@@ -248,7 +249,15 @@ class Pyjs(Filter):
         """Collect modules, so we can handle imports later"""
         for pkgroot in self.path:
             pkgroot = os.path.abspath(pkgroot)
-            for root, dirs, files in os.walk(pkgroot):
+
+            #python 2.5 does not have the followlinks keyword argument
+            has_followlinks = sys.version_info >= (2, 6)
+            if has_followlinks:
+                allfiles = os.walk(pkgroot, followlinks=True)
+            else:
+                allfiles = os.walk(pkgroot)
+
+            for root, dirs, files in allfiles:
                 if '__init__.py' in files:
                     files.remove('__init__.py')
                     # The root __init__.py is ignored
@@ -264,6 +273,8 @@ class Pyjs(Filter):
                         continue
 
                     path = os.path.join(root, filename)
+                    if not has_followlinks:
+                        path = os.path.abspath(path)
                     module_path = path[len(pkgroot) + len(os.sep):]
                     if os.path.basename(module_path) == '__init__.py':
                         module_name = os.path.dirname(module_path)

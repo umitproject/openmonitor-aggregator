@@ -7,6 +7,12 @@ if MEDIA_DEV_MODE:
     from django.utils.http import http_date
     import time
 
+TEXT_MIME_TYPES = (
+    'application/x-javascript',
+    'application/xhtml+xml',
+    'application/xml',
+)
+
 class MediaMiddleware(object):
     """
     Middleware for serving and browser-side caching of media files.
@@ -35,8 +41,15 @@ class MediaMiddleware(object):
         try:
             backend = _backend_mapping[filename]
         except KeyError:
-            raise Http404('No such media file "%s"' % filename)
+            raise Http404('The mediagenerator could not find the media file "%s"'
+                          % filename)
         content, mimetype = backend.get_dev_output(filename)
+        if not mimetype:
+            mimetype = 'application/octet-stream'
+        if isinstance(content, unicode):
+            content = content.encode('utf-8')
+        if mimetype.startswith('text/') or mimetype in TEXT_MIME_TYPES:
+            mimetype += '; charset=utf-8'
         response = HttpResponse(content, content_type=mimetype)
         response['Content-Length'] = len(content)
 

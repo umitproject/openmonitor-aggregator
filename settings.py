@@ -27,6 +27,7 @@ from djangoappengine.settings_base import *
 
 import os
 
+
 # Activate django-dbindexer for the default database
 DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
@@ -37,6 +38,11 @@ SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 CACHE_MIDDLEWARE_SECONDS = 30
+
+# PISTON SETTINGS
+PISTON_DISPLAY_ERRORS = DEBUG
+PISTON_EMAIL_ERRORS = "adriano@umitproject.org"
+PISTON_STREAM_OUTPUT = DEBUG
 
 ENVIRONMENT = os.environ.get('SERVER_SOFTWARE', '')
 GAE = True

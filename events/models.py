@@ -153,17 +153,14 @@ class Event(models.Model):
 
     def get_full_dict(self):
         event = self.get_dict()
+        
+        # TODO: Refer to decision/decisionSystem.py:68 for code to generate this data.
+        #for blockedNode in self.eventblockednode_set.all():
+        #    blockedNodes.append({'city': blockedNode.city, 'country': blockedNode.country, 'lat': blockedNode.latitude, 'lng': blockedNode.longitude, 'ip': blockedNode.ip})
 
-        isps = []
-        for isp in self.eventisp_set.all():
-            isps.append(isp.isp)
-
-        blockedNodes = []
-        for blockedNode in self.eventblockednode_set.all():
-            blockedNodes.append({'city': blockedNode.city, 'country': blockedNode.country, 'lat': blockedNode.latitude, 'lng': blockedNode.longitude, 'ip': blockedNode.ip})
-
-        event['isps'] = isps
-        event['blockingNodes'] = blockedNodes
+        event['isps'] = self.isps
+        event['blockingNodes'] = []
+        
         return event
 
     def save(self, *args, **kwargs):
@@ -224,3 +221,4 @@ class EventLocationAggregation(models.Model):
 
     def __unicode__(self):
         return "Event in %s - %s" % (self.location_country_code, self.count)
+

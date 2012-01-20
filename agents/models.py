@@ -167,6 +167,8 @@ class Agent(models.Model):
             agent.save()
             
             return agent
+        else:
+            raise Exception("User not registered or login failed: user '%s'" % username)
 
     def promoteToSuperPeer(self):
         self.superPeer = True

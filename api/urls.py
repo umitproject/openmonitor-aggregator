@@ -23,6 +23,7 @@
 from django.conf.urls.defaults import *
 from piston.resource import Resource
 from api.handlers import *
+from gui.decorators import staff_member_required
 
 registeragent_handler = Resource(RegisterAgentHandler)
 getpeerlist_handler = Resource(GetPeerListHandler)
@@ -54,7 +55,7 @@ urlpatterns = patterns('',
    url(r'^checktests/$', checktests_handler),
    url(r'^websitesuggestion/$', websitesuggestion_handler),
    url(r'^servicesuggestion/$', servicesuggestion_handler),
-   url(r'^tests/$', test_handler),
+   url(r'^tests/$', staff_member_required(test_handler)),
    url(r'^checkaggregator/$', checkaggregator_handler),
    url(r'^$', checkaggregator_handler),
 )

@@ -1,4 +1,5 @@
 *.pyc
+geoip/GeoLiteCity*
 .settings
 .settings/*
 .settings/org.eclipse.core.resources.prefs

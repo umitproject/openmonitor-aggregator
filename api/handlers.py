@@ -86,7 +86,10 @@ class RegisterAgentHandler(BaseHandler):
         publicKeyExp = receivedAgentRegister.agentPublicKey.exp
         username = receivedAgentRegister.credentials.username
         password = receivedAgentRegister.credentials.password
-        agent = Agent.create(receivedAgentRegister.versionNo, receivedAgentRegister.agentType, agentIp, publicKeyMod, publicKeyExp, username, password, AESKey)
+        agent = Agent.create(receivedAgentRegister.versionNo,
+                             receivedAgentRegister.agentType,
+                             agentIp, publicKeyMod, publicKeyExp,
+                             username, password, AESKey)
         logging.warning("Created agent instance")
 
         # get software version information

@@ -77,7 +77,7 @@ def event(request, event_id):
         event = Event.objects.get(pk=event_id)
     except Event.DoesNotExist:
         raise Http404
-    eventDict = event.getFullDict()
+    eventDict = event.get_full_dict()
     locations = json.dumps(eventDict['locations'])
     blockingNodes = json.dumps(eventDict['blockingNodes'])
 

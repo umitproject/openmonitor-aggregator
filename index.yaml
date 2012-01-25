@@ -119,6 +119,16 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: icm_tests_servicetestupdateaggregation
+  properties:
+  - name: active
+  - name: test_id
+
+- kind: icm_tests_websitetestupdateaggregation
+  properties:
+  - name: active
+  - name: test_id
+
 - kind: piston_consumer
   properties:
   - name: __key__

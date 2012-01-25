@@ -197,37 +197,35 @@ class Login2Handler(BaseHandler):
 class LogoutHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.Logout)
+    def create(self, request, logout_agent, aes_key):
         logging.info("logoutAgent received")
         agentID = request.POST['agentID']
-        msg = base64.b64decode(request.POST['msg'])
-
-        logoutAgent = messages_pb2.Logout()
-        logoutAgent.ParseFromString(msg)
 
         # get agent
         agent = Agent.getAgent(agentID)
         agent.logout()
+        
+        response = messages_pb2.LogoutResponse()
+        response.status = "logged out"
+        response_str = response.SerializeToString()
+        
+        return response_str
 
 
 class GetPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.GetPeerList)
+    def create(self, request, received_msg, aes_key):
         logging.info("getPeerList received")
 
         # get agent info
         agentID = request.POST['agentID']
         agent = Agent.getAgent(agentID)
 
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedMsg = messages_pb2.GetPeerList()
-        receivedMsg.ParseFromString(msg)
-
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agentType == 'DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -239,8 +237,8 @@ class GetPeerListHandler(BaseHandler):
         else:
             testVersion = 0
 
-        if receivedMsg.HasField('count'):
-            totalPeers = receivedMsg.count
+        if received_msg.HasField('count'):
+            totalPeers = received_msg.count
         else:
             totalPeers = 100
 
@@ -268,9 +266,9 @@ class GetPeerListHandler(BaseHandler):
 
         # send back response
         try:
-            response_str = agent.encodeMessage(response.SerializeToString())
+            response_str = response.SerializeToString()
         except Exception,e:
-            logging.error(e)
+            logging.critical("Failed to serialize response for GetPeerList request. %s" % e)
 
         return response_str
 
@@ -278,24 +276,21 @@ class GetPeerListHandler(BaseHandler):
 class GetSuperPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.GetSuperPeerList)
+    def create(self, request, received_msg, aes_key):
         logging.info("getSuperPeerList received")
 
         # get agent info
         agentID = request.POST['agentID']
         agent = Agent.getAgent(agentID)
 
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedMsg = messages_pb2.GetSuperPeerList()
-        receivedMsg.ParseFromString(msg)
-
         # get software version information
         if agent.agentType=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
+        elif agent.agentType == 'MOBILE':
             softwareVersion = MobileAgentVersion.getLastVersionNo()
+        else:
+            raise Exception("Unknown agent type %s" % agent.agentType)
 
         # get last test id
         last_test = Test.get_last_test()
@@ -304,8 +299,8 @@ class GetSuperPeerListHandler(BaseHandler):
         else:
             testVersion = 0
 
-        if receivedMsg.HasField('count'):
-            totalPeers = receivedMsg.count
+        if received_msg.HasField('count'):
+            totalPeers = received_msg.count
         else:
             totalPeers = 100
 
@@ -316,6 +311,7 @@ class GetSuperPeerListHandler(BaseHandler):
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion
 
+        logging.debug(">>> Super Peers found: %s" % superpeers)
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
             knownSuperPeer.agentID = peer.agentID
@@ -332,7 +328,8 @@ class GetSuperPeerListHandler(BaseHandler):
                 knownSuperPeer.peerStatus = "OFF"
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 

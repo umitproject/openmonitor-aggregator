@@ -68,7 +68,9 @@ class LoggedAgent(models.Model):
         peersIDs = [agentID]
 
         # select near peers
-        nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code), Q(superPeer=superPeer), ~Q(agentID__in=peersIDs)))
+        nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
+                                                    Q(superPeer=superPeer),
+                                                    ~Q(agentID__in=peersIDs)))
 
         # if more peers are needed, get far peers
         neededPeers = totalPeers-len(nearPeers)
@@ -252,7 +254,9 @@ class Agent(models.Model):
 
     def getPeers(self, totalPeers=100):
         #return Agent._getPeers(country, False, totalPeers)
-        return LoggedAgent._getPeers(self.agentID, self.lastKnownCountry, False, totalPeers)
+        return LoggedAgent._getPeers(self.agentID,
+                                     self.lastKnownCountry,
+                                     False, totalPeers)
 
     def getSuperPeers(self, totalPeers=100):
         #return Agent._getPeers(country, True, totalPeers)

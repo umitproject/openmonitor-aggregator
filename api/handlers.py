@@ -39,6 +39,7 @@ from icm_tests.models import Test, WebsiteTestUpdateAggregation, ServiceTestUpda
 from decision.decisionSystem import DecisionSystem
 from agents.models import Agent, LoggedAgent
 from agents.CryptoLib import *
+from api.decorators import message_handler
 
 import hashlib
 
@@ -49,71 +50,54 @@ from geoip.models import IPRange
 class RegisterAgentHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
-        logging.info("registerAgent received")
-
-        logging.warning("Creating the crypto instance")
-        crypto = CryptoLib()
-        aggregatorKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
-        logging.warning("Generated the aggregator key")
-
-        AESKey = crypto.decodeRSAPrivateKey(request.POST['key'], aggregatorKey)
-        logging.critical("AESKey: %s" % AESKey)
-        
-        msg = crypto.decodeAES(request.POST['msg'], AESKey)
-    
-        logging.critical("Key: %s" % request.POST['key'])
-        logging.critical("Aggregator Key: %s" % aggregatorKey)
-        logging.critical("Msg: %s" % request.POST['msg'])
-        
-        
-        logging.warning("Decoded AES from agent")
-        
-        receivedAgentRegister = messages_pb2.RegisterAgent()
-        receivedAgentRegister.ParseFromString(msg)
-        logging.warning("Parsed registeragent message")
-
+    @message_handler(messages_pb2.RegisterAgent)
+    def create(self, request, register_obj, aes_key):
         # get agent ip
-        if receivedAgentRegister.HasField('ip'):
-            agentIp = receivedAgentRegister.ip
-        else:
-            agentIp = request.META['REMOTE_ADDR']
+        agent_ip = request.META['REMOTE_ADDR']
         
-        logging.warning("Agent IP: %s" % agentIp)
+        logging.debug("Agent IP: %s" % agent_ip)
 
         # create agent
-        publicKeyMod = receivedAgentRegister.agentPublicKey.mod
-        publicKeyExp = receivedAgentRegister.agentPublicKey.exp
-        username = receivedAgentRegister.credentials.username
-        password = receivedAgentRegister.credentials.password
-        agent = Agent.create(receivedAgentRegister.versionNo,
-                             receivedAgentRegister.agentType,
-                             agentIp, publicKeyMod, publicKeyExp,
-                             username, password, AESKey)
-        logging.warning("Created agent instance")
+        publicKeyMod = register_obj.agentPublicKey.mod
+        publicKeyExp = register_obj.agentPublicKey.exp
+        username = register_obj.credentials.username
+        password = register_obj.credentials.password
+        agent = Agent.create(register_obj.versionNo,
+                             register_obj.agentType,
+                             agent_ip, publicKeyMod, publicKeyExp,
+                             username, password, aes_key)
+        logging.debug("Created agent instance")
 
         # get software version information
-        if receivedAgentRegister.agentType=="DESKTOP":
+        #
+        # TODO: CACHE the desktop and mobile latest versions so we don't need
+        # to reach out to the datastore to get that upon every registration.
+        #
+        if register_obj.agentType=="DESKTOP":
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        elif receivedAgentRegister.agentType=="MOBILE":
+        elif register_obj.agentType=="MOBILE":
             softwareVersion = MobileAgentVersion.getLastVersionNo()
         
-        logging.warning("Software version: %s" % softwareVersion)
+        logging.debug("Software version: %s" % softwareVersion)
 
         # get last test id
+        #
+        # TODO: Cache the latest test version to avoid going to datastore on
+        # every register request
+        #
         last_test = Test.get_last_test()
         if last_test!=None:
             testVersion = last_test.test_id
         else:
             testVersion = 0
         
-        logging.warning("Test version: %s" % testVersion)
+        logging.debug("Test version: %s" % testVersion)
 
         m = hashlib.sha1()
         m.update(agent.publicKeyMod)
         publicKeyHash = m.digest()
         
-        logging.warning("Public key hash: %s" % publicKeyHash)
+        logging.debug("Public key hash: %s" % publicKeyHash)
 
         # create the response
         try:
@@ -121,12 +105,13 @@ class RegisterAgentHandler(BaseHandler):
             response.header.currentVersionNo = softwareVersion.version
             response.header.currentTestVersionNo = testVersion
             response.agentID = agent.agentID
-            response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash, aggregatorKey)
-        except Exception,e:
-            logging.error(e)
+            response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash,
+                                                                aggregatorKey)
+        except Exception, e:
+            logging.error("Failed while creating the register response: %s" % e)
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
         return response_str
 
 
@@ -145,10 +130,7 @@ class LoginHandler(BaseHandler):
         agent = Agent.getAgent(loginAgent.agentID)
 
         # get agent ip
-        if loginAgent.HasField('ip'):
-            agentIp = loginAgent.ip
-        else:
-            agentIp = request.META['REMOTE_ADDR']
+        agentIp = request.META['REMOTE_ADDR']
 
         # initiate login process
         loginProcess = agent.initLogin(agentIp, loginAgent.port)
@@ -156,9 +138,7 @@ class LoginHandler(BaseHandler):
         logging.info("Challeng received from agent: %s" % loginAgent.challenge)
 
         # initiate crypto to cipher challenge
-        crypto = CryptoLib()
-        aggregatorPrivateKey = RSAKey(settings.RSAKEY_MOD, settings.RSAKEY_EXP, settings.RSAKEY_D, settings.RSAKEY_P, settings.RSAKEY_Q, settings.RSAKEY_U)
-        cipheredChallenge = crypto.signRSA(loginAgent.challenge, aggregatorPrivateKey)
+        cipheredChallenge = crypto.signRSA(loginAgent.challenge, aggregatorKey)
 
         logging.info("Challenge generated on aggregator: %s" % loginProcess.challenge)
 
@@ -504,39 +484,37 @@ class SendServiceReportHandler(BaseHandler):
 class CheckNewVersionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.NewVersion)
+    def create(self, request, received_msg, aes_key):
         logging.info("checkNewVersion received")
-        msg = base64.b64decode(request.POST['msg'])
-
-        receivedMsg = messages_pb2.NewVersion()
-        receivedMsg.ParseFromString(msg)
-
+        logging.info("%s" % request.POST)
+        
         # get software version information
-        if receivedMsg.agentType == "DESKTOP":
+        if received_msg.agentType == "DESKTOP":
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        elif receivedMsg.agentType == "MOBILE":
+        elif received_msg.agentType == "MOBILE":
             softwareVersion = MobileAgentVersion.getLastVersionNo()
-        # TODO: throw exception if not desktop neither mobile
-
+        else:
+            raise Exception("Unknown agent type.")
+        
         # get last test id
         last_test = Test.get_last_test()
         if last_test!=None:
             testVersion = last_test.test_id
         else:
             testVersion = 0
-
+        
         # create the response
         response = messages_pb2.NewVersionResponse()
         response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion
         response.versionNo = softwareVersion.version
-
-        if response.versionNo > receivedMsg.agentVersionNo:
+        
+        if response.versionNo > received_msg.agentVersionNo:
             response.downloadURL = softwareVersion.url
-            # TODO: send in bzip ?
-
+        
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = response.SerializeToString()
         return response_str
 
 

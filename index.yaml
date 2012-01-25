@@ -60,6 +60,11 @@ indexes:
 
 - kind: agents_agent
   properties:
+  - name: __key__
+    direction: desc
+
+- kind: agents_agent
+  properties:
   - name: superPeer
   - name: uptime
     direction: desc

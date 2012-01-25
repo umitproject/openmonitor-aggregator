@@ -20,11 +20,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
 import os
 import base64
-import settings
+import logging
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
+
+from django.conf import settings
 
 
 DEFAULT_BLOCK_SIZE = 32
@@ -139,3 +142,39 @@ class RSAKey:
     def getPrivateKey(self):
         rsaKey = RSA.construct((long(self.mod), long(self.exp), long(self.d), long(self.p), long(self.q), long(self.u)))
         return rsaKey
+
+
+##############################################################################
+
+#
+# TODO: We might be able to cache the aggregatorKey. Check how we can optimize this
+#
+crypto = CryptoLib()
+aggregatorKey = RSAKey(settings.RSAKEY_MOD,
+                       settings.RSAKEY_EXP,
+                       settings.RSAKEY_D,
+                       settings.RSAKEY_P,
+                       settings.RSAKEY_Q,
+                       settings.RSAKEY_U)
+
+def aes_decrypt(message, message_type, key=None, aes_key=None):
+    """This function will decrypt a message with either a key or aes_key provided
+    as argument and will return the aes_key and the parsed message object, using
+    the message_type provided.
+    """
+    
+    if aes_key is None and key is not None:
+        aes_key = crypto.decodeRSAPrivateKey(key, aggregatorKey)
+    elif key is None and aes_key is None:
+        raise Exception("Missing a key or aes key to proceed.")
+    
+    msg = crypto.decodeAES(message, aes_key)
+    
+    msg_obj = message_type()
+    msg_obj.ParseFromString(msg)
+    logging.debug("Decrypted %s message" % message_type)
+    
+    return aes_key, msg_obj
+
+
+

@@ -69,6 +69,7 @@ INSTALLED_APPS = (
     'protobuf',
     'piston',
     'messages',
+    'agents',
     'geoip',
     'api',
     'gui',

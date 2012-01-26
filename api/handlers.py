@@ -252,7 +252,7 @@ class GetPeerListHandler(BaseHandler):
         for peer in peers:
             knownPeer = response.knownPeers.add()
             knownPeer.agentID = peer.agentID
-            knownPeer.token = "tokenpeer1"
+            knownPeer.token = "tokenpeer1" # TODO: PUT REAL TOKEN
             knownPeer.publicKey.mod = peer.publicKeyMod
             knownPeer.publicKey.exp = peer.publicKeyExp
             if isinstance(peer, LoggedAgent):
@@ -336,20 +336,15 @@ class GetSuperPeerListHandler(BaseHandler):
 class GetEventsHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.GetEvents)
+    def create(self, request, received_msg, aes_key):
         logging.info("getEvents received")
 
         # get agent info
         agentID = request.POST['agentID']
         agent = Agent.getAgent(agentID)
 
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedMsg = messages_pb2.GetEvents()
-        receivedMsg.ParseFromString(msg)
-
-        regions = receivedMsg.locations
+        regions = received_msg.locations
         logging.info(regions)
         events = Event.get_active_events_region(regions)
 
@@ -383,7 +378,8 @@ class GetEventsHandler(BaseHandler):
                 location.latitude = event.lats[i]
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 

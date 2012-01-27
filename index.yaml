@@ -154,6 +154,12 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: reports_report
+  properties:
+  - name: agent_location_id
+  - name: test_id
+  - name: created_at
+
 - kind: reports_servicereport
   properties:
   - name: __key__

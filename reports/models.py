@@ -70,7 +70,9 @@ class Trace(object):
     @staticmethod
     def from_dump(dump):
         dump = eval(dump)
-        return Trace(**json.loads(dump[0]))
+        logging.debug("Trace Dump %s" % dump)
+        if len(dump):
+            return Trace(**json.loads(dump[0]))
     
     @cache_model_method('trace_', 300, 'location_id')
     @property
@@ -102,7 +104,8 @@ def db_convert_trace(traces):
     if not isinstance(traces, list):
         traces = [traces]
     for trace in traces:
-        traces_json.append(trace.toJson())
+        if trace is not None:
+            traces_json.append(trace.toJson())
     return traces_json
 
 
@@ -223,7 +226,7 @@ class Report(models.Model):
 
 class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    report_id = models.IntegerField()
+    report_id = models.CharField(max_length=150)
     agent_id = models.BigIntegerField()
     test_id = models.PositiveIntegerField()
     time = models.DateTimeField()
@@ -351,6 +354,7 @@ class WebsiteReport(UserReport):
         report.user_id = agent.user.id
 
         # read ICMReport
+        logging.critical("STATUS CODE: %s" % icm_report.reportID)
         report.report_id = icm_report.reportID
         report.agent_id = icm_report.agentID
         report.test_id = icm_report.testID
@@ -399,7 +403,7 @@ class WebsiteReport(UserReport):
         report.agent_zipcode = loggedAgent.zipcode
         report.agent_lat = loggedAgent.latitude
         report.agent_lon = loggedAgent.longitude
-
+        
         report.save()
         
         return report

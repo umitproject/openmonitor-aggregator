@@ -62,11 +62,16 @@ class message_handler(object):
                                            aes_key=aes_key)
             
             # Processing the request
-            try:
-                response = method(handler, request, msg_obj, aes_key, *args, **kwargs)
-            except Exception, e:
-                logging.critical("Failed to execute api request: %s" % e)
-                raise e
+            #try:
+            response = method(handler,
+                                  request,
+                                  msg_obj,
+                                  aes_key,
+                                  agent,
+                                  *args, **kwargs)
+            #except Exception, e:
+            #    logging.critical("Failed to execute api request: %s" % e)
+            #    raise e
             
             # Need to encrypt and return the response now
             return crypto.encodeAES(response, aes_key)

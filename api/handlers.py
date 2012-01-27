@@ -51,7 +51,7 @@ class RegisterAgentHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     @message_handler(messages_pb2.RegisterAgent)
-    def create(self, request, register_obj, aes_key):
+    def create(self, request, register_obj, aes_key, agent):
         # get agent ip
         agent_ip = request.META['REMOTE_ADDR']
         
@@ -198,12 +198,9 @@ class LogoutHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     @message_handler(messages_pb2.Logout)
-    def create(self, request, logout_agent, aes_key):
+    def create(self, request, logout_agent, aes_key, agent):
         logging.info("logoutAgent received")
-        agentID = request.POST['agentID']
-
-        # get agent
-        agent = Agent.getAgent(agentID)
+        
         agent.logout()
         
         response = messages_pb2.LogoutResponse()
@@ -217,12 +214,8 @@ class GetPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     @message_handler(messages_pb2.GetPeerList)
-    def create(self, request, received_msg, aes_key):
+    def create(self, request, received_msg, aes_key, agent):
         logging.info("getPeerList received")
-
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
 
         # get software version information
         if agent.agentType == 'DESKTOP':
@@ -277,12 +270,8 @@ class GetSuperPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     @message_handler(messages_pb2.GetSuperPeerList)
-    def create(self, request, received_msg, aes_key):
+    def create(self, request, received_msg, aes_key, agent):
         logging.info("getSuperPeerList received")
-
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -337,12 +326,8 @@ class GetEventsHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     @message_handler(messages_pb2.GetEvents)
-    def create(self, request, received_msg, aes_key):
+    def create(self, request, received_msg, aes_key, agent):
         logging.info("getEvents received")
-
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
 
         regions = received_msg.locations
         logging.info(regions)
@@ -386,21 +371,12 @@ class GetEventsHandler(BaseHandler):
 class SendWebsiteReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.SendWebsiteReport)
+    def create(self, request, received_website_report, aes_key, agent):
         logging.info("sendWebsiteReport received")
 
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
-
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedWebsiteReport = messages_pb2.SendWebsiteReport()
-        receivedWebsiteReport.ParseFromString(msg)
-
         # add website report
-        webSiteReport = WebsiteReport.create(receivedWebsiteReport, agent)
+        webSiteReport = WebsiteReport.create(received_website_report, agent)
 
         logging.info("report created")
         # send report to decision system
@@ -425,7 +401,8 @@ class SendWebsiteReportHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 
@@ -478,7 +455,7 @@ class CheckNewVersionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     @message_handler(messages_pb2.NewVersion)
-    def create(self, request, received_msg, aes_key):
+    def create(self, request, received_msg, aes_key, agent):
         logging.info("checkNewVersion received")
         logging.info("%s" % request.POST)
         

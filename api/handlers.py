@@ -483,20 +483,11 @@ class CheckNewVersionHandler(BaseHandler):
 class CheckNewTestHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.NewTests)
+    def create(self, request, received_msg, aes_key, agent):
         logging.info("checkNewTest received")
 
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
-
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedMsg = messages_pb2.NewTests()
-        receivedMsg.ParseFromString(msg)
-
-        newTests = Test.get_updated_tests(receivedMsg.currentTestVersionNo)
+        newTests = Test.get_updated_tests(received_msg.currentTestVersionNo)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -533,30 +524,22 @@ class CheckNewTestHandler(BaseHandler):
                 test.service.ip = newTest.ip
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 
 class WebsiteSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.WebsiteSuggestion)
+    def create(self, request, received_website_suggestion, aes_key, agent):
         logging.info("websiteSuggestion received")
 
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
-
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedWebsiteSuggestion = messages_pb2.WebsiteSuggestion()
-        receivedWebsiteSuggestion.ParseFromString(msg)
-
-        logging.info("Aggregator: registering website suggestion %s from agent %s" % (receivedWebsiteSuggestion.websiteURL, agentID))
+        logging.info("Aggregator: registering website suggestion %s from agent %s" % (received_website_suggestion.websiteURL, agent.pk))
 
         # create the suggestion
-        webSiteSuggestion = WebsiteSuggestion.create(receivedWebsiteSuggestion, agent.user)
+        webSiteSuggestion = WebsiteSuggestion.create(received_website_suggestion, agent.user)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -577,32 +560,27 @@ class WebsiteSuggestionHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 
 class ServiceSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.ServiceSuggestion)
+    def create(self, request, received_service_suggestion, aes_key, agent):
         logging.info("serviceSuggestion received")
 
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
-
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedServiceSuggestion = messages_pb2.ServiceSuggestion()
-        receivedServiceSuggestion.ParseFromString(msg)
-
         logging.info("Aggregator: registering service suggestion %s on %s(%s):%s from agent %s" %
-                     (receivedServiceSuggestion.serviceName, receivedServiceSuggestion.hostName,
-                         receivedServiceSuggestion.ip, receivedServiceSuggestion.port, agentID))
+                     (received_service_suggestion.serviceName,
+                      received_service_suggestion.hostName,
+                      received_service_suggestion.ip,
+                      received_service_suggestion.port, agent.pk))
 
         # create the suggestion
-        serviceSuggestion = ServiceSuggestion.create(receivedServiceSuggestion, agent.user)
+        serviceSuggestion = ServiceSuggestion.create(received_service_suggestion,
+                                                     agent.user)
 
         # get software version information
         if agent.agentType=='DESKTOP':
@@ -623,7 +601,8 @@ class ServiceSuggestionHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 

@@ -409,21 +409,12 @@ class SendWebsiteReportHandler(BaseHandler):
 class SendServiceReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
+    @message_handler(messages_pb2.SendServiceReport)
+    def create(self, request, received_service_report, aes_key, agent):
         logging.info("sendServiceReport received")
 
-        # get agent info
-        agentID = request.POST['agentID']
-        agent = Agent.getAgent(agentID)
-
-        # decode received message
-        msg = agent.decodeMessage(request.POST['msg'])
-
-        receivedServiceReport = messages_pb2.SendServiceReport()
-        receivedServiceReport.ParseFromString(msg)
-
         # add service report
-        serviceReport = ServiceReport.create(receivedServiceReport, agent)
+        serviceReport = ServiceReport.create(received_service_report, agent)
 
         # send report to decision system
         DecisionSystem.newReport(serviceReport)
@@ -447,7 +438,8 @@ class SendServiceReportHandler(BaseHandler):
         response.header.currentTestVersionNo = testVersion
 
         # send back response
-        response_str = agent.encodeMessage(response.SerializeToString())
+        response_str = response.SerializeToString()
+        
         return response_str
 
 

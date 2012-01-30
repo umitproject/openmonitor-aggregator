@@ -40,6 +40,10 @@ checkaggregator_handler = Resource(CheckAggregator)
 login_handler = Resource(LoginHandler)
 login2_handler = Resource(Login2Handler)
 logout_handler = Resource(LogoutHandler)
+get_netlist_handler = Resource(GetNetlistHandler)
+get_banlist_handler = Resource(GetBanlistHandler)
+get_bannets_handler = Resource(GetBannetsHandler)
+
 
 urlpatterns = patterns('',
    url(r'^registeragent/$', registeragent_handler),
@@ -57,5 +61,8 @@ urlpatterns = patterns('',
    url(r'^servicesuggestion/$', servicesuggestion_handler),
    url(r'^tests/$', staff_member_required(test_handler)),
    url(r'^checkaggregator/$', checkaggregator_handler),
+   url(r'^get_netlist/$', get_netlist_handler),
+   url(r'^get_banlist/$', get_banlist_handler),
+   url(r'^get_bannets/$', get_bannets_handler),
    url(r'^$', checkaggregator_handler),
 )

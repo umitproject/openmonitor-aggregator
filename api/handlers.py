@@ -321,6 +321,77 @@ class GetSuperPeerListHandler(BaseHandler):
         
         return response_str
 
+class GetNetlistHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    @message_handler(messages_pb2.GetPeerList)
+    def create(self, request, received_msg, aes_key, agent):
+        logging.info("getNetlist received")
+
+        # get software version information
+        if agent.agentType == 'DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
+
+        # TODO: BUILD THE LIST AND RETURN IT
+        
+        # send back response
+        try:
+            response_str = response.SerializeToString()
+        except Exception,e:
+            logging.critical("Failed to serialize response for GetNetlist request. %s" % e)
+
+        return response_str
+
+
+class GetBanlistHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    @message_handler(messages_pb2.GetPeerList)
+    def create(self, request, received_msg, aes_key, agent):
+        logging.info("getBanlist received")
+
+        # get software version information
+        if agent.agentType == 'DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
+
+        # TODO: BUILD THE LIST AND RETURN IT
+        
+        # send back response
+        try:
+            response_str = response.SerializeToString()
+        except Exception,e:
+            logging.critical("Failed to serialize response for GetBanlist request. %s" % e)
+
+        return response_str
+
+
+class GetBannetsHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    @message_handler(messages_pb2.GetPeerList)
+    def create(self, request, received_msg, aes_key, agent):
+        logging.info("getBannets received")
+
+        # get software version information
+        if agent.agentType == 'DESKTOP':
+            softwareVersion = DesktopAgentVersion.getLastVersionNo()
+        else:
+            softwareVersion = MobileAgentVersion.getLastVersionNo()
+
+        # TODO: BUILD THE LIST AND RETURN IT
+        
+        # send back response
+        try:
+            response_str = response.SerializeToString()
+        except Exception,e:
+            logging.critical("Failed to serialize response for GetBannets request. %s" % e)
+
+        return response_str
+
 
 class GetEventsHandler(BaseHandler):
     allowed_methods = ('POST',)

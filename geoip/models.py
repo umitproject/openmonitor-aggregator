@@ -29,7 +29,10 @@ from geoip.ip import convert_ip, convert_int_ip
 
 CACHE_EXPIRATION = 60*60 # 1 hour, since this doesn't change any often
 LOCATION_CACHE_KEY = "location_%s"
+AGENT_CACHE_KEY = "agent_%s"
+IP_RANGE_CACHE_KEY = "ip_range_%s"
 IP_RANGES_CACHE_KEY = "ip_ranges_%s"
+NETWORK_LIST_AGENTS_CACHE_KEY = "network_logged_agents_%s"
 PREFIX_KEY = "region_prefix_%s"
 CLOSEST_LOCATION_KEY='closest_location_%s_%s'
 CLOSEST_LOCATIONS_KEY='closes_locationss_%s_%s'
@@ -128,6 +131,7 @@ class Location(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
     aggregations = ListField(py_type=int)
+    nodes_count = models.IntegerField(default=0, null=True)
     
     def add_aggregation(self, aggregation):
         if aggregation.id in self.aggregations:
@@ -244,6 +248,7 @@ class IPRange(models.Model):
     zipcode = models.CharField(max_length=6)
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
+    nodes_count = models.IntegerField(default=0, null=True)
     
     def __unicode__(self):
         return "%s - %s (%s)" % (convert_int_ip(self.start_number),
@@ -283,6 +288,18 @@ class IPRange(models.Model):
             location = Location.objects.get(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
+    
+    @property
+    def logged_agents(self):
+        key = NETWORK_LIST_AGENTS_CACHE_KEY % self.id
+        logged_agents = cache.get(key, False)
+        if not logged_agents:
+            count = settings.MAX_AGENTSLIST_RESPONSE
+            # The order by is to randomize the query
+            from agents.models import LoggedAgent
+            logged_agents = LoggedAgent.objects.filter(location_id=self.location_id).order_by('?')[:count]
+            cache.set(key, logged_agents, CACHE_EXPIRATION)
+        return logged_agents
 
     def save(self, *args, **kwargs):
         new = self.id is None
@@ -301,3 +318,8 @@ class IPRange(models.Model):
                     start_ip=convert_int_ip(self.start_number),
                     end_ip=convert_int_ip(self.end_number)
                     )
+
+
+
+
+

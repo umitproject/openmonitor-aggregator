@@ -37,7 +37,7 @@ from events.models import Event
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from icm_tests.models import Test, WebsiteTestUpdateAggregation, ServiceTestUpdateAggregation
 from decision.decisionSystem import DecisionSystem
-from agents.models import Agent, LoggedAgent
+from agents.models import *
 from agents.CryptoLib import *
 from api.decorators import message_handler
 
@@ -104,7 +104,7 @@ class RegisterAgentHandler(BaseHandler):
             response = messages_pb2.RegisterAgentResponse()
             response.header.currentVersionNo = softwareVersion.version
             response.header.currentTestVersionNo = testVersion
-            response.agentID = agent.agentID
+            response.agentID = agent.id
             response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash,
                                                                 aggregatorKey)
         except Exception, e:
@@ -127,7 +127,7 @@ class LoginHandler(BaseHandler):
         loginAgent.ParseFromString(msg)
 
         # get agent
-        agent = Agent.getAgent(loginAgent.agentID)
+        agent = Agent.get_agent(loginAgent.agentID)
 
         # get agent ip
         agentIp = request.META['REMOTE_ADDR']
@@ -135,7 +135,7 @@ class LoginHandler(BaseHandler):
         # initiate login process
         loginProcess = agent.initLogin(agentIp, loginAgent.port)
 
-        logging.info("Challeng received from agent: %s" % loginAgent.challenge)
+        logging.info("Challenge received from agent: %s" % loginAgent.challenge)
 
         # initiate crypto to cipher challenge
         cipheredChallenge = crypto.signRSA(loginAgent.challenge, aggregatorKey)
@@ -166,11 +166,12 @@ class Login2Handler(BaseHandler):
         loginAgent.ParseFromString(msg)
 
         # check login process
-        agent = Agent.finishLogin(loginAgent.processID, loginAgent.cipheredChallenge)
+        agent = Agent.finishLogin(loginAgent.processID,
+                                  loginAgent.cipheredChallenge)
 
         if agent is not None:
             # get software version information
-            if agent.agentType=='DESKTOP':
+            if agent.agent_type=='DESKTOP':
                 softwareVersion = DesktopAgentVersion.getLastVersionNo()
             else:
                 softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -218,7 +219,7 @@ class GetPeerListHandler(BaseHandler):
         logging.info("getPeerList received")
 
         # get software version information
-        if agent.agentType == 'DESKTOP':
+        if agent.agent_type == 'DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -244,8 +245,8 @@ class GetPeerListHandler(BaseHandler):
 
         for peer in peers:
             knownPeer = response.knownPeers.add()
-            knownPeer.agentID = peer.agentID
-            knownPeer.token = "tokenpeer1" # TODO: PUT REAL TOKEN
+            knownPeer.agentID = peer.agent_id
+            knownPeer.token = peer.token
             knownPeer.publicKey.mod = peer.publicKeyMod
             knownPeer.publicKey.exp = peer.publicKeyExp
             if isinstance(peer, LoggedAgent):
@@ -274,12 +275,12 @@ class GetSuperPeerListHandler(BaseHandler):
         logging.info("getSuperPeerList received")
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        elif agent.agentType == 'MOBILE':
+        elif agent.agent_type == 'MOBILE':
             softwareVersion = MobileAgentVersion.getLastVersionNo()
         else:
-            raise Exception("Unknown agent type %s" % agent.agentType)
+            raise Exception("Unknown agent type %s" % agent.agent_type)
 
         # get last test id
         last_test = Test.get_last_test()
@@ -303,8 +304,8 @@ class GetSuperPeerListHandler(BaseHandler):
         logging.debug(">>> Super Peers found: %s" % superpeers)
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
-            knownSuperPeer.agentID = peer.agentID
-            knownSuperPeer.token = "tokenSuper1"
+            knownSuperPeer.agentID = peer.agent_id
+            knownSuperPeer.token = knownSuperPeer.token
             knownSuperPeer.publicKey.mod = peer.publicKeyMod
             knownSuperPeer.publicKey.exp = peer.publicKeyExp
             if isinstance(peer, LoggedAgent):
@@ -329,12 +330,39 @@ class GetNetlistHandler(BaseHandler):
         logging.info("getNetlist received")
 
         # get software version information
-        if agent.agentType == 'DESKTOP':
+        if agent.agent_type == 'DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
+        
+        # get last test id
+        last_test = Test.get_last_test()
+        if last_test!=None:
+            testVersion = last_test.test_id
+        else:
+            testVersion = 0
 
         # TODO: BUILD THE LIST AND RETURN IT
+        count = received_msg.count if received_msg.count < settings.MAX_NETLIST_RESPONSE else settings.MAX_NETLIST_RESPONSE 
+        netlist = NetworkList.objects.all()[:count]
+        
+        response = messages_pb2.GetNetlistResponse()
+        response.header.currentVersionNo = softwareVersion
+        response.header.currentTestVersionNo = testVersion
+        
+        for net in netlist:
+            network = response.networks.add()
+            # NEED TO REFORMULATE THE MESSAGE AND AVOID SENDING SENSITIVE DATA
+            network.start_ip =net.ip_range.start_num
+            network.end_ip = net.ip_range.end_num
+            network.nodesCount = net.ip_range.nodes_count
+            
+            for agent in net.logged_agent:
+                ag = network.nodes.add()
+                ag.agentID = agent.id
+                ag.agentIP = agent.current_ip
+                ag.agentPort = agent.port
+                ag.token = agent.token
         
         # send back response
         try:
@@ -353,7 +381,7 @@ class GetBanlistHandler(BaseHandler):
         logging.info("getBanlist received")
 
         # get software version information
-        if agent.agentType == 'DESKTOP':
+        if agent.agent_type == 'DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -377,7 +405,7 @@ class GetBannetsHandler(BaseHandler):
         logging.info("getBannets received")
 
         # get software version information
-        if agent.agentType == 'DESKTOP':
+        if agent.agent_type == 'DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -405,7 +433,7 @@ class GetEventsHandler(BaseHandler):
         events = Event.get_active_events_region(regions)
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -454,7 +482,7 @@ class SendWebsiteReportHandler(BaseHandler):
         DecisionSystem.newReport(webSiteReport)
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -491,7 +519,7 @@ class SendServiceReportHandler(BaseHandler):
         DecisionSystem.newReport(serviceReport)
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -561,7 +589,7 @@ class CheckNewTestHandler(BaseHandler):
         newTests = Test.get_updated_tests(received_msg.currentTestVersionNo)
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -613,7 +641,7 @@ class WebsiteSuggestionHandler(BaseHandler):
         webSiteSuggestion = WebsiteSuggestion.create(received_website_suggestion, agent.user)
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
@@ -654,7 +682,7 @@ class ServiceSuggestionHandler(BaseHandler):
                                                      agent.user)
 
         # get software version information
-        if agent.agentType=='DESKTOP':
+        if agent.agent_type=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()

@@ -22,18 +22,21 @@
 
 import logging
 import random
+import hashlib
+import datetime
 
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth import authenticate
+from django.core.cache import cache
 
 from agents.CryptoLib import *
-from geoip.models import IPRange
+from geoip.models import *
 
 
 class LoginProcess(models.Model):
     processID     = models.AutoField(primary_key=True)
-    agentID       = models.IntegerField()
+    agent_id       = models.IntegerField()
     loginTime     = models.DateTimeField(auto_now_add=True)
     ip            = models.CharField(max_length=255)
     port          = models.PositiveIntegerField()
@@ -41,36 +44,51 @@ class LoginProcess(models.Model):
 
 
 class LoggedAgent(models.Model):
-    agentID       = models.IntegerField(primary_key=True)
-    country_code  = models.CharField(max_length=2)
-    country_name  = models.CharField(max_length=100)
-    location_id   = models.IntegerField()
+    agent_id = models.IntegerField()
+    country_code = models.CharField(max_length=2)
+    country_name = models.CharField(max_length=100)
+    location_id = models.IntegerField()
     location_name = models.CharField(max_length=300)
-    state_region  = models.CharField(max_length=2)
-    city          = models.CharField(max_length=255)
-    zipcode       = models.CharField(max_length=6)
-    latitude      = models.DecimalField(decimal_places=20, max_digits=23)
-    longitude     = models.DecimalField(decimal_places=20, max_digits=23)
-    current_ip    = models.CharField(max_length=255)
-    port          = models.PositiveIntegerField()
-    agentInfo     = models.ForeignKey('Agent')
-    superPeer     = models.BooleanField()
-    AESKey        = models.TextField()
-    publicKeyMod  = models.TextField()
-    publicKeyExp  = models.TextField()
+    state_region = models.CharField(max_length=2)
+    city = models.CharField(max_length=255)
+    zipcode = models.CharField(max_length=6)
+    latitude = models.DecimalField(decimal_places=20, max_digits=23)
+    longitude = models.DecimalField(decimal_places=20, max_digits=23)
+    current_ip = models.CharField(max_length=255)
+    port = models.PositiveIntegerField() 
+    superPeer = models.BooleanField()
+    AESKey = models.TextField()
+    publicKeyMod = models.TextField()
+    publicKeyExp = models.TextField()
+    token = models.CharField(max_length=56)
+    
+    @property
+    def location(self):
+        key = LOCATION_CACHE_KEY % self.location_id
+        location = cache.get(key, False)
+        if not location:
+            location = Location.objects.get(id=self.location_id)
+            cache.set(key, location, CACHE_EXPIRATION)
+        return location
 
-    def getAgent(agentID):
-        return LoggedAgent.objects.get(agentID=agentID)
+    @property
+    def agent(self):
+        key = AGENT_CACHE_KEY % self.location_id
+        agent = cache.get(key, False)
+        if not agent:
+            agent = Agent.objects.get(id=self.agent_id)
+            cache.set(key, agent, CACHE_EXPIRATION)
+        return agent
 
-    def _getPeers(agentID, country_code, superPeer, totalPeers):
+    def _getPeers(agent_id, country_code, superPeer, totalPeers):
         selectedPeers = []
         # create list with already selected agent ids
-        peersIDs = [agentID]
+        peersIDs = [agent_id]
 
         # select near peers
         nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
                                                     Q(superPeer=superPeer),
-                                                    ~Q(agentID__in=peersIDs)))
+                                                    ~Q(agent_id__in=peersIDs)))
 
         # if more peers are needed, get far peers
         neededPeers = totalPeers-len(nearPeers)
@@ -78,10 +96,10 @@ class LoggedAgent(models.Model):
 
             # list of peer ids to exclude
             for peer in nearPeers:
-                peersIDs.append(peer.agentID)
+                peersIDs.append(peer.agent_id)
 
             # select far peers
-            farPeers = list(LoggedAgent.objects.filter(~Q(agentID__in=peersIDs), Q(superPeer=superPeer)))
+            farPeers = list(LoggedAgent.objects.filter(~Q(agent_id__in=peersIDs), Q(superPeer=superPeer)))
             # shuffle peers
             random.shuffle(farPeers)
 
@@ -96,10 +114,10 @@ class LoggedAgent(models.Model):
 
                 # list of peers ids to exclude
                 for peer in farPeers:
-                    peersIDs.append(peer.agentID)
+                    peersIDs.append(peer.agent_id)
 
                 # select offline peers sorted by uptime
-                offlinePeers = list(Agent.objects.filter(Q(superPeer=superPeer), ~Q(agentID__in=peersIDs), Q(uptime__gt=0)).order_by('-uptime'))
+                offlinePeers = list(Agent.objects.filter(Q(superPeer=superPeer), ~Q(agent_id__in=peersIDs), Q(uptime__gt=0)).order_by('-uptime'))
 
                 if len(offlinePeers)>0:
                     selectedPeers.extend(offlinePeers[:neededPeers])
@@ -113,15 +131,13 @@ class LoggedAgent(models.Model):
         return selectedPeers
 
     def __unicode__(self):
-        return "Agent %s at %s" % (self.agentID, self.country_name)
+        return "Agent %s at %s" % (self.agent_id, self.country_name)
 
-    getAgent = staticmethod(getAgent)
     _getPeers = staticmethod(_getPeers)
 
 
 class Agent(models.Model):
-    agentID       = models.AutoField(primary_key=True)
-    agentType     = models.CharField(max_length=10)
+    agent_type     = models.CharField(max_length=10)
     agentVersion  = models.PositiveIntegerField()
     registered_at = models.DateTimeField(auto_now_add=True)
     registered_ip = models.CharField(max_length=255)
@@ -143,8 +159,12 @@ class Agent(models.Model):
     activated     = models.BooleanField(default=False)
     # flag to mark agent as blocked (if blocked agent will not be able to login)
     blocked       = models.BooleanField(default=False)
+    token = models.CharField(max_length=56)
 
-    def create(versionNo, agentType, ip, publicKeyMod, publicKeyExp, username, password, AESKey):
+    @staticmethod
+    def create(versionNo, agentType, ip,
+               publicKeyMod, publicKeyExp,
+               username, password, AESKey):
         # check username and password
         user = authenticate(username=username, password=password)
         if user is not None:
@@ -164,13 +184,27 @@ class Agent(models.Model):
             agent.country = iprange.country_code
             agent.latitude = iprange.lat
             agent.longitude = iprange.lon
+            
+            if agent.registered_at is None:
+                agent.registered_at = datetime.datetime.now()
 
+            agent.token = Agent.gen_token(agent)
 
             agent.save()
             
             return agent
         else:
             raise Exception("User not registered or login failed: user '%s'" % username)
+    
+    @staticmethod
+    def gen_token(agent):
+        return hashlib.sha224(\
+            "%(username)s%(agent_id)s%(agent_type)s%(registered_ip)s%(registered_at)s" % \
+                dict(username=agent.user.username,
+                     agent_id=agent.id,
+                     agent_type=agent.agent_type,
+                     registered_ip=agent.registered_ip,
+                     registered_at=agent.registered_at.strftime("%Y%m%d%H%M%S%z"))).hexdigest()
 
     def promoteToSuperPeer(self):
         self.superPeer = True
@@ -187,29 +221,29 @@ class Agent(models.Model):
         logging.info("Challenge generated: %s" %challenge)
 
         loginProcess = LoginProcess()
-        loginProcess.agentID = self.agentID
+        loginProcess.agent_id = self.id
         loginProcess.ip = ip
         loginProcess.port = port
         loginProcess.challenge = challenge
         loginProcess.save()
 
         return loginProcess
-
+    
+    @staticmethod
     def finishLogin(loginProcessID, cipheredChallenge):
         # get login process
         loginProcess = LoginProcess.objects.get(processID=loginProcessID)
 
         # get agent instance
-        agent = Agent.getAgent(loginProcess.agentID)
+        agent = Agent.get_agent(loginProcess.agent_id)
 
         # check challenge
         if agent.checkChallenge(str(loginProcess.challenge), cipheredChallenge):
-
             # delete already logged agent info
-            LoggedAgent.objects.filter(agentID=agent.agentID).delete()
+            LoggedAgent.objects.filter(agent_id=agent.id).delete()
 
             loggedAgent = LoggedAgent()
-            loggedAgent.agentID = agent.agentID
+            loggedAgent.agent_id = agent.id
             loggedAgent.agentInfo = agent
             loggedAgent.current_ip = loginProcess.ip
             loggedAgent.port = loginProcess.port
@@ -217,30 +251,45 @@ class Agent(models.Model):
             loggedAgent.publicKeyMod = agent.publicKeyMod
             loggedAgent.publicKeyExp = agent.publicKeyExp
             loggedAgent.AESKey = agent.AESKey
-
-            # get country by geoip
-            iprange = IPRange.ip_location(loginProcess.ip)
-            loggedAgent.country_code = iprange.country_code
-            loggedAgent.country_name = iprange.country_name
-            loggedAgent.latitude = iprange.lat
-            loggedAgent.longitude = iprange.lon
-            loggedAgent.location_id = iprange.location_id
-            loggedAgent.location_name = iprange.location.name
-            loggedAgent.zipcode = iprange.zipcode
-            loggedAgent.state_region = iprange.state_region
-            loggedAgent.city = iprange.city
-            loggedAgent.save()
-
-            # update agent information
-            agent.lastKnownCountry = iprange.country_code
-            agent.lastKnownLatitude = iprange.lat
-            agent.lastKnownLongitude = iprange.lon
-            agent.lastKnownIP = loginProcess.ip
-            agent.lastKnownPort = loginProcess.port
-            agent.save()
-
-            # delete login process
-            loginProcess.delete()
+    
+            try:
+                # get country by geoip
+                iprange = IPRange.ip_location(loginProcess.ip)
+                loggedAgent.country_code = iprange.country_code
+                loggedAgent.country_name = iprange.country_name
+                loggedAgent.latitude = iprange.lat
+                loggedAgent.longitude = iprange.lon
+                loggedAgent.location_id = iprange.location_id
+                loggedAgent.location_name = iprange.location.name
+                loggedAgent.zipcode = iprange.zipcode
+                loggedAgent.state_region = iprange.state_region
+                loggedAgent.city = iprange.city
+                loggedAgent.save()
+                
+                
+                iprange.nodes_count += 1
+                iprange.save()
+                
+                location = iprange.location
+                location.nodes_count += 1
+                location.save()
+                
+                
+                # update agent information
+                agent.lastKnownCountry = iprange.country_code
+                agent.lastKnownLatitude = iprange.lat
+                agent.lastKnownLongitude = iprange.lon
+                agent.lastKnownIP = loginProcess.ip
+                agent.lastKnownPort = loginProcess.port
+                agent.save()
+    
+                # delete login process
+                loginProcess.delete()
+            except Exception, err:
+                logging.critical(err)
+                import pdb; pdb.set_trace()
+                
+            logging.info("Yay! 3 %s" % agent)
 
             return agent
 
@@ -250,20 +299,26 @@ class Agent(models.Model):
 
     def logout(self):
         # TODO: update uptime
-        LoggedAgent.objects.filter(agentID=self.agentID).delete()
+        LoggedAgent.objects.filter(agent_id=self.id).delete()
+        
+        # Remove from networks list
+        iprange = IPRange.ip_location(self.lastKnownIP)
+        iprange.nodes_count -= 1
+        iprange.save()
+        
+        location = iprange.location
+        location.nodes_count -= 1
+        location.save()
 
     def getPeers(self, totalPeers=100):
         #return Agent._getPeers(country, False, totalPeers)
-        return LoggedAgent._getPeers(self.agentID,
+        return LoggedAgent._getPeers(self.id,
                                      self.lastKnownCountry,
                                      False, totalPeers)
 
     def getSuperPeers(self, totalPeers=100):
         #return Agent._getPeers(country, True, totalPeers)
-        return LoggedAgent._getPeers(self.agentID, self.lastKnownCountry, True, totalPeers)
-
-    def getAgent(agentID):
-        return Agent.objects.get(agentID=agentID)
+        return LoggedAgent._getPeers(self.id, self.lastKnownCountry, True, totalPeers)
 
     def encodeMessage(self, message):
         # get cryptolib instance
@@ -291,12 +346,43 @@ class Agent(models.Model):
         return crypt.verifySignatureRSA(originalChallenge, cipheredChallenge, publicKey)
 
     def getLoginInfo(self):
-        return LoggedAgent.getAgent(self.agentID)
-        
+        return LoggedAgent.getAgent(self.id)
+    
+    @staticmethod
+    def get_agent(agent_id):
+        return Agent.objects.get(id=agent_id)
 
     def __unicode__(self):
-        return "Agent %s (%s %s) - %s at %s - up %s" % (self.agentID, self.agentType, self.agentVersion, self.registered_ip, self.country, self.uptime)
+        return "Agent %s (%s %s) - %s at %s - up %s" % (self.id,
+                                                        self.agent_type,
+                                                        self.agentVersion,
+                                                        self.registered_ip,
+                                                        self.country,
+                                                        self.uptime)
 
-    create = staticmethod(create)
-    getAgent = staticmethod(getAgent)
-    finishLogin = staticmethod(finishLogin)
+
+class BannedNetworks(models.Model):
+    location_id = models.IntegerField()
+    iprange_id = models.IntegerField()
+    offending_nodes_count = models.IntegerField(default=0, null=True)
+
+
+    @property
+    def location(self):
+        key = LOCATION_CACHE_KEY % self.location_id
+        location = cache.get(key, False)
+        if not location:
+            location = Location.objects.get(id=self.location_id)
+            cache.set(key, location, CACHE_EXPIRATION)
+        return location
+    
+    @property
+    def iprange(self):
+        key = IP_RANGE_CACHE_KEY % self.iprange_id
+        iprange = cache.get(key, False)
+        if not iprange:
+            iprange = IPRange.objects.get(id=self.iprange_id)
+            cache.set(key, iprange, CACHE_EXPIRATION)
+        return iprange
+
+

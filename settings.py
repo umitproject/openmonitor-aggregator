@@ -175,6 +175,11 @@ USE_I18N = True
 
 SITENAME = "OpenMonitor"
 
+##################
+# RESPONSE COUNTS
+MAX_NETLIST_RESPONSE = 10
+MAX_AGENTSLIST_RESPONSE = 5
+
 #########################
 # File Transfer settings
 PREPARE_UPLOAD_BACKEND = 'filetransfers.backends.delegate.prepare_upload'

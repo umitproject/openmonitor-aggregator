@@ -69,6 +69,17 @@ indexes:
   - name: uptime
     direction: desc
 
+- kind: agents_loggedagent
+  properties:
+  - name: country_code
+  - name: superPeer
+  - name: agent_id
+
+- kind: agents_loggedagent
+  properties:
+  - name: superPeer
+  - name: agent_id
+
 - kind: events_event
   properties:
   - name: __key__

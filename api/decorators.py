@@ -51,7 +51,7 @@ class message_handler(object):
             if key is None:
                 assert agent_id
                 
-                agent = Agent.getAgent(agent_id)
+                agent = Agent.get_agent(agent_id)
                 aes_key = agent.AESKey
             else:
                 aes_key = crypto.decodeRSAPrivateKey(key, aggregatorKey)

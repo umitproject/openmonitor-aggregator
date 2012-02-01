@@ -23,12 +23,14 @@ import decimal
 
 from django.db import models
 from django.core.cache import cache
+from django.conf import settings
 
 from dbextra.fields import ListField
 from geoip.ip import convert_ip, convert_int_ip
 
 CACHE_EXPIRATION = 60*60 # 1 hour, since this doesn't change any often
 LOCATION_CACHE_KEY = "location_%s"
+PUBLIC_KEY_AGENT_CACHE_KEY = "pkey_agent_%s"
 AGENT_CACHE_KEY = "agent_%s"
 IP_RANGE_CACHE_KEY = "ip_range_%s"
 IP_RANGES_CACHE_KEY = "ip_ranges_%s"
@@ -227,14 +229,14 @@ class Location(models.Model):
         return locations
 
 
-#UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
-#                                                  country_name='Unknown',
-#                                                  country_code='UN',
-#                                                  state_region='UN',
-#                                                  city='Unknown',
-#                                                  zipcode='',
-#                                                  lat=decimal.Decimal('0.0'),
-#                                                  lon=decimal.Decimal('0.0'))[0]
+UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
+                                                  country_name='Unknown',
+                                                  country_code='UN',
+                                                  state_region='UN',
+                                                  city='Unknown',
+                                                  zipcode='',
+                                                  lat=decimal.Decimal('0.0'),
+                                                  lon=decimal.Decimal('0.0'))[0]
 
 class IPRange(models.Model):
     location_id = models.IntegerField()
@@ -295,9 +297,10 @@ class IPRange(models.Model):
         logged_agents = cache.get(key, False)
         if not logged_agents:
             count = settings.MAX_AGENTSLIST_RESPONSE
-            # The order by is to randomize the query
             from agents.models import LoggedAgent
-            logged_agents = LoggedAgent.objects.filter(location_id=self.location_id).order_by('?')[:count]
+            
+            # TODO: Randomize results
+            logged_agents = LoggedAgent.objects.filter(location_id=self.location_id)[:count]
             cache.set(key, logged_agents, CACHE_EXPIRATION)
         return logged_agents
 

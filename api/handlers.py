@@ -43,7 +43,7 @@ from api.decorators import message_handler
 
 import hashlib
 
-from geoip.models import IPRange
+from geoip.models import *
 
 
 
@@ -342,34 +342,38 @@ class GetNetlistHandler(BaseHandler):
         else:
             testVersion = 0
 
-        # TODO: BUILD THE LIST AND RETURN IT
-        count = received_msg.count if received_msg.count < settings.MAX_NETLIST_RESPONSE else settings.MAX_NETLIST_RESPONSE 
-        netlist = NetworkList.objects.all()[:count]
+        count = received_msg.count if received_msg.count < settings.MAX_NETLIST_RESPONSE else settings.MAX_NETLIST_RESPONSE
+        
+        # TODO: Retrieve randomized list 
+        netlist = IPRange.objects.all().order_by("-nodes_count")[:count]
         
         response = messages_pb2.GetNetlistResponse()
-        response.header.currentVersionNo = softwareVersion
+        response.header.currentVersionNo = softwareVersion.version
         response.header.currentTestVersionNo = testVersion
         
         for net in netlist:
             network = response.networks.add()
             # NEED TO REFORMULATE THE MESSAGE AND AVOID SENDING SENSITIVE DATA
-            network.start_ip =net.ip_range.start_num
-            network.end_ip = net.ip_range.end_num
-            network.nodesCount = net.ip_range.nodes_count
+            network.start_ip =net.start_number
+            network.end_ip = net.end_number
+            network.nodesCount = net.nodes_count
             
-            for agent in net.logged_agent:
+            for agent in net.logged_agents:
                 ag = network.nodes.add()
                 ag.agentID = agent.id
                 ag.agentIP = agent.current_ip
                 ag.agentPort = agent.port
                 ag.token = agent.token
+                ag.peerStatus = "ON"
+                
+                ag.publicKey.mod = agent.publicKeyMod
+                ag.publicKey.exp = agent.publicKeyExp
         
-        # send back response
         try:
             response_str = response.SerializeToString()
         except Exception,e:
             logging.critical("Failed to serialize response for GetNetlist request. %s" % e)
-
+        
         return response_str
 
 

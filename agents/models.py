@@ -82,13 +82,13 @@ class LoggedAgent(models.Model):
 
     def _getPeers(agent_id, country_code, superPeer, totalPeers):
         selectedPeers = []
-        # create list with already selected agent ids
-        peersIDs = [agent_id]
+        
+        peersIDs = []
 
         # select near peers
         nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
                                                     Q(superPeer=superPeer),
-                                                    ~Q(agent_id__in=peersIDs)))
+                                                    ~Q(agent_id=agent_id)))
 
         # if more peers are needed, get far peers
         neededPeers = totalPeers-len(nearPeers)
@@ -99,7 +99,8 @@ class LoggedAgent(models.Model):
                 peersIDs.append(peer.agent_id)
 
             # select far peers
-            farPeers = list(LoggedAgent.objects.filter(~Q(agent_id__in=peersIDs), Q(superPeer=superPeer)))
+            farPeers = list(LoggedAgent.objects.filter(~Q(agent_id=agent_id),
+                                                       Q(superPeer=superPeer)))
             # shuffle peers
             random.shuffle(farPeers)
 
@@ -117,7 +118,10 @@ class LoggedAgent(models.Model):
                     peersIDs.append(peer.agent_id)
 
                 # select offline peers sorted by uptime
-                offlinePeers = list(Agent.objects.filter(Q(superPeer=superPeer), ~Q(agent_id__in=peersIDs), Q(uptime__gt=0)).order_by('-uptime'))
+                offlinePeers = list(Agent.objects.filter(\
+                                    Q(superPeer=superPeer),
+                                    ~Q(id=agent_id),
+                                    Q(uptime__gt=0)).order_by('-uptime'))
 
                 if len(offlinePeers)>0:
                     selectedPeers.extend(offlinePeers[:neededPeers])
@@ -329,8 +333,7 @@ class Agent(models.Model):
     def encodeMessageRSA(self, message):
         # get cryptolib instance
         crypt = CryptoLib()
-        agentKey = RSAKey(self.publicKeyMod, self.publicKeyExp)
-        encoded = crypt.encodeRSAPublicKey(message, agentKey)
+        encoded = crypt.encodeRSAPublicKey(message, self.public_key)
         return encoded
 
     def decodeMessage(self, encodedMessage):
@@ -342,11 +345,21 @@ class Agent(models.Model):
     def checkChallenge(self, originalChallenge, cipheredChallenge):
         # get cryptolib instance
         crypt = CryptoLib()
-        publicKey = RSAKey(self.publicKeyMod, self.publicKeyExp)
-        return crypt.verifySignatureRSA(originalChallenge, cipheredChallenge, publicKey)
+        return crypt.verifySignatureRSA(originalChallenge,
+                                        cipheredChallenge,
+                                        self.public_key)
 
     def getLoginInfo(self):
         return LoggedAgent.getAgent(self.id)
+    
+    @property
+    def public_key(self):
+        key = PUBLIC_KEY_AGENT_CACHE_KEY % self.id
+        pkey = cache.get(key, False)
+        if not pkey:
+            pkey = RSAKey(self.publicKeyMod, self.publicKeyExp)
+            cache.set(key, pkey, CACHE_EXPIRATION)
+        return pkey
     
     @staticmethod
     def get_agent(agent_id):

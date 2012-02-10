@@ -172,7 +172,6 @@ def aes_decrypt(message, message_type, key=None, aes_key=None):
     
     msg_obj = message_type()
     msg_obj.ParseFromString(msg)
-    logging.debug("Decrypted %s message" % message_type)
     
     return aes_key, msg_obj
 

@@ -22,6 +22,8 @@
 import logging
 
 from agents.models import Agent
+from versions.models import *
+from icm_tests.models import Test
 from agents.CryptoLib import crypto, aggregatorKey, aes_decrypt
 
 
@@ -45,8 +47,6 @@ class message_handler(object):
             message = request.POST.get('msg', None)
             agent_id = request.POST.get('agentID', None)
             
-            logging.debug("Agent ID: %s" % agent_id)
-            
             # If key is not provided, then agent_id must be present.
             if key is None:
                 assert agent_id
@@ -61,17 +61,45 @@ class message_handler(object):
                                            self.message_type,
                                            aes_key=aes_key)
             
-            # Processing the request
-            #try:
+            # get software version information
+            # TODO: CACHE the desktop and mobile latest versions so we don't need
+            # to reach out to the datastore to get that upon every api request.
+            software_version = None
+            if agent is not None:
+                if agent.agent_type == 'DESKTOP':
+                    software_version = DesktopAgentVersion.getLastVersionNo()
+                elif agent.agent_type == 'MOBILE':
+                    software_version = MobileAgentVersion.getLastVersionNo()
+                else:
+                    logging.error("Unknown agent type '%s' - Agent %s" % \
+                                    ( agent.agent_type, agent))
+            
+            # get lastest test id
+            # TODO: Cache the latest test version to avoid going to datastore on
+            # every api request
+            last_test = Test.get_last_test()
+            if last_test!=None:
+                test_version = last_test.test_id
+            else:
+                test_version = 0
+            
+            response = None
+            if self.response_type is not None:
+                response = self.response_type()
+                
+                if getattr(response, "header", False):
+                    response.header.currentVersionNo = software_version.version if software_version is not None else 0
+                    response.header.currentTestVersionNo = test_version
+            
             response = method(handler,
                                   request,
                                   msg_obj,
                                   aes_key,
                                   agent,
+                                  software_version,
+                                  test_version,
+                                  response,
                                   *args, **kwargs)
-            #except Exception, e:
-            #    logging.critical("Failed to execute api request: %s" % e)
-            #    raise e
             
             # Need to encrypt and return the response now
             return crypto.encodeAES(response, aes_key)

@@ -30,6 +30,8 @@ from django.db.models import Q
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
+from dbextra.fields import ListField
+
 from agents.CryptoLib import *
 from geoip.models import *
 
@@ -139,6 +141,41 @@ class LoggedAgent(models.Model):
 
     _getPeers = staticmethod(_getPeers)
 
+class BannedAgents(models.Model):
+    agent_ids = ListField(py_type=int)
+    
+    @classmethod
+    def banned_agents(cls):
+        banned = cls.objects.all()
+        if len(banned) == 0:
+            banned = cls()
+            banned.save()
+        return banned
+    
+    @classmethod
+    def banned_agent_ids(cls):
+        return cls.banned_agents().agent_ids
+    
+    @classmethod
+    def add(cls, agent):
+        banned = cls.banned_agents()
+        if banned.agent_ids.count(agent.id):
+            return False
+        banned.agent_ids.append(agent.id)
+        banned.save()
+        
+        return True
+    
+    @classmethod
+    def remove(cls, agent):
+        banned = cls.banned_agents()
+        if banned.agent_ids.count(agent.id):
+            return False
+        
+        banned.agent_ids.remove(agent.id)
+        banned.save()
+        
+        return True
 
 class Agent(models.Model):
     agent_type     = models.CharField(max_length=10)
@@ -162,19 +199,37 @@ class Agent(models.Model):
     # flag to know if agent has finished the register process
     activated     = models.BooleanField(default=False)
     # flag to mark agent as blocked (if blocked agent will not be able to login)
-    blocked       = models.BooleanField(default=False)
+    banned = models.BooleanField(default=False)
+    ban_flags = models.IntegerField(default=0)
     token = models.CharField(max_length=56)
-
+    iprange_id = models.IntegerField(null=True)
+    location_id = models.IntegerField(null=True)
+    
+    
+    def ban(self, flags):
+        self.banned = True
+        self.ban_flags = flags
+        self.save()
+        
+        BannedAgents.add(self)
+    
+    def unban(self):
+        self.banned = False
+        self.ban_flags = 0
+        self.save()
+        
+        BannedAgents.remove(self)
+    
     @staticmethod
     def create(versionNo, agentType, ip,
                publicKeyMod, publicKeyExp,
                username, password, AESKey):
         # check username and password
         user = authenticate(username=username, password=password)
-        if user is not None:
+        if user is not None and agentType in ["MOBILE", "DESKTOP"]:
             agent = Agent()
             agent.agentVersion = versionNo
-            agent.agentType = agentType
+            agent.agent_type = agentType
             agent.registered_ip = ip
             agent.uptime = 0
             agent.publicKeyMod = publicKeyMod
@@ -188,6 +243,8 @@ class Agent(models.Model):
             agent.country = iprange.country_code
             agent.latitude = iprange.lat
             agent.longitude = iprange.lon
+            agent.iprange_id = iprange.id
+            agent.location_id = iprange.location_id
             
             if agent.registered_at is None:
                 agent.registered_at = datetime.datetime.now()
@@ -220,10 +277,12 @@ class Agent(models.Model):
 
     def initLogin(self, ip, port):
         # get new challenge
+        if self.banned:
+            return False
+        
         crypto = CryptoLib()
         challenge = crypto.generateChallenge()
-        logging.info("Challenge generated: %s" %challenge)
-
+        
         loginProcess = LoginProcess()
         loginProcess.agent_id = self.id
         loginProcess.ip = ip
@@ -255,46 +314,40 @@ class Agent(models.Model):
             loggedAgent.publicKeyMod = agent.publicKeyMod
             loggedAgent.publicKeyExp = agent.publicKeyExp
             loggedAgent.AESKey = agent.AESKey
-    
-            try:
-                # get country by geoip
-                iprange = IPRange.ip_location(loginProcess.ip)
-                loggedAgent.country_code = iprange.country_code
-                loggedAgent.country_name = iprange.country_name
-                loggedAgent.latitude = iprange.lat
-                loggedAgent.longitude = iprange.lon
-                loggedAgent.location_id = iprange.location_id
-                loggedAgent.location_name = iprange.location.name
-                loggedAgent.zipcode = iprange.zipcode
-                loggedAgent.state_region = iprange.state_region
-                loggedAgent.city = iprange.city
-                loggedAgent.save()
-                
-                
-                iprange.nodes_count += 1
-                iprange.save()
-                
-                location = iprange.location
-                location.nodes_count += 1
-                location.save()
-                
-                
-                # update agent information
-                agent.lastKnownCountry = iprange.country_code
-                agent.lastKnownLatitude = iprange.lat
-                agent.lastKnownLongitude = iprange.lon
-                agent.lastKnownIP = loginProcess.ip
-                agent.lastKnownPort = loginProcess.port
-                agent.save()
-    
-                # delete login process
-                loginProcess.delete()
-            except Exception, err:
-                logging.critical(err)
-                import pdb; pdb.set_trace()
-                
-            logging.info("Yay! 3 %s" % agent)
 
+            # get country by geoip
+            iprange = IPRange.ip_location(loginProcess.ip)
+            loggedAgent.country_code = iprange.country_code
+            loggedAgent.country_name = iprange.country_name
+            loggedAgent.latitude = iprange.lat
+            loggedAgent.longitude = iprange.lon
+            loggedAgent.location_id = iprange.location_id
+            loggedAgent.location_name = iprange.location.name
+            loggedAgent.zipcode = iprange.zipcode
+            loggedAgent.state_region = iprange.state_region
+            loggedAgent.city = iprange.city
+            loggedAgent.save()
+            
+            
+            iprange.nodes_count += 1
+            iprange.save()
+            
+            location = iprange.location
+            location.nodes_count += 1
+            location.save()
+            
+            
+            # update agent information
+            agent.lastKnownCountry = iprange.country_code
+            agent.lastKnownLatitude = iprange.lat
+            agent.lastKnownLongitude = iprange.lon
+            agent.lastKnownIP = loginProcess.ip
+            agent.lastKnownPort = loginProcess.port
+            agent.save()
+
+            # delete login process
+            loginProcess.delete()
+            
             return agent
 
         else:
@@ -360,6 +413,24 @@ class Agent(models.Model):
             pkey = RSAKey(self.publicKeyMod, self.publicKeyExp)
             cache.set(key, pkey, CACHE_EXPIRATION)
         return pkey
+    
+    @property
+    def iprange(self):
+        key = IP_RANGE_CACHE_KEY % self.iprange_id
+        iprange = cache.get(key, False)
+        if not iprange:
+            iprange = IPRange.objects.get(pk=self.iprange_id)
+            cache.set(key, iprange, CACHE_EXPIRATION)
+        return iprange
+    
+    @property
+    def location(self):
+        key = LOCATION_CACHE_KEY % self.location_id
+        location = cache.get(key, False)
+        if not location:
+            location = Location.objects.get(pk=self.location_id)
+            cache.set(key, location, CACHE_EXPIRATION)
+        return location
     
     @staticmethod
     def get_agent(agent_id):

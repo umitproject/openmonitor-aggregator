@@ -59,7 +59,11 @@ class URLRewriter(object):
                         return 'url(data:%s;base64,%s)' % (mime, data)
                 url = media_url(rebased_url)
             except:
-                logging.error('URL not found: %s' % url)
+                if settings.PRODUCTION:
+                    # Removing this from local dev env so we can have a less
+                    # cluttered console. Will warn us of issues while testing
+                    # on GAE environment.
+                    logging.error('URL not found: %s' % url)
 
         if url_query is None:
             url_query = ''

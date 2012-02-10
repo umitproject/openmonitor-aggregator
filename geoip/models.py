@@ -238,6 +238,36 @@ UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
                                                   lat=decimal.Decimal('0.0'),
                                                   lon=decimal.Decimal('0.0'))[0]
 
+class BannedNetworks(models.Model):
+    """This is an aggregation of Banned Networks that is built from
+    IPRange model. This is in order for making retrieval of ban list faster
+    and cheaper.
+    """
+    location_id = models.IntegerField()
+    iprange_id = models.IntegerField()
+    start_number = models.IntegerField()
+    end_number = models.IntegerField()
+    nodes_count = models.IntegerField()
+    flags = models.IntegerField()
+    
+    @property
+    def location(self):
+        key = LOCATION_CACHE_KEY % self.location_id
+        location = cache.get(key, False)
+        if not location:
+            location = Location.objects.get(id=self.location_id)
+            cache.set(key, location, CACHE_EXPIRATION)
+        return location
+    
+    @property
+    def iprange(self):
+        key = IP_RANGE_CACHE_KEY % self.iprange_id
+        iprange = cache.get(key, False)
+        if not iprange:
+            iprange = IPrange.objects.get(id=self.iprange_id)
+            cache.set(key, iprange, CACHE_EXPIRATION)
+        return iprange
+
 class IPRange(models.Model):
     location_id = models.IntegerField()
     start_number = models.IntegerField()
@@ -251,12 +281,42 @@ class IPRange(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
     nodes_count = models.IntegerField(default=0, null=True)
+    banned = models.BooleanField(default=False)
+    ban_flags = models.IntegerField(default=0)
     
     def __unicode__(self):
         return "%s - %s (%s)" % (convert_int_ip(self.start_number),
                                      convert_int_ip(self.end_number),
                                      "%s, %s" % (self.city, self.country_code) \
                                         if self.city != '' else self.country_code)
+    
+    def ban(self, flags):
+        self.banned = True
+        self.ban_flags = flags
+        self.save()
+        
+        banet = BannedNetworks.objects.filter(iprange_id=self.id)
+        if banet:
+            banet.flags |= flags
+        else:
+            banet = BannedNetworks()
+            banet.location_id = self.location_id
+            banet.iprange_id = self.id
+            banet.start_number = self.start_number
+            banet.end_number = self.end_number
+            banet.nodes_count = self.nodes_count # the amount of nodes at the moment of the ban
+            banet.flags = flags
+        
+        banet.save()
+    
+    def unban(self):
+        self.banned = False
+        self.ban_flags = 0
+        self.save()
+        
+        banet = BannedNetworks.objects.filter(iprange_id=self.id)
+        if banet:
+            banet.delete()
     
     @staticmethod
     def ip_location(ip):

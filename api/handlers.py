@@ -50,77 +50,47 @@ from geoip.models import *
 class RegisterAgentHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.RegisterAgent)
-    def create(self, request, register_obj, aes_key, agent):
-        # get agent ip
-        agent_ip = request.META['REMOTE_ADDR']
-        
-        logging.debug("Agent IP: %s" % agent_ip)
-
-        # create agent
-        publicKeyMod = register_obj.agentPublicKey.mod
-        publicKeyExp = register_obj.agentPublicKey.exp
-        username = register_obj.credentials.username
-        password = register_obj.credentials.password
-        agent = Agent.create(register_obj.versionNo,
-                             register_obj.agentType,
-                             agent_ip, publicKeyMod, publicKeyExp,
-                             username, password, aes_key)
-        logging.debug("Created agent instance")
-
-        # get software version information
-        #
-        # TODO: CACHE the desktop and mobile latest versions so we don't need
-        # to reach out to the datastore to get that upon every registration.
-        #
-        if register_obj.agentType=="DESKTOP":
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        elif register_obj.agentType=="MOBILE":
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-        
-        logging.debug("Software version: %s" % softwareVersion)
-
-        # get last test id
-        #
-        # TODO: Cache the latest test version to avoid going to datastore on
-        # every register request
-        #
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-        
-        logging.debug("Test version: %s" % testVersion)
-
-        m = hashlib.sha1()
-        m.update(agent.publicKeyMod)
-        publicKeyHash = m.digest()
-        
-        logging.debug("Public key hash: %s" % publicKeyHash)
-
-        # create the response
+    @message_handler(messages_pb2.RegisterAgent,
+                     messages_pb2.RegisterAgentResponse)
+    def create(self, request, register_obj, aes_key, agent,
+               software_version, test_version, response):
         try:
-            response = messages_pb2.RegisterAgentResponse()
-            response.header.currentVersionNo = softwareVersion.version
-            response.header.currentTestVersionNo = testVersion
-            response.agentID = agent.id
-            response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash,
-                                                                aggregatorKey)
-        except Exception, e:
-            logging.error("Failed while creating the register response: %s" % e)
-
-        # send back response
-        response_str = response.SerializeToString()
-        return response_str
+            # get agent ip
+            agent_ip = request.META['REMOTE_ADDR']
+    
+            # create agent
+            publicKeyMod = register_obj.agentPublicKey.mod
+            publicKeyExp = register_obj.agentPublicKey.exp
+            username = register_obj.credentials.username
+            password = register_obj.credentials.password
+            agent = Agent.create(register_obj.versionNo,
+                                 register_obj.agentType,
+                                 agent_ip, publicKeyMod, publicKeyExp,
+                                 username, password, aes_key)
+            
+            m = hashlib.sha1()
+            m.update(agent.publicKeyMod)
+            publicKeyHash = m.digest()
+            
+            try:
+                response.agentID = agent.id
+                response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash,
+                                                                    aggregatorKey)
+            except Exception, e:
+                logging.error("Failed while creating the register response: %s" % e)
+    
+            # send back response
+            response_str = response.SerializeToString()
+            return response_str
+        except Exception, err:
+            import pdb; pdb.set_trace()
+            print err
 
 
 class LoginHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
-        logging.info("loginAgent received")
-        logging.info("Aggregator: Starting login step1")
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.Login()
@@ -134,32 +104,28 @@ class LoginHandler(BaseHandler):
 
         # initiate login process
         loginProcess = agent.initLogin(agentIp, loginAgent.port)
-
-        logging.info("Challenge received from agent: %s" % loginAgent.challenge)
-
-        # initiate crypto to cipher challenge
-        cipheredChallenge = crypto.signRSA(loginAgent.challenge, aggregatorKey)
-
-        logging.info("Challenge generated on aggregator: %s" % loginProcess.challenge)
-
-        # create the response
-        response = messages_pb2.LoginStep1()
-        response.processID = loginProcess.processID
-        response.cipheredChallenge = cipheredChallenge
-        response.challenge = loginProcess.challenge
-
-        # send back response
-        response_str = base64.b64encode(response.SerializeToString())
-        logging.info("Sending login step1")
-        return response_str
+        
+        if loginProcess:
+            # initiate crypto to cipher challenge
+            cipheredChallenge = crypto.signRSA(loginAgent.challenge, aggregatorKey)
+    
+            # create the response
+            response = messages_pb2.LoginStep1()
+            response.processID = loginProcess.processID
+            response.cipheredChallenge = cipheredChallenge
+            response.challenge = loginProcess.challenge
+    
+            # send back response
+            response_str = base64.b64encode(response.SerializeToString())
+            return response_str
+        
+        return "TRY AGAIN IN 1000 YEARS."
 
 
 class Login2Handler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
-        logging.info("loginAgent2 received")
-        logging.info("Aggregator: Starting login step2")
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.LoginStep2()
@@ -198,13 +164,12 @@ class Login2Handler(BaseHandler):
 class LogoutHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.Logout)
-    def create(self, request, logout_agent, aes_key, agent):
-        logging.info("logoutAgent received")
-        
+    @message_handler(messages_pb2.Logout,
+                     messages_pb2.LogoutResponse)
+    def create(self, request, logout_agent, aes_key, agent,
+               software_version, test_version, response):
         agent.logout()
         
-        response = messages_pb2.LogoutResponse()
         response.status = "logged out"
         response_str = response.SerializeToString()
         
@@ -214,35 +179,16 @@ class LogoutHandler(BaseHandler):
 class GetPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("getPeerList received")
-
-        # get software version information
-        if agent.agent_type == 'DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
+    @message_handler(messages_pb2.GetPeerList,
+                     messages_pb2.GetPeerListResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
         if received_msg.HasField('count'):
             totalPeers = received_msg.count
         else:
             totalPeers = 100
 
         peers = agent.getPeers(totalPeers)
-
-        # create the response
-        response = messages_pb2.GetPeerListResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
-
         for peer in peers:
             knownPeer = response.knownPeers.add()
             knownPeer.agentID = peer.agent_id
@@ -270,25 +216,10 @@ class GetPeerListHandler(BaseHandler):
 class GetSuperPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetSuperPeerList)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("getSuperPeerList received")
-
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        elif agent.agent_type == 'MOBILE':
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-        else:
-            raise Exception("Unknown agent type %s" % agent.agent_type)
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
+    @message_handler(messages_pb2.GetSuperPeerList,
+                     messages_pb2.GetSuperPeerListResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
         if received_msg.HasField('count'):
             totalPeers = received_msg.count
         else:
@@ -296,12 +227,6 @@ class GetSuperPeerListHandler(BaseHandler):
 
         superpeers = agent.getSuperPeers(totalPeers)
 
-        # create the response
-        response = messages_pb2.GetSuperPeerListResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
-
-        logging.debug(">>> Super Peers found: %s" % superpeers)
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
             knownSuperPeer.agentID = peer.agent_id
@@ -325,31 +250,14 @@ class GetSuperPeerListHandler(BaseHandler):
 class GetNetlistHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("getNetlist received")
-
-        # get software version information
-        if agent.agent_type == 'DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-        
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
+    @message_handler(messages_pb2.GetPeerList,
+                     messages_pb2.GetNetlistResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
         count = received_msg.count if received_msg.count < settings.MAX_NETLIST_RESPONSE else settings.MAX_NETLIST_RESPONSE
         
         # TODO: Retrieve randomized list 
         netlist = IPRange.objects.all().order_by("-nodes_count")[:count]
-        
-        response = messages_pb2.GetNetlistResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
         
         for net in netlist:
             network = response.networks.add()
@@ -380,17 +288,14 @@ class GetNetlistHandler(BaseHandler):
 class GetBanlistHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("getBanlist received")
-
-        # get software version information
-        if agent.agent_type == 'DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # TODO: BUILD THE LIST AND RETURN IT
+    @message_handler(messages_pb2.GetBanlist,
+                     messages_pb2.GetBanlistResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
+        banned_agents = BannedAgents.banned_agent_ids()
+        response.nodes_count = len(banned_agents)
+        for ban in banned_agents:
+            response.agent_ids.append(ban)
         
         # send back response
         try:
@@ -404,17 +309,17 @@ class GetBanlistHandler(BaseHandler):
 class GetBannetsHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("getBannets received")
-
-        # get software version information
-        if agent.agent_type == 'DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # TODO: BUILD THE LIST AND RETURN IT
+    @message_handler(messages_pb2.GetPeerList,
+                     messages_pb2.GetPeerListResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
+        banets = BannedNetworks.objects.all()
+        for bn in banets:
+            net = response.networks.add()
+            net.start_ip = bn.start_number
+            net.end_ip = bn.end_number
+            net.nodes_count = bn.nodes_count
+            net.flags = bn.flags
         
         # send back response
         try:
@@ -428,31 +333,12 @@ class GetBannetsHandler(BaseHandler):
 class GetEventsHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetEvents)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("getEvents received")
-
+    @message_handler(messages_pb2.GetEvents,
+                     messages_pb2.GetEventsResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
         regions = received_msg.locations
-        logging.info(regions)
         events = Event.get_active_events_region(regions)
-
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
-        # create the response
-        response = messages_pb2.GetEventsResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
 
         for event in events:
             e = response.events.add()
@@ -474,34 +360,15 @@ class GetEventsHandler(BaseHandler):
 class SendWebsiteReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.SendWebsiteReport)
-    def create(self, request, received_website_report, aes_key, agent):
-        logging.info("sendWebsiteReport received")
-
+    @message_handler(messages_pb2.SendWebsiteReport,
+                     messages_pb2.SendReportResponse)
+    def create(self, request, received_website_report, aes_key, agent,
+               software_version, test_version, response):
         # add website report
         webSiteReport = WebsiteReport.create(received_website_report, agent)
 
-        logging.info("report created")
         # send report to decision system
         DecisionSystem.newReport(webSiteReport)
-
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
-        # create the response
-        response = messages_pb2.SendReportResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = response.SerializeToString()
@@ -512,34 +379,16 @@ class SendWebsiteReportHandler(BaseHandler):
 class SendServiceReportHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.SendServiceReport)
-    def create(self, request, received_service_report, aes_key, agent):
-        logging.info("sendServiceReport received")
-
+    @message_handler(messages_pb2.SendServiceReport,
+                     messages_pb2.SendReportResponse)
+    def create(self, request, received_service_report, aes_key, agent,
+               software_version, test_version, response):
         # add service report
         serviceReport = ServiceReport.create(received_service_report, agent)
 
         # send report to decision system
         DecisionSystem.newReport(serviceReport)
-
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
-        # create the response
-        response = messages_pb2.SendReportResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
-
+        
         # send back response
         response_str = response.SerializeToString()
         
@@ -549,34 +398,14 @@ class SendServiceReportHandler(BaseHandler):
 class CheckNewVersionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.NewVersion)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("checkNewVersion received")
-        logging.info("%s" % request.POST)
-        
-        # get software version information
-        if received_msg.agentType == "DESKTOP":
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        elif received_msg.agentType == "MOBILE":
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-        else:
-            raise Exception("Unknown agent type.")
-        
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-        
-        # create the response
-        response = messages_pb2.NewVersionResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
-        response.versionNo = softwareVersion.version
+    @message_handler(messages_pb2.NewVersion,
+                     messages_pb2.NewVersionResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
+        response.versionNo = software_version.version
         
         if response.versionNo > received_msg.agentVersionNo:
-            response.downloadURL = softwareVersion.url
+            response.downloadURL = software_version.url
         
         # send back response
         response_str = response.SerializeToString()
@@ -586,30 +415,13 @@ class CheckNewVersionHandler(BaseHandler):
 class CheckNewTestHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.NewTests)
-    def create(self, request, received_msg, aes_key, agent):
-        logging.info("checkNewTest received")
-
+    @message_handler(messages_pb2.NewTests,
+                     messages_pb2.NewTestsResponse)
+    def create(self, request, received_msg, aes_key, agent,
+               software_version, test_version, response):
         newTests = Test.get_updated_tests(received_msg.currentTestVersionNo)
 
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
-        # create the response
-        response = messages_pb2.NewTestsResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
-        response.testVersionNo = testVersion
+        response.testVersionNo = test_version
 
         for newTest in newTests:
             test = response.tests.add()
@@ -635,32 +447,12 @@ class CheckNewTestHandler(BaseHandler):
 class WebsiteSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.WebsiteSuggestion)
-    def create(self, request, received_website_suggestion, aes_key, agent):
-        logging.info("websiteSuggestion received")
-
-        logging.info("Aggregator: registering website suggestion %s from agent %s" % (received_website_suggestion.websiteURL, agent.pk))
-
+    @message_handler(messages_pb2.WebsiteSuggestion,
+                     messages_pb2.TestSuggestionResponse)
+    def create(self, request, received_website_suggestion, aes_key, agent,
+               software_version, test_version, response):
         # create the suggestion
         webSiteSuggestion = WebsiteSuggestion.create(received_website_suggestion, agent.user)
-
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
-        # create the response
-        response = messages_pb2.TestSuggestionResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = response.SerializeToString()
@@ -671,37 +463,13 @@ class WebsiteSuggestionHandler(BaseHandler):
 class ServiceSuggestionHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.ServiceSuggestion)
-    def create(self, request, received_service_suggestion, aes_key, agent):
-        logging.info("serviceSuggestion received")
-
-        logging.info("Aggregator: registering service suggestion %s on %s(%s):%s from agent %s" %
-                     (received_service_suggestion.serviceName,
-                      received_service_suggestion.hostName,
-                      received_service_suggestion.ip,
-                      received_service_suggestion.port, agent.pk))
-
+    @message_handler(messages_pb2.ServiceSuggestion,
+                     messages_pb2.TestSuggestionResponse)
+    def create(self, request, received_service_suggestion, aes_key, agent,
+               software_version, test_version, response):
         # create the suggestion
         serviceSuggestion = ServiceSuggestion.create(received_service_suggestion,
                                                      agent.user)
-
-        # get software version information
-        if agent.agent_type=='DESKTOP':
-            softwareVersion = DesktopAgentVersion.getLastVersionNo()
-        else:
-            softwareVersion = MobileAgentVersion.getLastVersionNo()
-
-        # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
-
-        # create the response
-        response = messages_pb2.TestSuggestionResponse()
-        response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
 
         # send back response
         response_str = response.SerializeToString()
@@ -713,8 +481,6 @@ class CheckAggregator(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
-        logging.info("CheckAggregator received")
-        
         msg = base64.b64decode(request.POST['msg'])
 
         checkAggregator = messages_pb2.CheckAggregator()

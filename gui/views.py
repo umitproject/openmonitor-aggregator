@@ -20,6 +20,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+
+import datetime
+import logging
+
 from django.shortcuts import render_to_response
 from django.utils import simplejson as json
 from django.http import HttpResponse, Http404
@@ -28,9 +32,8 @@ from django.shortcuts import get_object_or_404
 
 from google.appengine.api import channel
 
-import datetime, logging
 from gui.forms import SuggestServiceForm, SuggestWebsiteForm, WebsiteEventForm, ServiceEventForm
-from gui.decorators import cant_repeat_form
+from gui.decorators import cant_repeat_form, staff_member_required
 from geoip.models import Location
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
 from events.models import Event, TargetType, EventType
@@ -259,3 +262,14 @@ def create_service_event(request):
 def serve_media(request, id):
     upload = get_object_or_404(WebsiteReport, pk=id)
     return serve_file(request, upload.file)
+
+@staff_member_required
+def ban_agent(request):
+    
+    return render_to_response('gui/ban_agent.html', locals())
+
+@staff_member_required
+def ban_network(request):
+    
+    return render_to_response('gui/ban_network.html', locals())
+    

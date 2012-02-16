@@ -36,7 +36,7 @@ GEO_BLOCK_CSV = "GeoLiteCity_20110906/GeoLiteCity-Blocks.csv"
 GEO_LOCATION_CSV = "GeoLiteCity_20110906/GeoLiteCity-Location.csv"
 COUNTRY_CODE_CSV = "country_codes.csv"
 GEO_LITE = "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity_CSV/" + GEO_FILE_ZIP 
-BATCH_SIZE = 20
+BATCH_SIZE = 30
 SAVE_GEOIP_URL = "http://localhost:9000/geoip/save_geoip/"
 
 

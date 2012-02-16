@@ -39,6 +39,12 @@ PREFIX_KEY = "region_prefix_%s"
 CLOSEST_LOCATION_KEY='closest_location_%s_%s'
 CLOSEST_LOCATIONS_KEY='closes_locationss_%s_%s'
 
+BAN_FLAGS = dict(
+    abuse=1,
+    robot=2,
+    other=4
+)
+
 
 class LocationAggregation(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23) # Base Latitude
@@ -272,14 +278,14 @@ class IPRange(models.Model):
     location_id = models.IntegerField()
     start_number = models.IntegerField()
     end_number = models.IntegerField()
-    name = models.CharField(max_length=300)
-    country_name = models.CharField(max_length=100)
-    country_code = models.CharField(max_length=2)
-    state_region = models.CharField(max_length=2)
-    city = models.CharField(max_length=255)
-    zipcode = models.CharField(max_length=6)
-    lat = models.DecimalField(decimal_places=20, max_digits=23)
-    lon = models.DecimalField(decimal_places=20, max_digits=23)
+    name = models.CharField(max_length=300, blank=True, null=True)
+    country_name = models.CharField(max_length=100, blank=True, null=True)
+    country_code = models.CharField(max_length=2, blank=True, null=True)
+    state_region = models.CharField(max_length=2, blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    zipcode = models.CharField(max_length=6, blank=True, null=True)
+    lat = models.DecimalField(decimal_places=20, max_digits=23, null=True)
+    lon = models.DecimalField(decimal_places=20, max_digits=23, null=True)
     nodes_count = models.IntegerField(default=0, null=True)
     banned = models.BooleanField(default=False)
     ban_flags = models.IntegerField(default=0)
@@ -292,7 +298,11 @@ class IPRange(models.Model):
     
     def ban(self, flags):
         self.banned = True
-        self.ban_flags = flags
+        import pdb; pdb.set_trace()
+        if self.ban_flags is None or self.ban_flags == 0:
+            self.ban_flags = flags
+        else:
+            self.ban_flags |= flags
         self.save()
         
         banet = BannedNetworks.objects.filter(iprange_id=self.id)

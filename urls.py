@@ -39,4 +39,5 @@ urlpatterns = patterns('',
     (r'^notification/', include('notificationsystem.urls')),
     (r'^admin/', include(admin.site.urls)),
     (r'^api/', include('api.urls')),
+    (r'^agents/', include('agents.urls')),
 )

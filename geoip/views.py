@@ -27,8 +27,13 @@ from decimal import Decimal
 from django.views.decorators.csrf import csrf_protect
 from django.utils import simplejson as json
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render_to_response
 
-from geoip.models import IPRange, Location, LocationNamesAggregation
+from gui.decorators import staff_member_required
+from geoip.models import *
+from geoip.forms import BanNetworkForm
+from geoip.ip import convert_ip
 
 
 def save_geoip(request):
@@ -84,4 +89,49 @@ def ajax_locations(request):
     if request.is_ajax() and request.GET.get('prefix', False):
         return HttpResponse(json.dumps(LocationNamesAggregation.get_names(request.GET['prefix'])))
     return HttpResponse(json.dumps([]))
+
+
+@staff_member_required
+def ban_network(request):
+    form = BanNetworkForm(request.POST)
+    msg = ""
+    error = False
+    
+    if form.is_valid():
+        network, created = IPRange.objects.get_or_create(\
+                            start_number=convert_ip(form.cleaned_data['start_ip']),
+                            end_number=convert_ip(form.cleaned_data['end_ip']),
+                            defaults=dict(location_id = UNKNOWN_LOCATION.id,
+                                          name = UNKNOWN_LOCATION.name,
+                                          country_name = UNKNOWN_LOCATION.country_name,
+                                          country_code = UNKNOWN_LOCATION.country_code,
+                                          state_region = UNKNOWN_LOCATION.state_region,
+                                          city = UNKNOWN_LOCATION.city,
+                                          zipcode = UNKNOWN_LOCATION.zipcode,
+                                          lat = UNKNOWN_LOCATION.lat,
+                                          lon = UNKNOWN_LOCATION.lon))
+        
+        try:
+            network.ban(BAN_FLAGS.get(form.cleaned_data['flag']))
+        except Exception, err:
+            error = str(err)
+            msg = "Failed to ban network %s->%s with flag %s" % \
+                                        (form.cleaned_data['start_ip'],
+                                         form.cleaned_data['end_ip'],
+                                         form.cleaned_data['flag'])
+        else:
+            msg = "Banned network %s->%s with flag %s successfuly!" % \
+                                        (form.cleaned_data['start_ip'],
+                                         form.cleaned_data['end_ip'],
+                                         form.cleaned_data['flag'])
+        
+    form = BanNetworkForm()
+    return render_to_response('geoip/ban_network.html', locals())
+    
+
+
+
+
+
+
 

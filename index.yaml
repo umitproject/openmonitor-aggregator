@@ -125,6 +125,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: geoip_locationnamesaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: gui_region
   properties:
   - name: __key__

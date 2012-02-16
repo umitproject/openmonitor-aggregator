@@ -36,6 +36,12 @@ from agents.CryptoLib import *
 from geoip.models import *
 
 
+BAN_FLAGS = dict(
+    abuse=1,
+    robots=2,
+    other=4
+)
+
 class LoginProcess(models.Model):
     processID     = models.AutoField(primary_key=True)
     agent_id       = models.IntegerField()
@@ -150,6 +156,8 @@ class BannedAgents(models.Model):
         if len(banned) == 0:
             banned = cls()
             banned.save()
+        else:
+            banned = banned[0]
         return banned
     
     @classmethod
@@ -208,7 +216,10 @@ class Agent(models.Model):
     
     def ban(self, flags):
         self.banned = True
-        self.ban_flags = flags
+        if self.ban_flags is None or self.ban_flags == 0:
+            self.ban_flags = flags
+        else:
+            self.ban_flags |= flags
         self.save()
         
         BannedAgents.add(self)
@@ -278,6 +289,11 @@ class Agent(models.Model):
     def initLogin(self, ip, port):
         # get new challenge
         if self.banned:
+            return False
+        
+        # Check if network is banned
+        iprange = IPRange.ip_location(loginProcess.ip)
+        if iprange and iprange.banned:
             return False
         
         crypto = CryptoLib()

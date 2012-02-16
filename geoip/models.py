@@ -274,6 +274,7 @@ class BannedNetworks(models.Model):
             cache.set(key, iprange, CACHE_EXPIRATION)
         return iprange
 
+
 class IPRange(models.Model):
     location_id = models.IntegerField()
     start_number = models.IntegerField()

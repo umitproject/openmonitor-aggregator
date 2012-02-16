@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Ban Network{% endblock %}
+
+{% block content %}
+    <div id='msg'>{{ msg }}</div>
+    {% if error %}
+       <div id='error' style="display: block;">{{ error }}</div>
+    {% endif %}
+    <form method="POST" action="/geoip/ban_network/" id='ban_network_form'>
+        {{ form.as_p }}
+        <input type="submit" value="Ban Network" name="ban" id="ban_network_button"/>
+    </form>
+{% endblock %}

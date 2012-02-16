@@ -292,7 +292,7 @@ class Agent(models.Model):
             return False
         
         # Check if network is banned
-        iprange = IPRange.ip_location(loginProcess.ip)
+        iprange = IPRange.ip_location(ip)
         if iprange and iprange.banned:
             return False
         

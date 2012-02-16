@@ -309,8 +309,8 @@ class GetBanlistHandler(BaseHandler):
 class GetBannetsHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList,
-                     messages_pb2.GetPeerListResponse)
+    @message_handler(messages_pb2.GetBannets,
+                     messages_pb2.GetBannetsResponse)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         banets = BannedNetworks.objects.all()

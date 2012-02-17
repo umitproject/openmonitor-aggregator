@@ -88,12 +88,13 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'mediagenerator.middleware.MediaMiddleware',
+    
     # This loads the index definitions, so it has to come first
     'autoload.middleware.AutoloadMiddleware',
     'django.middleware.cache.UpdateCacheMiddleware', # CACHE
     #'django.middleware.csrf.CsrfViewMiddleware', # CSRF
 
-    'mediagenerator.middleware.MediaMiddleware',
     'django.middleware.common.CommonMiddleware', # CACHE
     'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -117,6 +118,13 @@ TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 
 ROOT_URLCONF = 'urls'
 
+ROOT_MEDIA_FILTERS = {
+    'js': 'mediagenerator.filters.yuicompressor.YUICompressor',
+    'css': 'mediagenerator.filters.yuicompressor.YUICompressor',
+}
+
+YUICOMPRESSOR_PATH = os.path.join(os.path.dirname(__file__), 'yuicompressor-2.4.7.jar')
+
 MEDIA_BUNDLES = (
      ('main.css',
         'css/main.css',
@@ -124,7 +132,6 @@ MEDIA_BUNDLES = (
         'css/realtimebox.css', ),
      ('main.js',
          'js/jquery.js',
-         {'filter': 'mediagenerator.filters.media_url.MediaURL'},
          'js/jquery-ui.js',
          'js/date.format.js',
          'js/markerclusterer.js',

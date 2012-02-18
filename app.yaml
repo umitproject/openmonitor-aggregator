@@ -20,9 +20,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-application: icm-dev
+application: icm-dev-hrd
 version: 7
-runtime: python
+runtime: python27
+threadsafe: true
 api_version: 1
 
 builtins:
@@ -31,13 +32,19 @@ builtins:
 inbound_services:
 - warmup
 
+libraries:
+- name: django
+  version: latest
+- name: pycrypto
+  version: latest
+
 handlers:
 - url: /_ah/queue/deferred
-  script: djangoappengine/deferred/handler.py
+  script: djangoappengine.deferred.handler.application
   login: admin
 
 - url: /_ah/stats/.*
-  script: djangoappengine/appstats/ui.py
+  script: djangoappengine.appstats.application
 
 - url: /media/admin
   static_dir: django/contrib/admin/media
@@ -48,4 +55,4 @@ handlers:
   expiration: '365d'
 
 - url: /.*
-  script: djangoappengine/main/main.py
+  script: djangoappengine.main.application

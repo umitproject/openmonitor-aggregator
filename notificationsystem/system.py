@@ -21,8 +21,9 @@
 ##
 
 import logging
+import decimal
 
-from django.utils import simplejson
+import simplejson
 
 from google.appengine.api import channel
 

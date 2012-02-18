@@ -23,9 +23,11 @@
 
 import datetime
 import logging
+import decimal
+
+import simplejson as json
 
 from django.shortcuts import render_to_response
-from django.utils import simplejson as json
 from django.http import HttpResponse, Http404
 from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404

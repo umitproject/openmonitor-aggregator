@@ -21,6 +21,14 @@
 ##
 
 from django.db import models
+from django.core.cache import cache
+from djangotoolbox.fields import BlobField
+
+from dbextra.fields import ListField
+
+from messages import messages_pb2
+
+TEST_CACHE_KEY = "compiled_test_key_%s"
 
 class Test(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -166,7 +174,8 @@ class ServiceTestUpdateAggregation(models.Model):
     
     @staticmethod
     def update_aggregation(service_test):
-        agg, created = ServiceTestUpdateAggregation.objects.get_or_create(test_id=service_test.test_id)
+        agg, created = ServiceTestUpdateAggregation.objects.get_or_create(
+                                                test_id=service_test.test_id)
         if agg.id is None or agg.version < service_test.version:
             agg.version = service_test.version
             agg.service_test_id = service_test.id
@@ -188,3 +197,153 @@ class ServiceTestUpdateAggregation(models.Model):
     def __unicode__(self):
         return "%s (%s) - %s" % (self.description, self.service_name,
                                  "Active" if self.active else "Inactive")
+
+class SuggestionSet(models.Model):
+    """This model holds the set of suggestions that took place after
+    the release of the latest test set. This aggregation is useful on helping us
+    figure what is important to keep in or out of the test sets based on
+    response to our test sets. Also, it helps us quickly gather this data to
+    build the next test set without having to do time consuming queries on the
+    datastore.
+    """
+    class Meta:
+        abstract = True
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    test_id = models.IntegerField(null=True)
+    version = models.IntegerField(null=True)
+    active = models.BooleanField(default=False)
+    count_unique = models.IntegerField(default=0)
+    count_total = models.IntegerField(default=0)
+    
+    @classmethod
+    def get_set(cls):
+        """Returns the latest and active suggestion set.
+        """
+        return cls.objects.get(active=True)
+    
+    @classmethod
+    def wrapup_set(cls, test_id, version):
+        """Closes the currently active set and creates a new one. This should
+        *ONLY* be called when a new test set is released.
+        """
+        sug_set = cls.get_set()
+        sug_set.active = False
+        sug_set.test_id = test_id
+        sug_set.version = version
+        sug_set.save()
+        
+        new_set = cls()
+        new_set.active = True
+        new_set.save()
+
+class WebsiteSuggestionSet(SuggestionSet):
+    """This model holds the set of website suggestions that took place after
+    the release of the latest test set. This aggregation is useful on helping us
+    figure what is important to keep in or out of the test sets based on
+    response to our test sets. Also, it helps us quickly gather this data to
+    build the next test set without having to do time consuming queries on the
+    datastore.
+    """
+    website_urls = ListField()
+    locations_names = ListField()
+    locations = ListField(py_type=int)
+    counters = ListField(py_type=int)
+    
+    @classmethod
+    def add_suggestion(cls, website_url, location):
+        """Add the suggestion to this set. If suggestion was already made in the
+        past, increase its counter.
+        """
+        cur_set = cls.get_set()
+        try:
+            index_url = cur_set.website_urls.index(website_url)
+            count_url = cur_set.website_urls.count(website_url)
+        except ValueError:
+            # Website wasn't suggested before
+            cur_set.website_urls.append(website_url)
+            cur_set.locations_names.append(str(location))
+            cur_set.locations.append(location.id)
+            cur_set.counters.append(1)
+        else:
+            if cur_set.locations[index_url] == location.id:
+                # This means suggestion already happened for this location
+                cur_set.counters[index_url] += 1
+            else:
+                # It means website was suggested for another region
+                cur_set.locations_names.append(str(location))
+                cur_set.locations.append(location.id)
+                cur_set.counters.append(1)
+        
+        cur_set.save()
+
+class ServiceSuggestionSet(SuggestionSet):
+    """This model holds the set of service suggestions that took place after
+    the release of the latest test set. This aggregation is useful on helping us
+    figure what is important to keep in or out of the test sets based on
+    response to our test sets. Also, it helps us quickly gather this data to
+    build the next test set without having to do time consuming queries on the
+    datastore.
+    """
+    service_names = ListField()
+    host_names = ListField()
+    ips = ListField()
+    ports = ListField()
+    locations_names = ListField()
+    locations = ListField(py_type=int)
+    counters = ListField(py_type=int)
+    
+    @classmethod
+    def add_suggestion(cls, service_name, host_name, ip, port, location):
+        """Add the suggestion to this set. If suggestion was already made in the
+        past, increase its counter.
+        """
+        cur_set = cls.get_set()
+        try:
+            index_url = cur_set.website_urls.index(website_url)
+        except ValueError:
+            # Website wasn't suggested before
+            cur_set.website_urls.append(website_url)
+            cur_set.locations_names.append(str(location))
+            cur_set.locations.append(location.id)
+            cur_set.counters.append(1)
+        else:
+            if cur_set.locations[index_url] == location.id:
+                # This means suggestion already happened for this location
+                cur_set.counters[index_url] += 1
+            else:
+                # It means website was suggested for another region
+                cur_set.locations_names.append(str(location))
+                cur_set.locations.append(location.id)
+                cur_set.counters.append(1)
+        
+        cur_set.save()
+
+
+class TestSet(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    test_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    description = models.TextField(blank=True)
+    active = models.BooleanField(default=False)
+    test_set_blob = BlobField()
+    
+    @property
+    def test_set(self):
+        test = cache.get(TEST_CACHE_KEY % self.id, False)
+        if not test:
+            test = messages_pb2.NewTestsResponse()
+            test.ParseFromString(self.test_set_blob)
+            cache.set(TEST_CACHE_KEY, test)
+        return test
+
+
+
+
+
+
+
+
+

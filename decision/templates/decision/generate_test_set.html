@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Generate New Test Set{% endblock %}
+
+{% block content %}
+    <p>While generating a new test set, you can keep or remove old tests and
+       add new ones. Choose carefully, and make sure your test complies with
+       our rules of <h1>NEVER</h1> testing against sites with pornographic,
+       racist, terrorist, violent or that contains any sort of illegal content.
+    </p>
+    <h2>Current Test Set</h2>
+    <div id="current_test_set">
+        {% for test in current_test_set %}
+            
+        {% endfor %}
+    </div>
+    <hr/>
+    <div id="website_suggestions">
+        {% for website in website_suggestions %}
+            
+        {% endfor %}
+    </div>
+    <hr/>
+    <div id="service_suggestions">
+        {% for service in service_suggestions %}
+            
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block main_right_side %}{% endblock %}

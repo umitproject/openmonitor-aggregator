@@ -48,7 +48,7 @@ class ListField(models.TextField):
     
     def to_python(self, value):
         if isinstance(value, list):
-            return list
+            return value
 
         if value in ['', None]:
             return []

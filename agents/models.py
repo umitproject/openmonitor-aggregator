@@ -81,7 +81,7 @@ class LoggedAgent(models.Model):
 
     @property
     def agent(self):
-        key = AGENT_CACHE_KEY % self.location_id
+        key = AGENT_CACHE_KEY % self.agent_id
         agent = cache.get(key, False)
         if not agent:
             agent = Agent.objects.get(id=self.agent_id)

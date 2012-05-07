@@ -142,7 +142,8 @@ class LoggedAgent(models.Model):
 
         return selectedPeers
 
-    def getLoggedAgent(self, agent_id):
+    @staticmethod
+    def getLoggedAgent(agent_id):
       return LoggedAgent.objects.get(agent_id=agent_id)
 
     def __unicode__(self):

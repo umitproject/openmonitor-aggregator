@@ -142,6 +142,9 @@ class LoggedAgent(models.Model):
 
         return selectedPeers
 
+    def getLoggedAgent(self, agent_id):
+      return LoggedAgent.objects.get(agent_id=agent_id)
+
     def __unicode__(self):
         return "Agent %s at %s" % (self.agent_id, self.country_name)
 
@@ -419,8 +422,8 @@ class Agent(models.Model):
                                         self.public_key)
 
     def getLoginInfo(self):
-        return LoggedAgent.getAgent(self.id)
-    
+        return LoggedAgent.getLoggedAgent(self.id)
+
     @property
     def public_key(self):
         key = PUBLIC_KEY_AGENT_CACHE_KEY % self.id

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block left %} {% endblock %}
+
+{% block content %}
+<h2>Register new account</h2>
+<form method="post" action=".">
+  {% include "_form.html" %}
+
+  <input type="submit" value="{% trans 'Submit' %}" />
+</form>
+{% endblock %}

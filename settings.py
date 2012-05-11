@@ -142,6 +142,26 @@ MEDIA_BUNDLES = (
          'js/map.js',
          'js/suggestion.js',
          'js/events.js',),
+     ('bootstrap.css',
+         'bs/assets/css/bootstrap-responsive.css',
+         'bs/assets/css/bootstrap.css',
+          ),
+     ('bootstrap.js',
+         {'filter': 'mediagenerator.filters.media_url.MediaURL'},
+          'bs/assets/js/jquery.js', #We already include bootstrap
+          'bs/assets/js/bootstrap-transition.js',
+          'bs/assets/js/bootstrap-alert.js',
+          'bs/assets/js/bootstrap-modal.js',
+          'bs/assets/js/bootstrap-dropdown.js',
+          'bs/assets/js/bootstrap-scrollspy.js',
+          'bs/assets/js/bootstrap-tab.js',
+          'bs/assets/js/bootstrap-tooltip.js',
+          'bs/assets/js/bootstrap-popover.js',
+          'bs/assets/js/bootstrap-button.js',
+          'bs/assets/js/bootstrap-collapse.js',
+          'bs/assets/js/bootstrap-carousel.js',
+          'bs/assets/js/bootstrap-typeahead.js',),
+                 
 )
 
 MEDIA_DEV_MODE = DEBUG

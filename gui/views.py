@@ -31,6 +31,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404
 from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404
+from django.template import RequestContext
 
 from google.appengine.api import channel
 
@@ -64,7 +65,9 @@ def map(request):
     for event in events:
         events_dict.append(event.get_dict())
     initialEvents = json.dumps(events_dict, use_decimal=True)
-    return render_to_response('notificationsystem/map.html', {'token': token, 'initial_events': initialEvents})
+    return render_to_response('notificationsystem/map.html',
+                              {'token': token, 'initial_events': initialEvents},
+                              context_instance=RequestContext(request))
 
 
 def realtimebox(request):
@@ -74,7 +77,9 @@ def realtimebox(request):
     for event in events:
         events_dict.append(event.get_dict())
     initialEvents = json.dumps(events_dict, use_decimal=True)
-    return render_to_response('notificationsystem/realtimebox.html', {'token': token, 'initial_events': initialEvents})
+    return render_to_response('notificationsystem/realtimebox.html',
+                              {'token': token, 'initial_events': initialEvents},
+                              context_instance=RequestContext(request))
 
 
 def event(request, event_id):
@@ -86,13 +91,15 @@ def event(request, event_id):
     locations = json.dumps(eventDict['locations'])
     blockingNodes = json.dumps(eventDict['blockingNodes'])
 
-    return render_to_response('events/event.html', {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes})
+    return render_to_response('events/event.html',
+                              {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes},
+                              context_instance=RequestContext(request))
 
 
 
 def about(request):
     user = request.user
-    return render_to_response('gui/about.html', locals())
+    return render_to_response('gui/about.html', locals(), context_instance=RequestContext(request))
 
 
 @cant_repeat_form(SuggestServiceForm, ['service_name', 'host_name', 'port', 'location'])
@@ -122,7 +129,7 @@ provided all terms.',
                    errors=form.errors)))
     
     form = SuggestServiceForm()
-    return render_to_response('gui/suggest_service.html', locals())
+    return render_to_response('gui/suggest_service.html', locals(), context_instance=RequestContext(request))
 
 
 @cant_repeat_form(SuggestWebsiteForm, ['website', 'location'])
@@ -148,7 +155,7 @@ provided at least a valid website.',
                 errors=form.errors)))
     
     form = SuggestWebsiteForm()
-    return render_to_response('gui/suggest_website.html', locals())
+    return render_to_response('gui/suggest_website.html', locals(), context_instance=RequestContext(request))
 
 
 def create_website_event(request):
@@ -205,7 +212,7 @@ def create_website_event(request):
                     errors=form.errors)))
     
     form = WebsiteEventForm()
-    return render_to_response('gui/create_website_event.html', locals())
+    return render_to_response('gui/create_website_event.html', locals(), context_instance=RequestContext(request))
 
 
 def create_service_event(request):
@@ -258,7 +265,7 @@ def create_service_event(request):
                     errors=form.errors)))
 
     form = ServiceEventForm()
-    return render_to_response('gui/create_service_event.html', locals())
+    return render_to_response('gui/create_service_event.html', locals(), context_instance=RequestContext(request))
 
 
 def serve_media(request, id):
@@ -268,10 +275,10 @@ def serve_media(request, id):
 @staff_member_required
 def ban_agent(request):
     
-    return render_to_response('gui/ban_agent.html', locals())
+    return render_to_response('gui/ban_agent.html', locals(), context_instance=RequestContext(request))
 
 @staff_member_required
 def ban_network(request):
     
-    return render_to_response('gui/ban_network.html', locals())
+    return render_to_response('gui/ban_network.html', locals(), context_instance=RequestContext(request))
     

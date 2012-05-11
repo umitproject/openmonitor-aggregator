@@ -1,3 +1,17 @@
+function renderTemplate(template, context) {
+   /* Render a basic Django template string (variables only) 
+      with context given as JS object */
+ 
+   var text = new String(template);
+   for (var key in context) {
+     var value = context[key];
+     alert(key+value);
+     var patt = new RegExp("[{][{][ ]*"+key+"[ ]*[}][}]");
+     text = text.replace(patt, value);
+   };
+   return text;
+}
+
 function formatDate(dateStr)
 {
     date = new Date(dateStr);

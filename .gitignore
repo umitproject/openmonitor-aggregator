@@ -17,3 +17,6 @@ geodata/cities1000.txt
 geodata/cities1000.zip
 _generated_media
 _generated_media_names.py
+*~
+*.orig
+*.swp

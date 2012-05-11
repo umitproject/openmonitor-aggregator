@@ -6,14 +6,6 @@ var eventLvl3 = media_url("images/alert3.png");
 var newevent  = media_url("images/newevent.gif");
 var newEventTime = 2000
 
-var event_info_template = "\
-<a href='{{ url }}'>{{target_type}} {{ type }} {{target}}</a>\
-<br />First Detection: {{ first_detection }}\
-<br />Last Detection:  {{ last_detection }}\
-<br />Location: {{ location }}";
-
-
-
 function initializeMap()
 {
     var latlng = new google.maps.LatLng(0, 0);
@@ -112,7 +104,7 @@ function addEventToMap(event, appear)
 
 function updateInitialMapEvents(m)
 {
-    events = JSON.parse(m.data)
+    events = JSON.parse(m.data);
     for(var i=0; i<events.length; i++)
     {
         addEventToMap(events[i], false)

@@ -116,6 +116,8 @@ TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
+#Remove comment in the following line for v2 design
+#TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates', 'v2'),)
 
 ROOT_URLCONF = 'urls'
 

@@ -115,9 +115,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
-TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
+#TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 #Remove comment in the following line for v2 design
-#TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates', 'v2'),)
+TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates', 'v2'),)
 
 ROOT_URLCONF = 'urls'
 

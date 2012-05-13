@@ -11,6 +11,19 @@ function renderTemplate(template, context) {
    return text;
 }
 
+function getFullLocationNameString(location) {
+	if (location.location_country_name == 'Unknown')
+		return 'Unknown';
+	else {
+        if(location.location_name!="")
+            var location_name = location.location_name + ", ";
+        else
+        	var location_name = "";
+        location_name += location.location_country_name;
+        return location_name;
+	}
+}
+
 function formatDate(dateStr)
 {
     date = new Date(dateStr);

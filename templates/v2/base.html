@@ -38,12 +38,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">OpenMonitor</a>
+          <a class="brand" href="/">OpenMonitor</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="/suggest_website">Suggest A Website</a></li>
-              <li><a href="/suggest_service">Suggest A Service</a></li>
+              <li {% ifequal request.path '/' %}class="active"{% endifequal %}><a href="/">Home</a></li>
+              <li {% ifequal request.path '/suggest_website' %}class="active"{% endifequal %}><a href="/suggest_website">Suggest A Website</a></li>
+              <li {% ifequal request.path '/suggest_service' %}class="active"{% endifequal %}><a href="/suggest_service">Suggest A Service</a></li>
             </ul>
             <ul class="nav pull-right">
 	            {% if request.user.is_authenticated %}
@@ -61,8 +61,8 @@
 	                </ul>
 	              </li>
 				{% else %}
-	                <li><a href="/accounts/login">Login</a></li>
-	                <li><a href="/accounts/register">Register</a></li>
+	                <li {% ifequal request.path '/accounts/login/' %}class="active"{% endifequal %}><a href="/accounts/login">Login</a></li>
+	                <li {% ifequal request.path '/accounts/register/' %}class="active"{% endifequal %}><a href="/accounts/register">Register</a></li>
 	            {% endif %}
             </ul>
           </div><!--/.nav-collapse -->

@@ -5,7 +5,7 @@ function renderTemplate(template, context) {
    var text = new String(template);
    for (var key in context) {
      var value = context[key];
-     var patt = new RegExp("[{][{][ ]*"+key+"[ ]*[}][}]");
+     var patt = new RegExp("[{][{][ ]*"+key+"[ ]*[}][}]", "g");
      text = text.replace(patt, value);
    };
    return text;

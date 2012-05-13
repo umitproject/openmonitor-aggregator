@@ -83,18 +83,17 @@ function placeNewEvent(type, event, latitude, longitude, alertEvent)
 
 function addEventToMap(event, appear)
 {
-    baseInfo = "<a href='" + event.url + "'>" + event.targetType + " " + event.type + " " + event.target + "</a><br />First Detection: " + formatDate(event.firstdetection) + "<br />Last Detection: " + formatDate(event.lastdetection) + "<br />Location: ";
-
+	var event_summary_div = createEventSummaryDiv(event);
+	
     for(i=0; i<event.locations.length; i++)
     {
-        localInfo = "";
-        if(event.locations[i].location_name!="")
-            localInfo = event.locations[i].location_name + ", ";
-        localInfo += event.locations[i].location_country_name;
-
-        eventInfo = "<div class='tooltip'>" + baseInfo + localInfo + "</div>";
-
-        placeNewEvent(event.type, eventInfo, event.locations[i].lat, event.locations[i].lon, appear)
+    	var new_event_summary_div = event_summary_div.clone();
+    	
+    	var location_name = getFullLocationNameString(event.locations[i]);
+    	var extra_info = '<strong>Reported From: </strong>' + location_name;
+    	new_event_summary_div.children().filter(".extra").html(extra_info);
+    	var event_summary_div_html = "<div style='margin-left:10px'>" +new_event_summary_div.html() + "</div>";
+        placeNewEvent(event.type, event_summary_div_html, event.locations[i].lat, event.locations[i].lon, appear)
         //console.info(event.type, event.locations[i].lat, event.locations[i].lon)
     }
 

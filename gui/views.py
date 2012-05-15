@@ -87,12 +87,30 @@ def event(request, event_id):
         event = Event.objects.get(pk=event_id)
     except Event.DoesNotExist:
         raise Http404
-    eventDict = event.get_full_dict()
-    locations = json.dumps(eventDict['locations'])
-    blockingNodes = json.dumps(eventDict['blockingNodes'])
 
+    event = event.get_full_dict()
+    
+    #blockingNodes = json.dumps(eventDict['blockingNodes'])
+    
+    event_json = json.dumps([event])
+    countries = {}
+    for location in event['locations']:
+      country_name = location['location_country_name']
+      if not countries.has_key(country_name):
+        countries[country_name] = []
+        
+      if country_name != 'Unknown':
+        location_name = location['location_name']  
+        if location_name != 'Unknown':
+          if not location_name in countries[country_name]:
+            countries[country_name].append(location_name)
+        
+    num_of_reports = len(event['locations'])
     return render_to_response('events/event.html',
-                              {'eventInfo': eventDict, 'locations': locations, 'blockingNodes': blockingNodes},
+                              {'countries': countries,
+                               'num_of_reports': num_of_reports,
+                               'event': event,
+                               'event_json': event_json},
                               context_instance=RequestContext(request))
 
 

@@ -270,7 +270,7 @@ class BannedNetworks(models.Model):
         key = IP_RANGE_CACHE_KEY % self.iprange_id
         iprange = cache.get(key, False)
         if not iprange:
-            iprange = IPrange.objects.get(id=self.iprange_id)
+            iprange = IPRange.objects.get(id=self.iprange_id)
             cache.set(key, iprange, CACHE_EXPIRATION)
         return iprange
 

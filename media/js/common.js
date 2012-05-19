@@ -30,18 +30,6 @@ function formatDate(dateStr)
     return date.format("dd/mm/yyyy HH:MM:ss");
 }
 
-$(document).ready(function () {
-	if ($('#id_location').length > 0) {
-		$("#id_location").autocomplete({
-			source:function(req, add) {
-						$.getJSON("/a/locations/",
-								  { prefix:req.term },
-								  function(data){ add(data); });
-					}
-		});
-	}
-});
-
 $.ajaxSetup({
      beforeSend: function(xhr, settings) {
          function getCookie(name) {

@@ -36,6 +36,7 @@ from agents.CryptoLib import *
 from geoip.models import *
 
 
+
 BAN_FLAGS = dict(
     abuse=1,
     robots=2,
@@ -239,6 +240,7 @@ class Agent(models.Model):
     def create(versionNo, agentType, ip,
                publicKeyMod, publicKeyExp,
                username, password, AESKey):
+        from geoip.models import IPRange
         # check username and password
         user = authenticate(username=username, password=password)
         if user is not None and agentType in ["MOBILE", "DESKTOP"]:

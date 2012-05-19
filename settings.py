@@ -34,6 +34,11 @@ DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native',
                         'HIGH_REPLICATION': True}
 AUTOLOAD_SITECONF = 'indexes'
 
+DBINDEXER_BACKENDS = ('dbindexer.backends.BaseResolver',
+                      'dbindexer.backends.FKNullFix',
+                      #'dbindexer.backends.InMemoryJOINResolver',
+                     'dbindexer.backends.ConstantFieldJOINResolver',)
+
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
 DEBUG = True

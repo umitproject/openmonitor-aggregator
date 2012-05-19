@@ -88,6 +88,7 @@ INSTALLED_APPS = (
     'notificationsystem',
     'registration',
     'filetransfers',
+    'ajax_select',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
@@ -236,3 +237,16 @@ RSAKEY_U = 480716677972136688172353265038083263882320363755084097931083195396290
 
 
 RSA_KEYSIZE = 1024
+
+
+######################
+# AJAX_SELECT OPTIONS
+
+AJAX_SELECT_BOOTSTRAP = True
+AJAX_SELECT_INLINES = 'inline'
+
+#######################
+# AJAX LOOKUP CHANNELS
+AJAX_LOOKUP_CHANNELS = {
+    'location': ('geoip.lookups', 'LocationLookup'),
+}

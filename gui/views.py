@@ -158,7 +158,7 @@ def suggest_website(request, form, valid, *args, **kwargs):
         
         suggestion = WebsiteSuggestion()
         suggestion.website_url = website
-        suggestion.location = location
+        suggestion.location_id = location.id
         #suggestion.user = request.user
         suggestion.save()
         

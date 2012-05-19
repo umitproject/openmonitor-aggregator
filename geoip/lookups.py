@@ -24,7 +24,6 @@
 from ajax_select import LookupChannel
 
 from geoip.models import Location
-from geoip.models import LocationNamesAggregation
 
 
 class LocationLookup(LookupChannel):
@@ -48,4 +47,7 @@ class LocationLookup(LookupChannel):
     return entities
   
   def format_match(self,obj):
-    obj.name
+    return self.format_item_display(obj)
+
+  def format_item_display(self, obj):
+    return obj.name

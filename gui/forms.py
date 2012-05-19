@@ -22,6 +22,12 @@
 import datetime
 from django import forms
 
+from suggestions.models import WebsiteSuggestion
+from suggestions.models import ServiceSuggestion
+
+from ajax_select import make_ajax_field
+
+
 EVENT_TYPE = (
     ('censor', 'Censor'),
     ('throttling', 'Throttling'),
@@ -30,7 +36,7 @@ EVENT_TYPE = (
 
 class SuggestWebsiteForm(forms.Form):
     website = forms.CharField(max_length=300, required=True)
-    location = forms.CharField(max_length=300, required=False)
+    location = make_ajax_field(WebsiteSuggestion, 'location_id', 'location', label='Location')
 
 class SuggestServiceForm(forms.Form):
     host_name = forms.CharField(max_length=300, required=True)

@@ -37,6 +37,7 @@ class Test(models.Model):
     version = models.IntegerField(default=1)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=False)
+    location_id = models.IntegerField(null=True)
 
     class Meta:
         abstract = True

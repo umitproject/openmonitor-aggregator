@@ -49,7 +49,7 @@ def add_to_aggregation(agg_model, fields, suggestion):
 class WebsiteSuggestion(UserModel):
     created_at = models.DateTimeField(auto_now_add=True)
     website_url = models.URLField(max_length=300)
-    location_id = models.IntegerField(null=True)
+    location_id = models.IntegerField(null=True, blank=True)
 
     @cache_model_method('website_suggestion_', 300, 'location_id')
     @property

@@ -46,6 +46,20 @@ def add_to_aggregation(agg_model, fields, suggestion):
     
     return agg
 
+
+def delete_from_aggregation(agg_model, fields, suggestion):
+    aggs = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))
+    for agg in aggs:
+        for suggestion_id in agg.suggestions:
+            if suggestion_id == suggestion.id:
+                agg.suggestions.remove(suggestion_id)
+
+        if len(agg.suggestions) == 0:
+            agg.delete()
+        else:
+            agg.save()
+
+
 class WebsiteSuggestion(UserModel):
     created_at = models.DateTimeField(auto_now_add=True)
     website_url = models.URLField(max_length=300)
@@ -78,10 +92,47 @@ class WebsiteSuggestion(UserModel):
 
         return res
 
+    def accept_suggestion(self):
+        self.create_tests()
+        return self.delete()
+
+
+    def delete(self):
+        WebsiteUrlAggregation.delete_suggestion(self)
+        WebsiteLocationAggregation.delete_suggestion(self)
+        WebsiteAggregation.delete
+
+    def create_tests(self):
+      #TODO: Create corresponding tests for that suggestion
+      pass
+
     def __unicode__(self):
         return "%s - %s" % (self.website_url, self.location)
 
-class WebsiteUserAggregation(UserModel):
+
+class BaseSuggestionAggregation(object):
+
+    SuggestionModel = None
+
+    def accept_aggregation(self):
+      if not self.suggestions:
+        return self.delete()
+
+      for suggestion_id in self.suggestions:
+        try:
+          suggestion = SuggestionModel.objects.get(id=suggestion_id)
+          suggestion.accept_suggestion()
+        except Suggestion.DoesNotExist:
+          pass
+      self.delete()
+
+
+class BaseWebsiteSuggestionAggregation(BaseSuggestionAggregation):
+
+    SuggestionModel = WebsiteSuggestion
+
+
+class WebsiteUserAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     suggestions = ListField(py_type=int)
@@ -94,7 +145,7 @@ class WebsiteUserAggregation(UserModel):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.user_id)
 
-class WebsiteUrlAggregation(models.Model):
+class WebsiteUrlAggregation(models.Model, BaseSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     website_url = models.URLField(max_length=300)
@@ -108,7 +159,9 @@ class WebsiteUrlAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.website_url)
 
-class WebsiteLocationAggregation(models.Model):
+class WebsiteLocationAggregation(models.Model,
+                                 BaseWebsiteSuggestionAggregation):
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
@@ -129,7 +182,7 @@ class WebsiteLocationAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.location)
 
-class WebsiteAggregation(UserModel):
+class WebsiteAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
@@ -197,7 +250,13 @@ class ServiceSuggestion(UserModel):
     def __unicode__(self):
         return self.service_name
 
-class ServiceNameAggregation(models.Model):
+
+class BaseServiceSuggestionAggregation(BaseSuggestionAggregation):
+
+    SuggestionModel = ServiceSuggestion
+
+
+class ServiceNameAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     service_name = models.CharField(max_length=100)
@@ -211,7 +270,7 @@ class ServiceNameAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.service_name)
 
-class ServiceHostAggregation(models.Model):
+class ServiceHostAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     host_name = models.CharField(max_length=100)
@@ -225,7 +284,7 @@ class ServiceHostAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.host_name)
 
-class ServiceIPAggregation(models.Model):
+class ServiceIPAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     ip = models.CharField(max_length=60)
@@ -239,7 +298,7 @@ class ServiceIPAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.ip)
 
-class ServicePortAggregation(models.Model):
+class ServicePortAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     port = models.IntegerField()
@@ -253,7 +312,8 @@ class ServicePortAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.port)
 
-class ServiceLocationAggregation(models.Model):
+class ServiceLocationAggregation(models.Model,
+                                 BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
@@ -274,7 +334,7 @@ class ServiceLocationAggregation(models.Model):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.location)
 
-class ServiceUserAggregation(UserModel):
+class ServiceUserAggregation(UserModel, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     suggestions = ListField(py_type=int)
@@ -287,7 +347,7 @@ class ServiceUserAggregation(UserModel):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.user_id)
 
-class ServiceAggregation(UserModel):
+class ServiceAggregation(UserModel, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)

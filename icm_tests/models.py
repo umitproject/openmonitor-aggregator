@@ -79,6 +79,10 @@ class Test(models.Model):
         new_tests.extend(service_tests)
         return new_tests
 
+    @staticmethod
+    def create_from_suggestion(suggestion):
+        raise NotImplementedError
+
 
 class WebsiteTest(Test):
     website_url = models.URLField()

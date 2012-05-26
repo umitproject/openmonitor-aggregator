@@ -23,14 +23,24 @@
 from suggestions.models import *
 from django.contrib import admin
 
+
+class AggregationAdmin(admin.ModelAdmin):
+
+    actions = ['accept_and_delete']
+
+    def accept_and_delete(self, request, queryset):
+        for aggregation in queryset:
+            aggregation.accept_aggregation()
+
+
 admin.site.register(WebsiteSuggestion)
 admin.site.register(ServiceSuggestion)
-admin.site.register(WebsiteUrlAggregation)
-admin.site.register(WebsiteLocationAggregation)
-admin.site.register(WebsiteAggregation)
-admin.site.register(ServiceNameAggregation)
-admin.site.register(ServiceHostAggregation)
-admin.site.register(ServiceIPAggregation)
-admin.site.register(ServicePortAggregation)
-admin.site.register(ServiceLocationAggregation)
-admin.site.register(ServiceAggregation)
+admin.site.register(WebsiteUrlAggregation, AggregationAdmin)
+admin.site.register(WebsiteLocationAggregation, AggregationAdmin)
+admin.site.register(WebsiteAggregation, AggregationAdmin)
+admin.site.register(ServiceNameAggregation, AggregationAdmin)
+admin.site.register(ServiceHostAggregation, AggregationAdmin)
+admin.site.register(ServiceIPAggregation, AggregationAdmin)
+admin.site.register(ServicePortAggregation, AggregationAdmin)
+admin.site.register(ServiceLocationAggregation, AggregationAdmin)
+admin.site.register(ServiceAggregation, AggregationAdmin)

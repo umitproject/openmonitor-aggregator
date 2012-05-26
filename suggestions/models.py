@@ -96,12 +96,6 @@ class WebsiteSuggestion(UserModel):
         self.create_tests()
         return self.delete()
 
-
-    def delete(self):
-        WebsiteUrlAggregation.delete_suggestion(self)
-        WebsiteLocationAggregation.delete_suggestion(self)
-        WebsiteAggregation.delete
-
     def create_tests(self):
       #TODO: Create corresponding tests for that suggestion
       pass

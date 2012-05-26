@@ -114,9 +114,9 @@ class BaseSuggestionAggregation(object):
 
       for suggestion_id in self.suggestions:
         try:
-          suggestion = SuggestionModel.objects.get(id=suggestion_id)
+          suggestion = self.SuggestionModel.objects.get(id=suggestion_id)
           suggestion.accept_suggestion()
-        except Suggestion.DoesNotExist:
+        except self.SuggestionModel.DoesNotExist:
           pass
       self.delete()
 
@@ -139,7 +139,8 @@ class WebsiteUserAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.user_id)
 
-class WebsiteUrlAggregation(models.Model, BaseSuggestionAggregation):
+
+class WebsiteUrlAggregation(models.Model, BaseWebsiteSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     website_url = models.URLField(max_length=300)
@@ -152,6 +153,7 @@ class WebsiteUrlAggregation(models.Model, BaseSuggestionAggregation):
     
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.website_url)
+
 
 class WebsiteLocationAggregation(models.Model,
                                  BaseWebsiteSuggestionAggregation):
@@ -176,6 +178,7 @@ class WebsiteLocationAggregation(models.Model,
     def __unicode__(self):
         return "(%s) %s" % (self.count, self.location)
 
+
 class WebsiteAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -197,7 +200,6 @@ class WebsiteAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     
     def __unicode__(self):
         return "(%s) %s - %s" % (self.count, self.location, self.website_url)
-
 
 
 class ServiceSuggestion(UserModel):

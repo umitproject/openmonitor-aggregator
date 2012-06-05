@@ -93,11 +93,13 @@ class WebsiteSuggestion(UserModel):
         return res
 
     def accept_suggestion(self):
-        self.create_tests()
+        self.create_test()
         return self.delete()
 
-    def create_tests(self):
-      #TODO: Create corresponding tests for that suggestion
+    def create_test(self):
+      '''Create corresponding tests for that suggestion.
+      '''
+      #Test.create_from_suggestion(self)
       pass
 
     def __unicode__(self):

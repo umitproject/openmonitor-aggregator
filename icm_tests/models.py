@@ -108,6 +108,15 @@ class TestAggregation(models.Model):
                 aggr.location = test.location
             aggr.save()
 
+    @staticmethod
+    def _remove_test_from_aggregation(Model, test, filter_kwargs=None):
+        try:
+            aggr = Model.objects.get(**filter_kwargs)
+            if test.id in aggr.test_ids:
+                aggr.test_ids.remove(test.id)
+                aggr.save()
+        except Model.DoesNotExist:
+            pass
 
     @staticmethod
     def update_aggregations_from_test(test):
@@ -146,6 +155,50 @@ class TestAggregation(models.Model):
             TestAggregation._update_aggregation_for_model(
                 aggr_models["country"], test,
                 {'location__country_name': test.location.country_name})
+
+
+    @staticmethod
+    def remove_test_from_aggregations(test):
+        assert type(test) in [WebsiteTest, ServiceTest]
+
+        if type(test) == WebsiteTest:
+            aggr_models = WEBSITE_TESTS_AGGREGATION_MODELS
+        else:
+            aggr_models = SERVICE_TESTS_AGGREGATION_MODELS
+
+        #remove from global aggregation
+        TestAggregation._remove_test_from_aggregation(
+            aggr_models["global"], test)
+
+        if not test.location:
+            return
+
+        #remove from city aggregation
+        if test.location.city:
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models['city'], test,
+                {'location__city': test.location.city})
+
+            return
+
+        #remove from region aggregation
+        if test.location.state_region:
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models["region"], test,
+                {'location__state_region': test.location.state_region})
+
+            return
+
+        #remove from country aggregation
+        if test.location.country_name:
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models["country"], test,
+                {'location__country_name': test.location.country_name})
+
+
+    @staticmethod
+    def get_for_agent(agent):
+        raise NotImplementedError
 
 
 class WebsiteTestsGlobalAggregation(TestAggregation):

@@ -70,6 +70,23 @@ class Test(models.Model):
 class WebsiteTest(Test):
     website_url = models.URLField()
 
+    @staticmethod
+    def create_from_suggestion(suggestion):
+        tests = WebsiteTest.objects.filter(
+            website_url=suggestion.website_url)
+
+        if suggestion.location:
+            tests.objects.filter(location_id=suggestion.location.id)
+
+        if tests.count():
+            return False
+        else:
+            test = WebsiteTest(website_url=suggestion.website_url)
+            if suggestion.location:
+                test.location_id = suggestion.location.id
+            test.save()
+            return True
+
     def __unicode__(self):
         return "%s (%s) - %s" % (self.description, self.website_url,
                                  "Active" if self.active else "Inactive")

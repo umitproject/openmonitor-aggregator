@@ -40,6 +40,32 @@ class Test(models.Model):
     def create_from_suggestion(suggestion):
         raise NotImplementedError
 
+    @staticmethod
+    def get_test_version(agent):
+        version_sum = 0
+
+        # Latest version is sum of the all aggregations' versions
+
+        # Add aggregation versions to the version_sum
+        for Model in ALL_TESTS_AGGREGATION_MODELS:
+            try:
+                version_sum += Model.get_for_agent(agent).version
+            except Model.DoesNotExist:
+                continue
+
+        return version_sum
+
+    def save(self, *args, **kwargs):
+        new = self.id is None
+
+        res = super(Test, self).save(*args, **kwargs)
+
+        if new:
+            test.update_aggregations_from_test(self)
+
+        return res
+
+
 
 class WebsiteTest(Test):
     website_url = models.URLField()

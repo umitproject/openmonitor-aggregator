@@ -35,7 +35,7 @@ from django.conf import settings
 
 from events.models import Event
 from versions.models import DesktopAgentVersion, MobileAgentVersion
-from icm_tests.models import Test, WebsiteTestUpdateAggregation, ServiceTestUpdateAggregation
+from icm_tests.models import Test
 from decision.decisionSystem import DecisionSystem
 from agents.models import *
 from agents.CryptoLib import *

@@ -149,35 +149,65 @@ class TestAggregation(models.Model):
 
 
 class WebsiteTestsGlobalAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsGlobalAggregation.objects.get()
 
 
 class WebsiteTestsCountryAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get(
+                location__country_name=agent.location.country_name)
 
 
 class WebsiteTestsRegionAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get(
+                location__state_region=agent.location.state_region)
 
 
 class WebsiteTestsCityAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get(
+                location__city=agent.location.city)
 
 
 class ServiceTestsGlobalAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get()
 
 
 class ServiceTestsCountryAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get(
+            location__country_name=agent.location.country_name)
 
 
 class ServiceTestsRegionAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get(
+            location__state_region=agent.location.state_region)
 
 
 class ServiceTestsCityAggregation(TestAggregation):
-    pass
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsCountryAggregation.objects.get(
+                location__city=agent.location.city)
 
 
 WEBSITE_TESTS_AGGREGATION_MODELS = {

@@ -104,6 +104,27 @@ class ServiceTest(Test):
     ip = models.TextField()
     port  = models.PositiveIntegerField()
 
+    @staticmethod
+    def create_from_suggestion(suggestion):
+        tests = ServiceTest.objects.filter(
+            service_name=suggestion.service_name,
+            ip=suggestion.ip,
+            port=suggestion.port)
+
+        if suggestion.location:
+            tests.objects.filter(location_id=suggestion.location.id)
+
+        if tests.count():
+            return False
+        else:
+            test = ServiceTest(service_name=suggestion.service_name,
+                               ip=suggestion.ip,
+                               port=suggestion.port)
+            if suggestion.location:
+                test.location_id = suggestion.location.id
+            test.save()
+            return True
+
     def __unicode__(self):
         return "%s (%s) - %s" % (self.description, self.service_name,
                                  self.ip, self.port)

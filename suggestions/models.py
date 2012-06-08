@@ -108,7 +108,8 @@ class WebsiteSuggestion(UserModel):
 
 class BaseSuggestionAggregation(object):
 
-    SuggestionModel = None
+    class Meta:
+        SuggestionModel = None
 
     def accept_aggregation(self):
       if not self.suggestions:
@@ -116,16 +117,17 @@ class BaseSuggestionAggregation(object):
 
       for suggestion_id in self.suggestions:
         try:
-          suggestion = self.SuggestionModel.objects.get(id=suggestion_id)
+          suggestion = self.Meta.SuggestionModel.objects.get(id=suggestion_id)
           suggestion.accept_suggestion()
-        except self.SuggestionModel.DoesNotExist:
+        except self.Meta.SuggestionModel.DoesNotExist:
           pass
       self.delete()
 
 
 class BaseWebsiteSuggestionAggregation(BaseSuggestionAggregation):
 
-    SuggestionModel = WebsiteSuggestion
+    class Meta:
+        SuggestionModel = WebsiteSuggestion
 
 
 class WebsiteUserAggregation(UserModel, BaseWebsiteSuggestionAggregation):

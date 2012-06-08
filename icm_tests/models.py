@@ -70,6 +70,9 @@ class Test(models.Model):
             TestAggregation.update_aggregations_from_test(self)
         return res
 
+    def delete(self, *args, **kwargs):
+        TestAggregation.remove_test_from_aggregations(self)
+        return super(Test, self).delete(*args, **kwargs)
 
 
 class WebsiteTest(Test):

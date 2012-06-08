@@ -58,11 +58,16 @@ class Test(models.Model):
     def save(self, *args, **kwargs):
         new = self.id is None
 
-        res = super(Test, self).save(*args, **kwargs)
-
         if new:
-            test.update_aggregations_from_test(self)
-
+            res = super(Test, self).save(*args, **kwargs)
+            TestAggregation.update_aggregations_from_test(self)
+        else:
+            # remove old state from aggregations
+            TestAggregation.remove_test_from_aggregations(self)
+            # apply new state
+            res = super(Test, self).save(*args, **kwargs)
+            # add new state to aggregations
+            TestAggregation.update_aggregations_from_test(self)
         return res
 
 

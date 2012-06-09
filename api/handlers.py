@@ -97,6 +97,7 @@ class LoginHandler(BaseHandler):
         loginAgent.ParseFromString(msg)
 
         # get agent
+        logging.error(loginAgent.agentID)
         agent = Agent.get_agent(loginAgent.agentID)
 
         # get agent ip

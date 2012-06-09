@@ -21,6 +21,8 @@
 ##
 
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from dbextra.fields import ListField
 from geoip.models import Location
@@ -44,12 +46,17 @@ class Test(models.Model):
     def get_test_version(agent):
         version_sum = 0
 
+        if not agent:
+            return 0
+
         # Latest version is sum of the all aggregations' versions
 
         # Add aggregation versions to the version_sum
-        for Model in ALL_TESTS_AGGREGATION_MODELS:
+        for Model in ALL_TESTS_AGGREGATION_MODELS.values():
             try:
-                version_sum += Model.get_for_agent(agent).version
+                agg = Model.get_for_agent(agent)
+                if agg:
+                    version_sum += agg.version
             except Model.DoesNotExist:
                 continue
 
@@ -69,10 +76,6 @@ class Test(models.Model):
             # add new state to aggregations
             TestAggregation.update_aggregations_from_test(self)
         return res
-
-    def delete(self, *args, **kwargs):
-        TestAggregation.remove_test_from_aggregations(self)
-        return super(Test, self).delete(*args, **kwargs)
 
 
 class WebsiteTest(Test):
@@ -98,6 +101,13 @@ class WebsiteTest(Test):
     def __unicode__(self):
         return "%s (%s) - %s" % (self.description, self.website_url,
                                  "Active" if self.active else "Inactive")
+
+
+@receiver(pre_delete, sender=WebsiteTest)
+def delete_website_test(sender, *args, **kwargs):
+    test = kwargs['instance']
+    TestAggregation.remove_test_from_aggregations(test)
+
 
 class ServiceTest(Test):
     service_name = models.TextField()
@@ -130,11 +140,17 @@ class ServiceTest(Test):
                                  self.ip, self.port)
 
 
+@receiver(pre_delete, sender=ServiceTest)
+def delete_service_test(sender, *args, **kwargs):
+    test = kwargs['instance']
+    TestAggregation.remove_test_from_aggregations(test)
+
+
 class TestAggregation(models.Model):
 
     version = models.IntegerField(default=1)
     location = models.ForeignKey(Location, blank=True, null=True)
-    test_ids = ListField()
+    test_ids = ListField(py_type=int)
 
     class Meta:
         abstract = True
@@ -142,7 +158,10 @@ class TestAggregation(models.Model):
     @staticmethod
     def _update_aggregation_for_model(Model, test, filter_kwargs=None):
         try:
-            aggr = Model.objects.get(**filter_kwargs)
+            if filter_kwargs:
+                aggr = Model.objects.get(**filter_kwargs)
+            else:
+                aggr = Model.objects.get()
             aggr.version += 1
             if not test.id in aggr.test_ids:
                 aggr.test_ids.append(test.id)
@@ -157,9 +176,13 @@ class TestAggregation(models.Model):
     @staticmethod
     def _remove_test_from_aggregation(Model, test, filter_kwargs=None):
         try:
-            aggr = Model.objects.get(**filter_kwargs)
+            if filter_kwargs:
+                aggr = Model.objects.get(**filter_kwargs)
+            else:
+                aggr = Model.objects.get()
             if test.id in aggr.test_ids:
                 aggr.test_ids.remove(test.id)
+                aggr.version += 1
                 aggr.save()
         except Model.DoesNotExist:
             pass
@@ -173,12 +196,11 @@ class TestAggregation(models.Model):
         else:
             aggr_models = SERVICE_TESTS_AGGREGATION_MODELS
 
-        #update global aggregation
-        TestAggregation._update_aggregation_for_model(
-            aggr_models["global"], test)
 
         if not test.location:
-            return
+            #update global aggregation
+            TestAggregation._update_aggregation_for_model(
+                aggr_models["global"], test)
 
         # update city aggregation
         if test.location.city:
@@ -212,12 +234,10 @@ class TestAggregation(models.Model):
         else:
             aggr_models = SERVICE_TESTS_AGGREGATION_MODELS
 
-        #remove from global aggregation
-        TestAggregation._remove_test_from_aggregation(
-            aggr_models["global"], test)
-
         if not test.location:
-            return
+            #remove from global aggregation
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models["global"], test)
 
         #remove from city aggregation
         if test.location.city:
@@ -258,6 +278,8 @@ class WebsiteTestsCountryAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
+        if not agent.location:
+            return None
         return WebsiteTestsCountryAggregation.objects.get(
                 location__country_name=agent.location.country_name)
 
@@ -266,6 +288,8 @@ class WebsiteTestsRegionAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
+        if not agent.location:
+            return None
         return WebsiteTestsCountryAggregation.objects.get(
                 location__state_region=agent.location.state_region)
 
@@ -274,6 +298,8 @@ class WebsiteTestsCityAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
+        if not agent.location:
+            return None
         return WebsiteTestsCountryAggregation.objects.get(
                 location__city=agent.location.city)
 
@@ -289,6 +315,8 @@ class ServiceTestsCountryAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
+        if not agent.location:
+            return None
         return WebsiteTestsCountryAggregation.objects.get(
             location__country_name=agent.location.country_name)
 
@@ -297,6 +325,8 @@ class ServiceTestsRegionAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
+        if not agent.location:
+            return None
         return WebsiteTestsCountryAggregation.objects.get(
             location__state_region=agent.location.state_region)
 
@@ -305,6 +335,8 @@ class ServiceTestsCityAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
+        if not agent.location:
+            return None
         return WebsiteTestsCountryAggregation.objects.get(
                 location__city=agent.location.city)
 

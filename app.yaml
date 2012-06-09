@@ -20,7 +20,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-application: icm-dev-hrd
+application: icm-agg-orcun
 version: 7
 runtime: python27
 threadsafe: true

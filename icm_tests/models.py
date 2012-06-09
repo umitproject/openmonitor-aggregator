@@ -62,6 +62,10 @@ class Test(models.Model):
 
         return version_sum
 
+    @staticmethod
+    def get_last_test():
+        return None
+
     def save(self, *args, **kwargs):
         new = self.id is None
 
@@ -337,7 +341,7 @@ class ServiceTestsCityAggregation(TestAggregation):
     def get_for_agent(agent):
         if not agent.location:
             return None
-        return WebsiteTestsCountryAggregation.objects.get(
+        return WebsiteTestsCityAggregation.objects.get(
                 location__city=agent.location.city)
 
 

@@ -77,11 +77,7 @@ class message_handler(object):
             # get lastest test id
             # TODO: Cache the latest test version to avoid going to datastore on
             # every api request
-            last_test = Test.get_last_test()
-            if last_test!=None:
-                test_version = last_test.test_id
-            else:
-                test_version = 0
+            test_version = Test.get_test_version(agent)
             
             response = None
             if self.response_type is not None:

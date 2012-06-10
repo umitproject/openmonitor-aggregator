@@ -26,6 +26,7 @@ from dbextra.fields import ListField
 from dbextra.decorators import cache_model_method
 from dbextra.models import UserModel
 from geoip.models import Location
+from icm_tests.models import WebsiteTest, ServiceTest
 
 from messages.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
@@ -93,12 +94,8 @@ class WebsiteSuggestion(UserModel):
         return res
 
     def accept_suggestion(self):
-        self.create_tests()
+        WebsiteTest.create_from_suggestion(self)
         return self.delete()
-
-    def create_tests(self):
-      #TODO: Create corresponding tests for that suggestion
-      pass
 
     def __unicode__(self):
         return "%s - %s" % (self.website_url, self.location)
@@ -106,7 +103,8 @@ class WebsiteSuggestion(UserModel):
 
 class BaseSuggestionAggregation(object):
 
-    SuggestionModel = None
+    class MetaData:
+        SuggestionModel = None
 
     def accept_aggregation(self):
       if not self.suggestions:
@@ -114,16 +112,17 @@ class BaseSuggestionAggregation(object):
 
       for suggestion_id in self.suggestions:
         try:
-          suggestion = self.SuggestionModel.objects.get(id=suggestion_id)
+          suggestion = self.MetaData.SuggestionModel.objects.get(id=suggestion_id)
           suggestion.accept_suggestion()
-        except self.SuggestionModel.DoesNotExist:
+        except self.MetaData.SuggestionModel.DoesNotExist:
           pass
       self.delete()
 
 
 class BaseWebsiteSuggestionAggregation(BaseSuggestionAggregation):
 
-    SuggestionModel = WebsiteSuggestion
+    class MetaData:
+        SuggestionModel = WebsiteSuggestion
 
 
 class WebsiteUserAggregation(UserModel, BaseWebsiteSuggestionAggregation):
@@ -242,6 +241,10 @@ class ServiceSuggestion(UserModel):
             ServiceAggregation.add_suggestion(self)
 
         return res
+
+    def accept_suggestion(self):
+        ServiceTest.create_from_suggestion(self)
+        return self.delete()
 
     def __unicode__(self):
         return self.service_name

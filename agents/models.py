@@ -293,6 +293,8 @@ class Agent(models.Model):
         self.save()
 
     def initLogin(self, ip, port):
+        from geoip.models import IPRange
+
         # get new challenge
         if self.banned:
             return False
@@ -318,6 +320,7 @@ class Agent(models.Model):
     
     @staticmethod
     def finishLogin(loginProcessID, cipheredChallenge):
+        from geoip.models import IPRange
         # get login process
         loginProcess = LoginProcess.objects.get(processID=loginProcessID)
 

@@ -25,5 +25,13 @@ from django.contrib import admin
 
 admin.site.register(WebsiteTest)
 admin.site.register(ServiceTest)
-admin.site.register(WebsiteTestUpdateAggregation)
-admin.site.register(ServiceTestUpdateAggregation)
+
+# Register aggregation models.
+admin.site.register(WebsiteTestsGlobalAggregation)
+admin.site.register(WebsiteTestsCountryAggregation)
+admin.site.register(WebsiteTestsRegionAggregation)
+admin.site.register(WebsiteTestsCityAggregation)
+admin.site.register(ServiceTestsGlobalAggregation)
+admin.site.register(ServiceTestsCountryAggregation)
+admin.site.register(ServiceTestsRegionAggregation)
+admin.site.register(ServiceTestsCityAggregation)

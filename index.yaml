@@ -135,10 +135,45 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: icm_tests_servicetest
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: icm_tests_servicetestsglobalaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: icm_tests_servicetestupdateaggregation
   properties:
   - name: active
   - name: test_id
+
+- kind: icm_tests_websitetest
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: icm_tests_websitetestscityaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: icm_tests_websitetestscountryaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: icm_tests_websitetestsglobalaggregation
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: icm_tests_websitetestsregionaggregation
+  properties:
+  - name: __key__
+    direction: desc
 
 - kind: icm_tests_websitetestupdateaggregation
   properties:

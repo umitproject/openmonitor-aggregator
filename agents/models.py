@@ -296,7 +296,9 @@ class Agent(models.Model):
         # get new challenge
         if self.banned:
             return False
-        
+
+        from geoip.models import IPRange
+
         # Check if network is banned
         iprange = IPRange.ip_location(ip)
         if iprange and iprange.banned:
@@ -338,6 +340,7 @@ class Agent(models.Model):
             loggedAgent.AESKey = agent.AESKey
 
             # get country by geoip
+            from geoip.models import IPRange
             iprange = IPRange.ip_location(loginProcess.ip)
             loggedAgent.country_code = iprange.country_code
             loggedAgent.country_name = iprange.country_name

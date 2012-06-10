@@ -21,7 +21,7 @@
 ##
 
 from django.db import models
-
+from datetime import datetime
 
 class SoftwareVersion(models.Model):
     released_at = models.DateTimeField(auto_now_add=True)
@@ -37,7 +37,11 @@ class DesktopAgentVersion(SoftwareVersion):
     def getLastVersionNo():
         # TODO (Adriano): Use memcache to store this version indefinitely and
         # create signals to revogate cache once a new version is added
-        return DesktopAgentVersion.objects.order_by('-version')[0:1].get()
+        try:
+            return DesktopAgentVersion.objects.order_by('-version')[0:1].get()
+        except DesktopAgentVersion.DoesNotExist:
+            p = DesktopAgentVersion(released_at=datetime.now(),version=1,url="http://alpha.openmonitor.org/")
+            return p;
 
     def __unicode__(self):
         return "Desktop Agent v" + str(self.version)
@@ -50,7 +54,11 @@ class MobileAgentVersion(SoftwareVersion):
     def getLastVersionNo():
         # TODO (Adriano): Use memcache to store this version indefinitely and create signals 
         # to revogate cache once a new version is added
-        return MobileAgentVersion.objects.order_by('-version')[0:1].get()
+        try:
+            return MobileAgentVersion.objects.order_by('-version')[0:1].get()
+        except MobileAgentVersion.DoesNotExist:
+            p = MobileAgentVersion(released_at=datetime.now(),version=1,url="http://alpha.openmonitor.org/")
+            return p;
 
     def __unicode__(self):
         return "Mobile Agent v" + str(self.version)

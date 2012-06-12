@@ -212,6 +212,18 @@ class GetPeerListHandler(BaseHandler):
 
         return response_str
 
+class AddPeerHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    @message_handler(messages_pb2.GetPeerListResponse,)
+    def create(self, request, received_msg, aes_key, agent, software_version, test_version, response):
+        logging.critical("Request : %s" % request)
+        logging.critical("Received message : %s" % received_msg)
+
+        # TODO : Logic for getting the protobuf request. Parsing it. Storing it in the peerlist
+        return
+
+
 
 class GetSuperPeerListHandler(BaseHandler):
     allowed_methods = ('POST',)

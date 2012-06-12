@@ -27,6 +27,7 @@ from gui.decorators import staff_member_required
 
 registeragent_handler = Resource(RegisterAgentHandler)
 getpeerlist_handler = Resource(GetPeerListHandler)
+addpeer_handler = Resource(AddPeerHandler)
 getsuperpeerlist_handler = Resource(GetSuperPeerListHandler)
 getevents_handler = Resource(GetEventsHandler)
 sendwebsitereport_handler = Resource(SendWebsiteReportHandler)
@@ -51,6 +52,7 @@ urlpatterns = patterns('',
    url(r'^loginagent2/$', login2_handler),
    url(r'^logoutagent/$', logout_handler),
    url(r'^getpeerlist/$', getpeerlist_handler),
+   url(r'^addpeer/$',addpeer_handler),
    url(r'^getsuperpeerlist/$', getsuperpeerlist_handler),
    url(r'^getevents/$', getevents_handler),
    url(r'^sendwebsitereport/$', sendwebsitereport_handler),

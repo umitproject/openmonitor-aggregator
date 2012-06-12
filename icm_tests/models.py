@@ -294,7 +294,7 @@ class WebsiteTestsRegionAggregation(TestAggregation):
     def get_for_agent(agent):
         if not agent.location:
             return None
-        return WebsiteTestsCountryAggregation.objects.get(
+        return WebsiteTestsRegionAggregation.objects.get(
                 location__state_region=agent.location.state_region)
 
 
@@ -304,7 +304,7 @@ class WebsiteTestsCityAggregation(TestAggregation):
     def get_for_agent(agent):
         if not agent.location:
             return None
-        return WebsiteTestsCountryAggregation.objects.get(
+        return WebsiteTestsCityAggregation.objects.get(
                 location__city=agent.location.city)
 
 
@@ -312,7 +312,7 @@ class ServiceTestsGlobalAggregation(TestAggregation):
 
     @staticmethod
     def get_for_agent(agent):
-        return WebsiteTestsCountryAggregation.objects.get()
+        return ServiceTestsGlobalAggregation.objects.get()
 
 
 class ServiceTestsCountryAggregation(TestAggregation):
@@ -321,7 +321,7 @@ class ServiceTestsCountryAggregation(TestAggregation):
     def get_for_agent(agent):
         if not agent.location:
             return None
-        return WebsiteTestsCountryAggregation.objects.get(
+        return ServiceTestsCountryAggregation.objects.get(
             location__country_name=agent.location.country_name)
 
 
@@ -331,7 +331,7 @@ class ServiceTestsRegionAggregation(TestAggregation):
     def get_for_agent(agent):
         if not agent.location:
             return None
-        return WebsiteTestsCountryAggregation.objects.get(
+        return ServiceTestsRegionAggregation.objects.get(
             location__state_region=agent.location.state_region)
 
 
@@ -341,7 +341,7 @@ class ServiceTestsCityAggregation(TestAggregation):
     def get_for_agent(agent):
         if not agent.location:
             return None
-        return WebsiteTestsCityAggregation.objects.get(
+        return ServiceTestsCityAggregation.objects.get(
                 location__city=agent.location.city)
 
 

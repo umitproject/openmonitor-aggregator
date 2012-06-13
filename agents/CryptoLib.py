@@ -29,17 +29,18 @@ from Crypto.Cipher import AES
 
 from django.conf import settings
 
-
-DEFAULT_BLOCK_SIZE = 32
-DEFAULT_PADDING = '{'
+DEFAULT_AES_MODE = AES.MODE_ECB
+#DEFAULT_AES_MODE = AES.MODE_CBC
+DEFAULT_BLOCK_SIZE = 16
 RANDOM_PARAM = 32
 CHALLENGE_SIZE = 10
 
 class CryptoLib:
 
-    def __init__(self, blockSize=DEFAULT_BLOCK_SIZE, padding=DEFAULT_PADDING):
+    def __init__(self, blockSize=DEFAULT_BLOCK_SIZE):
         self.blockSize = blockSize
-        self.padding = padding
+        self.pad = lambda s: s + (self.blockSize - len(s) % self.blockSize) * chr(self.blockSize - len(s) % self.blockSize)
+        self.unpad = lambda s : s[0:-ord(s[-1])]
 
     def generateRSAKey(self, size=settings.RSA_KEYSIZE):
         # generate new RSA key
@@ -49,10 +50,6 @@ class CryptoLib:
         key['public'] = RSAKey(keyPair.n, keyPair.e)
         key['private'] = RSAKey(keyPair.n, keyPair.e, keyPair.d, keyPair.p, keyPair.q, keyPair.u)
         return key
-
-    def pad(self, data):
-        paddedData = data + (self.blockSize - len(data) % self.blockSize) * self.padding
-        return paddedData
 
     def generateAESKey(self):
         secret = os.urandom(self.blockSize)
@@ -109,7 +106,7 @@ class CryptoLib:
         # generate cipher from secret
         cipher = AES.new(secret)
         # decode data
-        data = cipher.decrypt(base64.b64decode(encodedData)).rstrip(self.padding)
+        data = self.unpad(cipher.decrypt(base64.b64decode(encodedData)))
         return data
 
     def signRSA(self, data, key):

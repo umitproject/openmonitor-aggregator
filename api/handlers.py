@@ -481,33 +481,28 @@ class ServiceSuggestionHandler(BaseHandler):
 class CheckAggregator(BaseHandler):
     allowed_methods = ('POST',)
 
-    def create(self, request):
-        msg = base64.b64decode(request.POST['msg'])
-
-        checkAggregator = messages_pb2.CheckAggregator()
-        checkAggregator.ParseFromString(msg)
+    @message_handler(messages_pb2.CheckAggregator,
+                     messages_pb2.CheckAggregatorResponse)
+    def create(self, request, received_check_aggregator, aes_key, agent,
+               software_version, test_version, response):
 
         # get software version information
-        if checkAggregator.agentType=='DESKTOP':
+        if received_check_aggregator.agentType=='DESKTOP':
             softwareVersion = DesktopAgentVersion.getLastVersionNo()
         else:
             softwareVersion = MobileAgentVersion.getLastVersionNo()
 
         # get last test id
-        last_test = Test.get_last_test()
-        if last_test!=None:
-            testVersion = last_test.test_id
-        else:
-            testVersion = 0
+        test_version = Test.get_test_version(agent)
 
         # create the response
-        response = messages_pb2.CheckAggregatorResponse()
         response.status = "ON"
         response.header.currentVersionNo = softwareVersion.version
-        response.header.currentTestVersionNo = testVersion
+        response.header.currentTestVersionNo = test_version
+        
 
         # send back response
-        response_str = base64.b64encode(response.SerializeToString())
+        response_str = response.SerializeToString()
         return response_str
 
 

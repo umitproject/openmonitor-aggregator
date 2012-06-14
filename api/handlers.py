@@ -215,13 +215,23 @@ class GetPeerListHandler(BaseHandler):
 class AddPeerHandler(BaseHandler):
     allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerListResponse,)
+    @message_handler(messages_pb2.AddPeer,messages_pb2.AddPeerResponse)
     def create(self, request, received_msg, aes_key, agent, software_version, test_version, response):
-        logging.critical("Request : %s" % request)
-        logging.critical("Received message : %s" % received_msg)
 
-        # TODO : Logic for getting the protobuf request. Parsing it. Storing it in the peerlist
-        return
+        # Received message has the required information.
+        logging.critical("Received message : %s" % received_msg)
+        try:
+            LoggedAgent.addPeer(received_msg.newPeer)
+            response.response = "Success"
+        except Exception,e:
+            response.response = "Failure %s" % e
+
+        try:
+            response_str = response.SerializeToString()
+        except:
+            logging.critical("Unable to construct protobuf from the message")
+
+        return response_str
 
 
 

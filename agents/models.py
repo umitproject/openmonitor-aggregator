@@ -144,6 +144,15 @@ class LoggedAgent(models.Model):
         return selectedPeers
 
     @staticmethod
+    def addPeer(newpeer):
+        p = LoggedAgent(agent_id = newpeer.agentID,current_ip = newpeer.agentIP,port = newpeer.agentPort,token = newpeer.token, \
+            publicKeyMod=newpeer.publicKey,location_id=1,latitude=10.0,longitude=20.3)
+        p.save();
+
+        return p
+
+
+    @staticmethod
     def getLoggedAgent(agent_id):
       return LoggedAgent.objects.get(agent_id=agent_id)
 

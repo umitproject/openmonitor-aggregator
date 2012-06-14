@@ -52,7 +52,7 @@ class Test(models.Model):
         # Latest version is sum of the all aggregations' versions
 
         # Add aggregation versions to the version_sum
-        for Model in ALL_TESTS_AGGREGATION_MODELS.values():
+        for Model in ALL_TESTS_AGGREGATION_MODELS:
             try:
                 agg = Model.get_for_agent(agent)
                 if agg:
@@ -360,5 +360,5 @@ SERVICE_TESTS_AGGREGATION_MODELS = {
     'city': ServiceTestsCityAggregation,
 }
 
-ALL_TESTS_AGGREGATION_MODELS = dict(**WEBSITE_TESTS_AGGREGATION_MODELS)
-ALL_TESTS_AGGREGATION_MODELS.update(dict(**SERVICE_TESTS_AGGREGATION_MODELS))
+ALL_TESTS_AGGREGATION_MODELS = WEBSITE_TESTS_AGGREGATION_MODELS.values() + \
+                               SERVICE_TESTS_AGGREGATION_MODELS.values()

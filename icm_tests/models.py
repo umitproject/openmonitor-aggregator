@@ -61,10 +61,39 @@ class Test(models.Model):
                 continue
 
         return version_sum
-
+      
     @staticmethod
-    def get_last_test():
-        return None
+    def get_updated_tests(agent, test_version):
+        current_test_version = Test.get_test_version(agent)
+        if current_test_version > test_version:
+            return Test.get_tests_for_version(agent, current_test_version)
+        else:
+            return []
+      
+      
+    @staticmethod
+    def get_tests_for_version(agent, test_version):
+        tests = []
+        for Model in WEBSITE_TESTS_AGGREGATION_MODELS.values():
+            try:
+                agg = Model.get_for_agent(agent)
+                _tests = [WebsiteTest.objects.get(id=test_id)
+                          for test_id in agg.test_ids]
+                tests.extend(_tests)
+            except Model.DoesNotExist:
+                pass
+              
+        for Model in SERVICE_TESTS_AGGREGATION_MODELS.values():
+            try:
+                agg = Model.get_for_agent(agent)
+                _tests = [ServiceTest.objects.get(id=test_id)
+                          for test_id in agg.test_ids]
+                tests.extend(_tests)
+            except Model.DoesNotExist:
+                pass
+              
+        return tests
+          
 
     def save(self, *args, **kwargs):
         new = self.id is None

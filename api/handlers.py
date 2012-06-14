@@ -35,7 +35,7 @@ from django.conf import settings
 
 from events.models import Event
 from versions.models import DesktopAgentVersion, MobileAgentVersion
-from icm_tests.models import Test
+from icm_tests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
 from agents.models import *
 from agents.CryptoLib import *
@@ -97,7 +97,6 @@ class LoginHandler(BaseHandler):
         loginAgent.ParseFromString(msg)
 
         # get agent
-        logging.error(loginAgent.agentID)
         agent = Agent.get_agent(loginAgent.agentID)
 
         # get agent ip
@@ -420,20 +419,20 @@ class CheckNewTestHandler(BaseHandler):
                      messages_pb2.NewTestsResponse)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
-        newTests = Test.get_updated_tests(received_msg.currentTestVersionNo)
-
+      
+        newTests = Test.get_updated_tests(agent, received_msg.currentTestVersionNo)
         response.testVersionNo = test_version
 
         for newTest in newTests:
             test = response.tests.add()
-            test.testID = newTest.test_id
+            test.testID = test_version
             # TODO: get execution time
             test.executeAtTimeUTC = 4000
 
-            if isinstance(newTest, WebsiteTestUpdateAggregation):
+            if isinstance(newTest, WebsiteTest):
                 test.testType = "WEB"
                 test.website.url = newTest.website_url
-            elif isinstance(newTest, ServiceTestUpdateAggregation):
+            elif isinstance(newTest, ServiceTest):
                 test.testType = "SERVICE"
                 test.service.name = newTest.service_name
                 test.service.port = newTest.port
@@ -441,7 +440,6 @@ class CheckNewTestHandler(BaseHandler):
 
         # send back response
         response_str = response.SerializeToString()
-        
         return response_str
 
 

@@ -205,6 +205,7 @@ class TestAggregation(models.Model):
             #update global aggregation
             TestAggregation._update_aggregation_for_model(
                 aggr_models["global"], test)
+            return
 
         # update city aggregation
         if test.location.city:
@@ -242,6 +243,7 @@ class TestAggregation(models.Model):
             #remove from global aggregation
             TestAggregation._remove_test_from_aggregation(
                 aggr_models["global"], test)
+            return
 
         #remove from city aggregation
         if test.location.city:

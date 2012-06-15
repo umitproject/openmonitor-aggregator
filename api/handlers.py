@@ -143,11 +143,7 @@ class Login2Handler(BaseHandler):
                 softwareVersion = MobileAgentVersion.getLastVersionNo()
 
             # get last test id
-            last_test = Test.get_last_test()
-            if last_test!=None:
-                testVersion = last_test.test_id
-            else:
-                testVersion = 0
+            testVersion = Test.get_test_version(agent)
 
             # create the response
             response = messages_pb2.LoginResponse()

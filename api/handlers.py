@@ -221,6 +221,7 @@ class AddPeerHandler(BaseHandler):
         # Received message has the required information.
         logging.critical("Received message : %s" % received_msg)
         try:
+            # Check condition - If there are two super peers for that country already - then make it a normal peer
             LoggedAgent.addPeer(received_msg.newPeer)
             response.response = "Success"
         except Exception,e:

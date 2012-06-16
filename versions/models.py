@@ -26,7 +26,7 @@ from datetime import datetime
 class SoftwareVersion(models.Model):
     released_at = models.DateTimeField(auto_now_add=True)
     version  = models.IntegerField()
-    url      = models.URLField(max_length=255)
+    url      = models.URLField(max_length=255, verify_exists=False)
 
     class Meta:
         abstract = True

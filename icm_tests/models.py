@@ -21,124 +21,126 @@
 ##
 
 from django.db import models
-from django.core.cache import cache
-from djangotoolbox.fields import BlobField
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from dbextra.fields import ListField
+from geoip.models import Location
 
-from messages import messages_pb2
-
-TEST_CACHE_KEY = "compiled_test_key_%s"
 
 class Test(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    test_id = models.IntegerField(null=True)
-    version = models.IntegerField(default=1)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=False)
-    location_id = models.IntegerField(null=True)
+    location = models.ForeignKey(Location, blank=True, null=True)
 
     class Meta:
         abstract = True
-    
-    def save(self, *args, **kwargs):
-        new = self.id is None
-        
-        super(Test, self).save(*args, **kwargs)
-        
-        if new and self.version == 1:
-            # First version of a test is got the id of the test.
-            # Subsequent versions of this test will carry the id of the original
-            self.test_id = self.id
-            self.save()
-
-    @staticmethod
-    def get_last_test():
-        website_test = WebsiteTest.objects.order_by('created_at')[0:1]
-        service_test = ServiceTest.objects.order_by('created_at')[0:1]
-
-        if len(website_test)==0 and len(service_test)>0:
-            return service_test.get()
-        elif len(service_test)==0 and len(website_test)>0:
-            return website_test.get()
-        elif len(website_test)>0 and len(service_test)>0:
-            if website_test.get().created_at > service_test.get().created_at:
-                return website_test.get()
-            else:
-                return service_test.get()
-
-        return None
-
-    @staticmethod
-    def get_updated_tests(last_test_id=0):
-        new_tests = []
-        website_tests = WebsiteTest.get_updated_tests(last_test_id)
-        service_tests = ServiceTest.get_updated_tests(last_test_id)
-        new_tests.extend(website_tests)
-        new_tests.extend(service_tests)
-        return new_tests
 
     @staticmethod
     def create_from_suggestion(suggestion):
         raise NotImplementedError
+
+    @staticmethod
+    def get_test_version(agent):
+        version_sum = 0
+
+        if not agent:
+            return 0
+
+        # Latest version is sum of the all aggregations' versions
+
+        # Add aggregation versions to the version_sum
+        for Model in ALL_TESTS_AGGREGATION_MODELS:
+            try:
+                agg = Model.get_for_agent(agent)
+                if agg:
+                    version_sum += agg.version
+            except Model.DoesNotExist:
+                continue
+
+        return version_sum
+      
+    @staticmethod
+    def get_updated_tests(agent, test_version):
+        current_test_version = Test.get_test_version(agent)
+        if current_test_version > test_version:
+            return Test.get_tests_for_version(agent, current_test_version)
+        else:
+            return []
+      
+      
+    @staticmethod
+    def get_tests_for_version(agent, test_version):
+        tests = []
+        for Model in WEBSITE_TESTS_AGGREGATION_MODELS.values():
+            try:
+                agg = Model.get_for_agent(agent)
+                _tests = [WebsiteTest.objects.get(id=test_id)
+                          for test_id in agg.test_ids]
+                tests.extend(_tests)
+            except Model.DoesNotExist:
+                pass
+              
+        for Model in SERVICE_TESTS_AGGREGATION_MODELS.values():
+            try:
+                agg = Model.get_for_agent(agent)
+                _tests = [ServiceTest.objects.get(id=test_id)
+                          for test_id in agg.test_ids]
+                tests.extend(_tests)
+            except Model.DoesNotExist:
+                pass
+              
+        return tests
+          
+
+    def save(self, *args, **kwargs):
+        new = self.id is None
+
+        if new:
+            res = super(Test, self).save(*args, **kwargs)
+            TestAggregation.update_aggregations_from_test(self)
+        else:
+            # remove old state from aggregations
+            TestAggregation.remove_test_from_aggregations(self)
+            # apply new state
+            res = super(Test, self).save(*args, **kwargs)
+            # add new state to aggregations
+            TestAggregation.update_aggregations_from_test(self)
+        return res
 
 
 class WebsiteTest(Test):
     website_url = models.URLField()
 
     @staticmethod
-    def get_updated_tests(last_test_id=0):
-        return WebsiteTestUpdateAggregation.objects.filter(active=True, test_id__gt=last_test_id)
-    
-    def save(self, *args, **kwargs):
-        super(WebsiteTest, self).save(*args, **kwargs)
-        WebsiteTestUpdateAggregation.update_aggregation(self)
+    def create_from_suggestion(suggestion):
+        tests = WebsiteTest.objects.filter(
+            website_url=suggestion.website_url)
+
+        if suggestion.location:
+            tests.objects.filter(location_id=suggestion.location.id)
+
+        if tests.count():
+            return False
+        else:
+            test = WebsiteTest(website_url=suggestion.website_url)
+            if suggestion.location:
+                test.location_id = suggestion.location.id
+            test.save()
+            return True
 
     def __unicode__(self):
         return "%s (%s) - %s" % (self.description, self.website_url,
                                  "Active" if self.active else "Inactive")
 
-class WebsiteTestUpdateAggregation(models.Model):
-    """This aggregation hold only the latest tests version for each test. It is
-    safe to filter it out by active if you want to. You'll only get one latest
-    version of each test in this case.
-    """
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    test_id = models.IntegerField()
-    website_test_id = models.IntegerField(null=True)
-    version = models.IntegerField(default=0)
-    description = models.TextField(blank=True)
-    website_url = models.URLField()
-    active = models.BooleanField(default=False)
-    
-    @property
-    def website_test(self):
-        return WebsiteTest.objects.get(id=self.website_test_id)
-    
-    @staticmethod
-    def update_aggregation(website_test):
-        agg, created = WebsiteTestUpdateAggregation.objects.get_or_create(test_id=website_test.test_id)
-        if agg.id is None or agg.version < website_test.version:
-            agg.version = website_test.version
-            agg.website_test_id = website_test.id
-            agg.description = website_test.description
-            agg.website_url = website_test.website_url
-            agg.active = website_test.active
-            created = True
-        elif agg.active != website_test.active:
-            agg.active = website_test.active
-            created = True
-        
-        if created:
-            agg.save()
-        
-        return agg
-    
-    def __unicode__(self):
-        return "%s (%s) - %s" % (self.description, self.website_url,
-                                 "Active" if self.active else "Inactive")
+
+@receiver(pre_delete, sender=WebsiteTest)
+def delete_website_test(sender, *args, **kwargs):
+    test = kwargs['instance']
+    TestAggregation.remove_test_from_aggregations(test)
+
 
 class ServiceTest(Test):
     service_name = models.TextField()
@@ -146,209 +148,248 @@ class ServiceTest(Test):
     port  = models.PositiveIntegerField()
 
     @staticmethod
-    def get_updated_tests(last_test_id=0):
-        return ServiceTestUpdateAggregation.objects.filter(active=True, test_id__gt=last_test_id)
-    
-    def save(self, *args, **kwargs):
-        super(ServiceTest, self).save(*args, **kwargs)
-        ServiceTestUpdateAggregation.update_aggregation(self)
+    def create_from_suggestion(suggestion):
+        tests = ServiceTest.objects.filter(
+            service_name=suggestion.service_name,
+            ip=suggestion.ip,
+            port=suggestion.port)
+
+        if suggestion.location:
+            tests.objects.filter(location_id=suggestion.location.id)
+
+        if tests.count():
+            return False
+        else:
+            test = ServiceTest(service_name=suggestion.service_name,
+                               ip=suggestion.ip,
+                               port=suggestion.port)
+            if suggestion.location:
+                test.location_id = suggestion.location.id
+            test.save()
+            return True
 
     def __unicode__(self):
         return "%s (%s) - %s" % (self.description, self.service_name,
-                                 "Active" if self.active else "Inactive")
+                                 self.ip, self.port)
 
-class ServiceTestUpdateAggregation(models.Model):
-    """This aggregation hold only the latest tests version for each test. It is
-    safe to filter it out by active if you want to. You'll only get one latest
-    version of each test in this case.
-    """
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    test_id = models.IntegerField()
-    service_test_id = models.IntegerField(null=True)
-    version = models.IntegerField(default=0)
-    description = models.TextField(blank=True)
-    service_name = models.TextField()
-    ip = models.TextField()
-    port = models.PositiveIntegerField()
-    active = models.BooleanField(default=False)
-    
-    @property
-    def service_test(self):
-        return ServiceTest.objects.get(id=self.service_test_id)
-    
-    @staticmethod
-    def update_aggregation(service_test):
-        agg, created = ServiceTestUpdateAggregation.objects.get_or_create(
-                                                test_id=service_test.test_id)
-        if agg.id is None or agg.version < service_test.version:
-            agg.version = service_test.version
-            agg.service_test_id = service_test.id
-            agg.description = service_test.description
-            agg.service_name = service_test.service_name
-            agg.ip = service_test.ip
-            agg.port = service_test.port
-            agg.active = service_test.active
-            created = True
-        elif agg.active != service_test.active:
-            agg.active = service_test.active
-            created = True
-        
-        if created:
-            agg.save()
-        
-        return agg
 
-    def __unicode__(self):
-        return "%s (%s) - %s" % (self.description, self.service_name,
-                                 "Active" if self.active else "Inactive")
+@receiver(pre_delete, sender=ServiceTest)
+def delete_service_test(sender, *args, **kwargs):
+    test = kwargs['instance']
+    TestAggregation.remove_test_from_aggregations(test)
 
-class SuggestionSet(models.Model):
-    """This model holds the set of suggestions that took place after
-    the release of the latest test set. This aggregation is useful on helping us
-    figure what is important to keep in or out of the test sets based on
-    response to our test sets. Also, it helps us quickly gather this data to
-    build the next test set without having to do time consuming queries on the
-    datastore.
-    """
+
+class TestAggregation(models.Model):
+
+    version = models.IntegerField(default=1)
+    location = models.ForeignKey(Location, blank=True, null=True)
+    test_ids = ListField(py_type=int)
+
     class Meta:
         abstract = True
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    test_id = models.IntegerField(null=True)
-    version = models.IntegerField(null=True)
-    active = models.BooleanField(default=False)
-    count_unique = models.IntegerField(default=0)
-    count_total = models.IntegerField(default=0)
-    
-    @classmethod
-    def get_set(cls):
-        """Returns the latest and active suggestion set.
-        """
-        return cls.objects.get(active=True)
-    
-    @classmethod
-    def wrapup_set(cls, test_id, version):
-        """Closes the currently active set and creates a new one. This should
-        *ONLY* be called when a new test set is released.
-        """
-        sug_set = cls.get_set()
-        sug_set.active = False
-        sug_set.test_id = test_id
-        sug_set.version = version
-        sug_set.save()
-        
-        new_set = cls()
-        new_set.active = True
-        new_set.save()
 
-class WebsiteSuggestionSet(SuggestionSet):
-    """This model holds the set of website suggestions that took place after
-    the release of the latest test set. This aggregation is useful on helping us
-    figure what is important to keep in or out of the test sets based on
-    response to our test sets. Also, it helps us quickly gather this data to
-    build the next test set without having to do time consuming queries on the
-    datastore.
-    """
-    website_urls = ListField()
-    locations_names = ListField()
-    locations = ListField(py_type=int)
-    counters = ListField(py_type=int)
-    
-    @classmethod
-    def add_suggestion(cls, website_url, location):
-        """Add the suggestion to this set. If suggestion was already made in the
-        past, increase its counter.
-        """
-        cur_set = cls.get_set()
+    @staticmethod
+    def _update_aggregation_for_model(Model, test, filter_kwargs=None):
         try:
-            index_url = cur_set.website_urls.index(website_url)
-            count_url = cur_set.website_urls.count(website_url)
-        except ValueError:
-            # Website wasn't suggested before
-            cur_set.website_urls.append(website_url)
-            cur_set.locations_names.append(str(location))
-            cur_set.locations.append(location.id)
-            cur_set.counters.append(1)
-        else:
-            if cur_set.locations[index_url] == location.id:
-                # This means suggestion already happened for this location
-                cur_set.counters[index_url] += 1
+            if filter_kwargs:
+                aggr = Model.objects.get(**filter_kwargs)
             else:
-                # It means website was suggested for another region
-                cur_set.locations_names.append(str(location))
-                cur_set.locations.append(location.id)
-                cur_set.counters.append(1)
-        
-        cur_set.save()
+                aggr = Model.objects.get()
+            aggr.version += 1
+            if not test.id in aggr.test_ids:
+                aggr.test_ids.append(test.id)
+            aggr.save()
+        except Model.DoesNotExist:
+            aggr = Model(version=1)
+            aggr.test_ids = [test.id]
+            if test and test.location:
+                aggr.location = test.location
+            aggr.save()
 
-class ServiceSuggestionSet(SuggestionSet):
-    """This model holds the set of service suggestions that took place after
-    the release of the latest test set. This aggregation is useful on helping us
-    figure what is important to keep in or out of the test sets based on
-    response to our test sets. Also, it helps us quickly gather this data to
-    build the next test set without having to do time consuming queries on the
-    datastore.
-    """
-    service_names = ListField()
-    host_names = ListField()
-    ips = ListField()
-    ports = ListField()
-    locations_names = ListField()
-    locations = ListField(py_type=int)
-    counters = ListField(py_type=int)
-    
-    @classmethod
-    def add_suggestion(cls, service_name, host_name, ip, port, location):
-        """Add the suggestion to this set. If suggestion was already made in the
-        past, increase its counter.
-        """
-        cur_set = cls.get_set()
+    @staticmethod
+    def _remove_test_from_aggregation(Model, test, filter_kwargs=None):
         try:
-            index_url = cur_set.website_urls.index(website_url)
-        except ValueError:
-            # Website wasn't suggested before
-            cur_set.website_urls.append(website_url)
-            cur_set.locations_names.append(str(location))
-            cur_set.locations.append(location.id)
-            cur_set.counters.append(1)
-        else:
-            if cur_set.locations[index_url] == location.id:
-                # This means suggestion already happened for this location
-                cur_set.counters[index_url] += 1
+            if filter_kwargs:
+                aggr = Model.objects.get(**filter_kwargs)
             else:
-                # It means website was suggested for another region
-                cur_set.locations_names.append(str(location))
-                cur_set.locations.append(location.id)
-                cur_set.counters.append(1)
-        
-        cur_set.save()
+                aggr = Model.objects.get()
+            if test.id in aggr.test_ids:
+                aggr.test_ids.remove(test.id)
+                aggr.version += 1
+                aggr.save()
+        except Model.DoesNotExist:
+            pass
+
+    @staticmethod
+    def update_aggregations_from_test(test):
+        assert type(test) in [WebsiteTest, ServiceTest]
+
+        if type(test) == WebsiteTest:
+            aggr_models = WEBSITE_TESTS_AGGREGATION_MODELS
+        else:
+            aggr_models = SERVICE_TESTS_AGGREGATION_MODELS
 
 
-class TestSet(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    test_id = models.IntegerField(null=True)
-    version = models.IntegerField(default=1)
-    description = models.TextField(blank=True)
-    active = models.BooleanField(default=False)
-    test_set_blob = BlobField()
-    
-    @property
-    def test_set(self):
-        test = cache.get(TEST_CACHE_KEY % self.id, False)
-        if not test:
-            test = messages_pb2.NewTestsResponse()
-            test.ParseFromString(self.test_set_blob)
-            cache.set(TEST_CACHE_KEY, test)
-        return test
+        if not test.location:
+            #update global aggregation
+            TestAggregation._update_aggregation_for_model(
+                aggr_models["global"], test)
+            return
+
+        # update city aggregation
+        if test.location.city:
+            TestAggregation._update_aggregation_for_model(
+                aggr_models['city'], test,
+                {'location__city': test.location.city})
+
+            return
+
+        #update region aggregation
+        if test.location.state_region:
+            TestAggregation._update_aggregation_for_model(
+                aggr_models["region"], test,
+                {'location__state_region': test.location.state_region})
+
+            return
+
+        #update country aggregation
+        if test.location.country_name:
+            TestAggregation._update_aggregation_for_model(
+                aggr_models["country"], test,
+                {'location__country_name': test.location.country_name})
 
 
+    @staticmethod
+    def remove_test_from_aggregations(test):
+        assert type(test) in [WebsiteTest, ServiceTest]
+
+        if type(test) == WebsiteTest:
+            aggr_models = WEBSITE_TESTS_AGGREGATION_MODELS
+        else:
+            aggr_models = SERVICE_TESTS_AGGREGATION_MODELS
+
+        if not test.location:
+            #remove from global aggregation
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models["global"], test)
+            return
+
+        #remove from city aggregation
+        if test.location.city:
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models['city'], test,
+                {'location__city': test.location.city})
+
+            return
+
+        #remove from region aggregation
+        if test.location.state_region:
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models["region"], test,
+                {'location__state_region': test.location.state_region})
+
+            return
+
+        #remove from country aggregation
+        if test.location.country_name:
+            TestAggregation._remove_test_from_aggregation(
+                aggr_models["country"], test,
+                {'location__country_name': test.location.country_name})
 
 
+    @staticmethod
+    def get_for_agent(agent):
+        raise NotImplementedError
 
 
+class WebsiteTestsGlobalAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        return WebsiteTestsGlobalAggregation.objects.get()
 
 
+class WebsiteTestsCountryAggregation(TestAggregation):
 
+    @staticmethod
+    def get_for_agent(agent):
+        if not agent.location:
+            return None
+        return WebsiteTestsCountryAggregation.objects.get(
+                location__country_name=agent.location.country_name)
+
+
+class WebsiteTestsRegionAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        if not agent.location:
+            return None
+        return WebsiteTestsRegionAggregation.objects.get(
+                location__state_region=agent.location.state_region)
+
+
+class WebsiteTestsCityAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        if not agent.location:
+            return None
+        return WebsiteTestsCityAggregation.objects.get(
+                location__city=agent.location.city)
+
+
+class ServiceTestsGlobalAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        return ServiceTestsGlobalAggregation.objects.get()
+
+
+class ServiceTestsCountryAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        if not agent.location:
+            return None
+        return ServiceTestsCountryAggregation.objects.get(
+            location__country_name=agent.location.country_name)
+
+
+class ServiceTestsRegionAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        if not agent.location:
+            return None
+        return ServiceTestsRegionAggregation.objects.get(
+            location__state_region=agent.location.state_region)
+
+
+class ServiceTestsCityAggregation(TestAggregation):
+
+    @staticmethod
+    def get_for_agent(agent):
+        if not agent.location:
+            return None
+        return ServiceTestsCityAggregation.objects.get(
+                location__city=agent.location.city)
+
+
+WEBSITE_TESTS_AGGREGATION_MODELS = {
+    'global': WebsiteTestsGlobalAggregation,
+    'country': WebsiteTestsCountryAggregation,
+    'region' : WebsiteTestsRegionAggregation,
+    'city': WebsiteTestsCityAggregation,
+}
+
+
+SERVICE_TESTS_AGGREGATION_MODELS = {
+    'global': ServiceTestsGlobalAggregation,
+    'country': ServiceTestsCountryAggregation,
+    'region': ServiceTestsRegionAggregation,
+    'city': ServiceTestsCityAggregation,
+}
+
+ALL_TESTS_AGGREGATION_MODELS = WEBSITE_TESTS_AGGREGATION_MODELS.values() + \
+                               SERVICE_TESTS_AGGREGATION_MODELS.values()

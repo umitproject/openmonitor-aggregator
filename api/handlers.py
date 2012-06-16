@@ -218,6 +218,10 @@ class AddPeerHandler(BaseHandler):
         logging.critical("Received message : %s" % received_msg)
         try:
             # Check condition - If there are two super peers for that country already - then make it a normal peer
+            logging.info("Checking if the country has two super peers already")
+            hasTwoSPeers = self._testSuperPeers()
+            if hasTwoSPeers :
+                received_msg.superPeer = False
             LoggedAgent.addPeer(received_msg.newPeer)
             response.response = "Success"
         except Exception,e:
@@ -229,6 +233,10 @@ class AddPeerHandler(BaseHandler):
             logging.critical("Unable to construct protobuf from the message")
 
         return response_str
+
+    def _testSuperPeers():
+        # Should include logic using geoip to check if two super peers are present for the same country. 
+        return False
 
 
 

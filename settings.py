@@ -23,15 +23,47 @@
 # Initialize App Engine and import the default settings (DB backend, etc.).
 # If you want to use a different backend you have to remove all occurences
 # of "djangoappengine" from this file.
-from djangoappengine.settings_base import *
+#from djangoappengine.settings_base import *
 
 import os
 
+ON_PRODUCTION_SERVER = False
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+)
+
+MANAGERS = ADMINS
+
+DATABASES = {}
 # Activate django-dbindexer for the default database
-DATABASES['native'] = DATABASES['default']
-DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native',
-                        'HIGH_REPLICATION': True}
+#DATABASES['native'] = DATABASES['default']
+
+DATABASES['default'] = {'ENGINE': 'dbindexer',
+                        'TARGET': 'main'}
+
+DATABASES['main'] = {'ENGINE': 'django_cassandra.db',
+                      'NAME': 'OpenMonitor',
+                      'USER': '',
+                      'PASSWORD': '',
+                      'HOST': 'localhost',
+                      'PORT': '',
+                      'SUPPORTS_TRANSACTIONS': False,
+                      'CASSANDRA_REPLICATION_FACTOR': 1,
+                      'CASSANDRA_ENABLE_CASCADING_DELETES': True}
+
+DATABASES['geoip'] = {'ENGINE': 'django.db.backends.mysql',
+                      'NAME': 'openmonitor',
+                      'USER': 'root',
+                      'PASSWORD': '123456',
+                      'HOST': 'localhost',
+                      'PORT': '', #default port
+                      }
+
+DATABASE_ROUTERS = ['dbrouter.DBRouter']
+
 AUTOLOAD_SITECONF = 'indexes'
 
 DBINDEXER_BACKENDS = ('dbindexer.backends.BaseResolver',
@@ -91,7 +123,7 @@ INSTALLED_APPS = (
     'ajax_select',
 
     # djangoappengine should come last, so it can override a few manage.py commands
-    'djangoappengine',
+    #'djangoappengine',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -194,7 +226,7 @@ LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 #'django.core.mail.backends.console.EmailBackend'
 
-if on_production_server:
+if ON_PRODUCTION_SERVER:
     EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
     EMAIL_HOST_USER = 'gmailusername@gmail.com'
@@ -203,7 +235,6 @@ if on_production_server:
     DEFAULT_FROM_EMAIL = 'gmailusername@gmail.com'
     SERVER_EMAIL = 'gmailusername@gmail.com'
 else:
-    # local
     EMAIL_HOST = 'localhost'
     EMAIL_PORT = 1025
     DEFAULT_FROM_EMAIL = 'webmaster@localhost'
@@ -250,3 +281,5 @@ AJAX_SELECT_INLINES = 'inline'
 AJAX_LOOKUP_CHANNELS = {
     'location': ('geoip.lookups', 'LocationLookup'),
 }
+
+

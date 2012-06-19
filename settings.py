@@ -20,24 +20,32 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-# Initialize App Engine and import the default settings (DB backend, etc.).
-# If you want to use a different backend you have to remove all occurences
-# of "djangoappengine" from this file.
-from djangoappengine.settings_base import *
-
 import os
 
 
+import djcelery
+djcelery.setup_loader()
+
 # Activate django-dbindexer for the default database
-DATABASES['native'] = DATABASES['default']
-DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native',
-                        'HIGH_REPLICATION': True}
+
+DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
+                         'NAME':'openmonitor',
+                         'USER':'',
+                         'PASSWORD':'',
+                         'HOST':'localhost',
+                         'PORT':'9160',
+                         'SUPPORTS_TRANSACTIONS':False,
+                         'CASSANDRA_REPLICATION_FACTOR':2,
+                         'CASSANDRA_ENABLE_CASCADING_DELETES':True,
+                         'TEST_NAME':'openmonitor_test'},
+             }
+
 AUTOLOAD_SITECONF = 'indexes'
 
 DBINDEXER_BACKENDS = ('dbindexer.backends.BaseResolver',
                       'dbindexer.backends.FKNullFix',
                       #'dbindexer.backends.InMemoryJOINResolver',
-                     'dbindexer.backends.ConstantFieldJOINResolver',)
+                      'dbindexer.backends.ConstantFieldJOINResolver',)
 
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
@@ -51,16 +59,9 @@ PISTON_EMAIL_ERRORS = "adriano@umitproject.org"
 PISTON_STREAM_OUTPUT = DEBUG
 
 ENVIRONMENT = os.environ.get('SERVER_SOFTWARE', '')
-GAE = True
-PRODUCTION = True
-TEST = False
+PRODUCTION = False
+TEST = True
 
-if ENVIRONMENT == '':
-    GAE = False
-elif ENVIRONMENT.startswith('Development'):
-    PRODUCTION = False
-elif ENVIRONMENT.startswith('GAETest'):
-    TEST = True
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -89,9 +90,6 @@ INSTALLED_APPS = (
     'registration',
     'filetransfers',
     'ajax_select',
-
-    # djangoappengine should come last, so it can override a few manage.py commands
-    'djangoappengine',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -220,9 +218,9 @@ MAX_AGENTSLIST_RESPONSE = 5
 #########################
 # File Transfer settings
 PREPARE_UPLOAD_BACKEND = 'filetransfers.backends.delegate.prepare_upload'
-PRIVATE_PREPARE_UPLOAD_BACKEND = 'djangoappengine.storage.prepare_upload'
-PUBLIC_PREPARE_UPLOAD_BACKEND = 'djangoappengine.storage.prepare_upload'
-SERVE_FILE_BACKEND = 'djangoappengine.storage.serve_file'
+#PRIVATE_PREPARE_UPLOAD_BACKEND = 'djangoappengine.storage.prepare_upload'
+#PUBLIC_PREPARE_UPLOAD_BACKEND = 'djangoappengine.storage.prepare_upload'
+#SERVE_FILE_BACKEND = 'djangoappengine.storage.serve_file'
 PUBLIC_DOWNLOAD_URL_BACKEND = 'filetransfers.backends.base_url.public_download_url'
 PUBLIC_DOWNLOADS_URL_BASE = '/data/'
 

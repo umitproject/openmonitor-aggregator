@@ -5,8 +5,7 @@ Provides a way to safely weakref any function, including bound methods (which
 aren't handled by the core weakref module).
 """
 
-import traceback
-import weakref
+import weakref, traceback
 
 def safeRef(target, onDelete = None):
     """Return a *safe* weak reference to a callable target
@@ -231,7 +230,7 @@ class BoundNonDescriptorMethodWeakref(BoundMethodWeakref):
         if target is not None:
             function = self.weakFunc()
             if function is not None:
-                # Using partial() would be another option, but it erases the
+                # Using curry() would be another option, but it erases the
                 # "signature" of the function. That is, after a function is
                 # curried, the inspect module can't be used to determine how
                 # many arguments the function expects, nor what keyword

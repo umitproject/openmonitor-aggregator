@@ -1,23 +1,16 @@
-from __future__ import with_statement
 import os
 import re
 import urllib
 
 from django.conf import settings
+from django.contrib.auth import SESSION_KEY, REDIRECT_FIELD_NAME
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.sites.models import Site, RequestSite
 from django.contrib.auth.models import User
-from django.core import mail
-from django.core.urlresolvers import reverse, NoReverseMatch
-from django.http import QueryDict
-from django.utils.encoding import force_unicode
-from django.utils.html import escape
 from django.test import TestCase
-from django.test.utils import override_settings
-
-from django.contrib.auth import SESSION_KEY, REDIRECT_FIELD_NAME
-from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
-                SetPasswordForm, PasswordResetForm)
-
+from django.core import mail
+from django.core.urlresolvers import reverse
+from django.http import QueryDict
 
 class AuthViewsTestCase(TestCase):
     """
@@ -44,42 +37,12 @@ class AuthViewsTestCase(TestCase):
     def login(self, password='password'):
         response = self.client.post('/login/', {
             'username': 'testclient',
-            'password': password,
-            })
+            'password': password
+            }
+        )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response['Location'].endswith(settings.LOGIN_REDIRECT_URL))
         self.assertTrue(SESSION_KEY in self.client.session)
-
-    def assertContainsEscaped(self, response, text, **kwargs):
-        return self.assertContains(response, escape(force_unicode(text)), **kwargs)
-
-AuthViewsTestCase = override_settings(USE_TZ=False)(AuthViewsTestCase)
-
-
-class AuthViewNamedURLTests(AuthViewsTestCase):
-    urls = 'django.contrib.auth.urls'
-
-    def test_named_urls(self):
-        "Named URLs should be reversible"
-        expected_named_urls = [
-            ('login', [], {}),
-            ('logout', [], {}),
-            ('password_change', [], {}),
-            ('password_change_done', [], {}),
-            ('password_reset', [], {}),
-            ('password_reset_done', [], {}),
-            ('password_reset_confirm', [], {
-                'uidb36': 'aaaaaaa',
-                'token': '1111-aaaaa',
-            }),
-            ('password_reset_complete', [], {}),
-        ]
-        for name, args, kwargs in expected_named_urls:
-            try:
-                reverse(name, args=args, kwargs=kwargs)
-            except NoReverseMatch:
-                self.fail("Reversal of url named '%s' failed with NoReverseMatch" % name)
-
 
 class PasswordResetTest(AuthViewsTestCase):
 
@@ -88,7 +51,7 @@ class PasswordResetTest(AuthViewsTestCase):
         response = self.client.get('/password_reset/')
         self.assertEqual(response.status_code, 200)
         response = self.client.post('/password_reset/', {'email': 'not_a_real_email@email.com'})
-        self.assertContainsEscaped(response, PasswordResetForm.error_messages['unknown'])
+        self.assertContains(response, "That e-mail address doesn&#39;t have an associated user account")
         self.assertEqual(len(mail.outbox), 0)
 
     def test_email_found(self):
@@ -129,7 +92,7 @@ class PasswordResetTest(AuthViewsTestCase):
         url, path = self._test_confirm_start()
         # Let's munge the token in the path, but keep the same length,
         # in case the URLconf will reject a different length.
-        path = path[:-5] + ("0" * 4) + path[-1]
+        path = path[:-5] + ("0"*4) + path[-1]
 
         response = self.client.get(path)
         self.assertEqual(response.status_code, 200)
@@ -137,13 +100,13 @@ class PasswordResetTest(AuthViewsTestCase):
 
     def test_confirm_invalid_user(self):
         # Ensure that we get a 200 response for a non-existant user, not a 404
-        response = self.client.get('/reset/123456-1-1/')
+        response = self.client.get('/reset/123456/1-1/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue("The password reset link was invalid" in response.content)
 
     def test_confirm_overflow_user(self):
         # Ensure that we get a 200 response for a base36 user id that overflows int
-        response = self.client.get('/reset/zzzzzzzzzzzzz-1-1/')
+        response = self.client.get('/reset/zzzzzzzzzzzzz/1-1/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue("The password reset link was invalid" in response.content)
 
@@ -151,12 +114,10 @@ class PasswordResetTest(AuthViewsTestCase):
         # Same as test_confirm_invalid, but trying
         # to do a POST instead.
         url, path = self._test_confirm_start()
-        path = path[:-5] + ("0" * 4) + path[-1]
+        path = path[:-5] + ("0"*4) + path[-1]
 
-        self.client.post(path, {
-            'new_password1': 'anewpassword',
-            'new_password2': ' anewpassword',
-        })
+        response = self.client.post(path, {'new_password1': 'anewpassword',
+                                           'new_password2':' anewpassword'})
         # Check the password has not been changed
         u = User.objects.get(email='staffmember@example.com')
         self.assertTrue(not u.check_password("anewpassword"))
@@ -179,20 +140,20 @@ class PasswordResetTest(AuthViewsTestCase):
     def test_confirm_different_passwords(self):
         url, path = self._test_confirm_start()
         response = self.client.post(path, {'new_password1': 'anewpassword',
-                                           'new_password2': 'x'})
+                                           'new_password2':' x'})
         self.assertEqual(response.status_code, 200)
-        self.assertContainsEscaped(response, SetPasswordForm.error_messages['password_mismatch'])
-
+        self.assertTrue("The two password fields didn&#39;t match" in response.content)
 
 class ChangePasswordTest(AuthViewsTestCase):
 
     def fail_login(self, password='password'):
         response = self.client.post('/login/', {
             'username': 'testclient',
-            'password': password,
-        })
+            'password': password
+            }
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertContainsEscaped(response, AuthenticationForm.error_messages['invalid_login'])
+        self.assertTrue("Please enter a correct username and password. Note that both fields are case-sensitive." in response.content)
 
     def logout(self):
         response = self.client.get('/logout/')
@@ -203,9 +164,10 @@ class ChangePasswordTest(AuthViewsTestCase):
             'old_password': 'donuts',
             'new_password1': 'password1',
             'new_password2': 'password1',
-        })
+            }
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertContainsEscaped(response, PasswordChangeForm.error_messages['password_incorrect'])
+        self.assertTrue("Your old password was entered incorrectly. Please enter it again." in response.content)
 
     def test_password_change_fails_with_mismatched_passwords(self):
         self.login()
@@ -213,9 +175,10 @@ class ChangePasswordTest(AuthViewsTestCase):
             'old_password': 'password',
             'new_password1': 'password1',
             'new_password2': 'donuts',
-        })
+            }
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertContainsEscaped(response, SetPasswordForm.error_messages['password_mismatch'])
+        self.assertTrue("The two password fields didn&#39;t match." in response.content)
 
     def test_password_change_succeeds(self):
         self.login()
@@ -223,28 +186,12 @@ class ChangePasswordTest(AuthViewsTestCase):
             'old_password': 'password',
             'new_password1': 'password1',
             'new_password2': 'password1',
-        })
+            }
+        )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response['Location'].endswith('/password_change/done/'))
         self.fail_login()
         self.login(password='password1')
-
-    def test_password_change_done_succeeds(self):
-        self.login()
-        response = self.client.post('/password_change/', {
-            'old_password': 'password',
-            'new_password1': 'password1',
-            'new_password2': 'password1',
-        })
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(response['Location'].endswith('/password_change/done/'))
-
-    def test_password_change_done_fails(self):
-        with self.settings(LOGIN_URL='/login/'):
-            response = self.client.get('/password_change/done/')
-            self.assertEqual(response.status_code, 302)
-            self.assertTrue(response['Location'].endswith('/login/?next=/password_change/done/'))
-
 
 class LoginTest(AuthViewsTestCase):
 
@@ -272,12 +219,13 @@ class LoginTest(AuthViewsTestCase):
             nasty_url = '%(url)s?%(next)s=%(bad_url)s' % {
                 'url': login_url,
                 'next': REDIRECT_FIELD_NAME,
-                'bad_url': urllib.quote(bad_url),
+                'bad_url': urllib.quote(bad_url)
             }
             response = self.client.post(nasty_url, {
                 'username': 'testclient',
                 'password': password,
-            })
+                }
+            )
             self.assertEqual(response.status_code, 302)
             self.assertFalse(bad_url in response['Location'],
                              "%s should be blocked" % bad_url)
@@ -289,22 +237,25 @@ class LoginTest(AuthViewsTestCase):
                          'view/?param=//example.com',
                          'https:///',
                          '//testserver/',
-                         '/url%20with%20spaces/'):  # see ticket #12534
+                         '/url%20with%20spaces/', # see ticket #12534
+                         ):
             safe_url = '%(url)s?%(next)s=%(good_url)s' % {
                 'url': login_url,
                 'next': REDIRECT_FIELD_NAME,
-                'good_url': urllib.quote(good_url),
+                'good_url': urllib.quote(good_url)
             }
             response = self.client.post(safe_url, {
                     'username': 'testclient',
                     'password': password,
-            })
+                }
+            )
             self.assertEqual(response.status_code, 302)
             self.assertTrue(good_url in response['Location'],
                             "%s should be allowed" % good_url)
 
 
 class LoginURLSettings(AuthViewsTestCase):
+    urls = 'django.contrib.auth.tests.urls'
 
     def setUp(self):
         super(LoginURLSettings, self).setUp()
@@ -325,8 +276,8 @@ class LoginURLSettings(AuthViewsTestCase):
         login_required_url = self.get_login_required_url(login_url)
         querystring = QueryDict('', mutable=True)
         querystring['next'] = '/login_required/'
-        self.assertEqual(login_required_url, 'http://testserver%s?%s' %
-                         (login_url, querystring.urlencode('/')))
+        self.assertEqual(login_required_url,
+             'http://testserver%s?%s' % (login_url, querystring.urlencode('/')))
 
     def test_remote_login_url(self):
         login_url = 'http://remote.example.com/login'
@@ -363,6 +314,7 @@ class LoginURLSettings(AuthViewsTestCase):
 
 
 class LogoutTest(AuthViewsTestCase):
+    urls = 'django.contrib.auth.tests.urls'
 
     def confirm_logged_out(self):
         self.assertTrue(SESSION_KEY not in self.client.session)
@@ -425,11 +377,12 @@ class LogoutTest(AuthViewsTestCase):
         for bad_url in ('http://example.com',
                         'https://example.com',
                         'ftp://exampel.com',
-                        '//example.com'):
+                        '//example.com'
+                        ):
             nasty_url = '%(url)s?%(next)s=%(bad_url)s' % {
                 'url': logout_url,
                 'next': REDIRECT_FIELD_NAME,
-                'bad_url': urllib.quote(bad_url),
+                'bad_url': urllib.quote(bad_url)
             }
             self.login()
             response = self.client.get(nasty_url)
@@ -445,11 +398,12 @@ class LogoutTest(AuthViewsTestCase):
                          'view/?param=//example.com',
                          'https:///',
                          '//testserver/',
-                         '/url%20with%20spaces/'):  # see ticket #12534
+                         '/url%20with%20spaces/', # see ticket #12534
+                         ):
             safe_url = '%(url)s?%(next)s=%(good_url)s' % {
                 'url': logout_url,
                 'next': REDIRECT_FIELD_NAME,
-                'good_url': urllib.quote(good_url),
+                'good_url': urllib.quote(good_url)
             }
             self.login()
             response = self.client.get(safe_url)

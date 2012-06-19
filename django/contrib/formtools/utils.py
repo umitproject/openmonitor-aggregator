@@ -3,9 +3,10 @@ try:
 except ImportError:
     import pickle
 
-import hashlib
 from django.conf import settings
+from django.forms import BooleanField
 from django.utils.crypto import salted_hmac
+from django.utils.hashcompat import md5_constructor
 
 
 def security_hash(request, form, *args):
@@ -18,7 +19,7 @@ def security_hash(request, form, *args):
     """
     import warnings
     warnings.warn("security_hash is deprecated; use form_hmac instead",
-                  DeprecationWarning)
+                  PendingDeprecationWarning)
     data = []
     for bf in form:
         # Get the value from the form data. If the form allows empty or hasn't
@@ -34,10 +35,11 @@ def security_hash(request, form, *args):
     data.extend(args)
     data.append(settings.SECRET_KEY)
 
-    # Use HIGHEST_PROTOCOL because it's the most efficient.
+    # Use HIGHEST_PROTOCOL because it's the most efficient. It requires
+    # Python 2.3, but Django requires 2.4 anyway, so that's OK.
     pickled = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
 
-    return hashlib.md5(pickled).hexdigest()
+    return md5_constructor(pickled).hexdigest()
 
 
 def form_hmac(form):

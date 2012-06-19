@@ -1,5 +1,6 @@
 from django.contrib.messages import constants
 from django.contrib.messages.storage import default_storage
+from django.utils.functional import lazy, memoize
 
 __all__ = (
     'add_message', 'get_messages',
@@ -14,24 +15,35 @@ class MessageFailure(Exception):
 
 def add_message(request, level, message, extra_tags='', fail_silently=False):
     """
-    Attempts to add a message to the request using the 'messages' app.
+    Attempts to add a message to the request using the 'messages' app, falling
+    back to the user's message_set if MessageMiddleware hasn't been enabled.
     """
     if hasattr(request, '_messages'):
         return request._messages.add(level, message, extra_tags)
+    if hasattr(request, 'user') and request.user.is_authenticated():
+        return request.user.message_set.create(message=message)
     if not fail_silently:
-        raise MessageFailure('You cannot add messages without installing '
-                    'django.contrib.messages.middleware.MessageMiddleware')
+        raise MessageFailure('Without the django.contrib.messages '
+                                'middleware, messages can only be added to '
+                                'authenticated users.')
 
 
 def get_messages(request):
     """
     Returns the message storage on the request if it exists, otherwise returns
-    an empty list.
+    user.message_set.all() as the old auth context processor did.
     """
     if hasattr(request, '_messages'):
         return request._messages
-    else:
-        return []
+
+    def get_user():
+        if hasattr(request, 'user'):
+            return request.user
+        else:
+            from django.contrib.auth.models import AnonymousUser
+            return AnonymousUser()
+
+    return lazy(memoize(get_user().get_and_delete_messages, {}, 0), list)()
 
 
 def get_level(request):

@@ -2,6 +2,8 @@
 # Modified from original contribution by Aryeh Leib Taurog, which was
 # released under the New BSD license.
 
+import django.utils.copycompat as copy
+
 from django.contrib.gis.geos import *
 from django.contrib.gis.geos.error import GEOSIndexError
 from django.utils import unittest

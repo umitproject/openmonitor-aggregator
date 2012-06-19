@@ -1,4 +1,7 @@
 import base64
+import os
+import random
+import sys
 import time
 from datetime import datetime, timedelta
 try:
@@ -8,10 +11,15 @@ except ImportError:
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
-from django.utils.crypto import constant_time_compare
-from django.utils.crypto import get_random_string
-from django.utils.crypto import salted_hmac
-from django.utils import timezone
+from django.utils.hashcompat import md5_constructor
+from django.utils.crypto import constant_time_compare, salted_hmac
+
+# Use the system (hardware-based) random number generator if it exists.
+if hasattr(random, 'SystemRandom'):
+    randrange = random.SystemRandom().randrange
+else:
+    randrange = random.randrange
+MAX_SESSION_KEY = 18446744073709551616L     # 2 << 63
 
 class CreateError(Exception):
     """
@@ -45,6 +53,12 @@ class SessionBase(object):
     def __delitem__(self, key):
         del self._session[key]
         self.modified = True
+
+    def keys(self):
+        return self._session.keys()
+
+    def items(self):
+        return self._session.items()
 
     def get(self, key, default=None):
         return self._session.get(key, default)
@@ -91,25 +105,34 @@ class SessionBase(object):
             else:
                 return pickle.loads(pickled)
         except Exception:
-            # ValueError, SuspiciousOperation, unpickling exceptions. If any of
-            # these happen, just return an empty dictionary (an empty session).
-            return {}
+            # ValueError, SuspiciousOperation, unpickling exceptions
+            # Fall back to Django 1.2 method
+            # PendingDeprecationWarning <- here to remind us to
+            # remove this fallback in Django 1.5
+            try:
+                return self._decode_old(session_data)
+            except Exception:
+                # Unpickling can cause a variety of exceptions. If something happens,
+                # just return an empty dictionary (an empty session).
+                return {}
+
+    def _decode_old(self, session_data):
+        encoded_data = base64.decodestring(session_data)
+        pickled, tamper_check = encoded_data[:-32], encoded_data[-32:]
+        if not constant_time_compare(md5_constructor(pickled + settings.SECRET_KEY).hexdigest(),
+                                     tamper_check):
+            raise SuspiciousOperation("User tampered with session cookie.")
+        return pickle.loads(pickled)
 
     def update(self, dict_):
         self._session.update(dict_)
         self.modified = True
 
     def has_key(self, key):
-        return key in self._session
-
-    def keys(self):
-        return self._session.keys()
+        return self._session.has_key(key)
 
     def values(self):
         return self._session.values()
-
-    def items(self):
-        return self._session.items()
 
     def iterkeys(self):
         return self._session.iterkeys()
@@ -130,25 +153,32 @@ class SessionBase(object):
 
     def _get_new_session_key(self):
         "Returns session key that isn't being used."
-        # Todo: move to 0-9a-z charset in 1.5
-        hex_chars = '1234567890abcdef'
-        # session_key should not be case sensitive because some backends
-        # can store it on case insensitive file systems.
-        while True:
-            session_key = get_random_string(32, hex_chars)
+        # The random module is seeded when this Apache child is created.
+        # Use settings.SECRET_KEY as added salt.
+        try:
+            pid = os.getpid()
+        except AttributeError:
+            # No getpid() in Jython, for example
+            pid = 1
+        while 1:
+            session_key = md5_constructor("%s%s%s%s"
+                    % (randrange(0, MAX_SESSION_KEY), pid, time.time(),
+                       settings.SECRET_KEY)).hexdigest()
             if not self.exists(session_key):
                 break
         return session_key
 
-    def _get_or_create_session_key(self):
-        if self._session_key is None:
-            self._session_key = self._get_new_session_key()
-        return self._session_key
-
     def _get_session_key(self):
-        return self._session_key
+        if self._session_key:
+            return self._session_key
+        else:
+            self._session_key = self._get_new_session_key()
+            return self._session_key
 
-    session_key = property(_get_session_key)
+    def _set_session_key(self, session_key):
+        self._session_key = session_key
+
+    session_key = property(_get_session_key, _set_session_key)
 
     def _get_session(self, no_load=False):
         """
@@ -159,7 +189,7 @@ class SessionBase(object):
         try:
             return self._session_cache
         except AttributeError:
-            if self.session_key is None or no_load:
+            if self._session_key is None or no_load:
                 self._session_cache = {}
             else:
                 self._session_cache = self.load()
@@ -174,7 +204,7 @@ class SessionBase(object):
             return settings.SESSION_COOKIE_AGE
         if not isinstance(expiry, datetime):
             return expiry
-        delta = expiry - timezone.now()
+        delta = expiry - datetime.now()
         return delta.days * 86400 + delta.seconds
 
     def get_expiry_date(self):
@@ -184,7 +214,7 @@ class SessionBase(object):
             return expiry
         if not expiry:   # Checks both None and 0 cases
             expiry = settings.SESSION_COOKIE_AGE
-        return timezone.now() + timedelta(seconds=expiry)
+        return datetime.now() + timedelta(seconds=expiry)
 
     def set_expiry(self, value):
         """
@@ -209,7 +239,7 @@ class SessionBase(object):
                 pass
             return
         if isinstance(value, timedelta):
-            value = timezone.now() + value
+            value = datetime.now() + value
         self['_session_expiry'] = value
 
     def get_expire_at_browser_close(self):

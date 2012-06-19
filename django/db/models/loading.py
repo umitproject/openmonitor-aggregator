@@ -6,6 +6,7 @@ from django.utils.datastructures import SortedDict
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 
+import imp
 import sys
 import os
 import threading
@@ -24,11 +25,7 @@ class AppCache(object):
         # Keys of app_store are the model modules for each application.
         app_store = SortedDict(),
 
-        # Mapping of installed app_labels to model modules for that app.
-        app_labels = {},
-
         # Mapping of app_labels to a dictionary of model names to model code.
-        # May contain apps that are not installed.
         app_models = SortedDict(),
 
         # Mapping of app_labels to errors raised when trying to import the app.
@@ -69,13 +66,6 @@ class AppCache(object):
         finally:
             self.write_lock.release()
 
-    def _label_for(self, app_mod):
-        """
-        Return app_label for given models module.
-
-        """
-        return app_mod.__name__.split('.')[-2]
-
     def load_app(self, app_name, can_postpone=False):
         """
         Loads the app with the provided fully qualified name, and returns the
@@ -109,7 +99,6 @@ class AppCache(object):
         self.nesting_level -= 1
         if models not in self.app_store:
             self.app_store[models] = len(self.app_store)
-            self.app_labels[self._label_for(models)] = models
         return models
 
     def app_cache_ready(self):
@@ -146,7 +135,6 @@ class AppCache(object):
                     if mod is None:
                         if emptyOK:
                             return None
-                        raise ImproperlyConfigured("App with label %s is missing a models.py module." % app_label)
                     else:
                         return mod
             raise ImproperlyConfigured("App with label %s could not be found" % app_label)
@@ -158,9 +146,7 @@ class AppCache(object):
         self._populate()
         return self.app_errors
 
-    def get_models(self, app_mod=None,
-                   include_auto_created=False, include_deferred=False,
-                   only_installed=True):
+    def get_models(self, app_mod=None, include_auto_created=False, include_deferred=False):
         """
         Given a module containing models, returns a list of the models.
         Otherwise returns a list of all installed models.
@@ -173,36 +159,27 @@ class AppCache(object):
         queries are *not* included in the list of models. However, if
         you specify include_deferred, they will be.
         """
-        cache_key = (app_mod, include_auto_created, include_deferred, only_installed)
+        cache_key = (app_mod, include_auto_created, include_deferred)
         try:
             return self._get_models_cache[cache_key]
         except KeyError:
             pass
         self._populate()
         if app_mod:
-            if app_mod in self.app_store:
-                app_list = [self.app_models.get(self._label_for(app_mod),
-                                                SortedDict())]
-            else:
-                app_list = []
+            app_list = [self.app_models.get(app_mod.__name__.split('.')[-2], SortedDict())]
         else:
-            if only_installed:
-                app_list = [self.app_models.get(app_label, SortedDict())
-                            for app_label in self.app_labels.iterkeys()]
-            else:
-                app_list = self.app_models.itervalues()
+            app_list = self.app_models.itervalues()
         model_list = []
         for app in app_list:
             model_list.extend(
                 model for model in app.values()
-                if ((not model._deferred or include_deferred) and
-                    (not model._meta.auto_created or include_auto_created))
+                if ((not model._deferred or include_deferred)
+                    and (not model._meta.auto_created or include_auto_created))
             )
         self._get_models_cache[cache_key] = model_list
         return model_list
 
-    def get_model(self, app_label, model_name,
-                  seed_cache=True, only_installed=True):
+    def get_model(self, app_label, model_name, seed_cache=True):
         """
         Returns the model matching the given app_label and case-insensitive
         model_name.
@@ -211,8 +188,6 @@ class AppCache(object):
         """
         if seed_cache:
             self._populate()
-        if only_installed and app_label not in self.app_labels:
-            return None
         return self.app_models.get(app_label, SortedDict()).get(model_name.lower())
 
     def register_models(self, app_label, *models):

@@ -2,6 +2,7 @@
 Extra HTML Widget classes
 """
 
+import time
 import datetime
 import re
 
@@ -67,7 +68,11 @@ class SelectDateWidget(Widget):
                 if settings.USE_L10N:
                     try:
                         input_format = get_format('DATE_INPUT_FORMATS')[0]
-                        v = datetime.datetime.strptime(value, input_format)
+                        # Python 2.4 compatibility:
+                        #     v = datetime.datetime.strptime(value, input_format)
+                        # would be clearer, but datetime.strptime was added in
+                        # Python 2.5
+                        v = datetime.datetime(*(time.strptime(value, input_format)[0:6]))
                         year_val, month_val, day_val = v.year, v.month, v.day
                     except ValueError:
                         pass
@@ -101,6 +106,7 @@ class SelectDateWidget(Widget):
             return '%s_%s' % (id_, first_select)
         else:
             return '%s_month' % id_
+    id_for_label = classmethod(id_for_label)
 
     def value_from_datadict(self, data, files, name):
         y = data.get(self.year_field % name)
@@ -133,11 +139,3 @@ class SelectDateWidget(Widget):
         s = Select(choices=choices)
         select_html = s.render(field % name, val, local_attrs)
         return select_html
-
-    def _has_changed(self, initial, data):
-        try:
-            input_format = get_format('DATE_INPUT_FORMATS')[0]
-            data = datetime_safe.datetime.strptime(data, input_format).date()
-        except (TypeError, ValueError):
-            pass
-        return super(SelectDateWidget, self)._has_changed(initial, data)

@@ -28,7 +28,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys, time, signal
+import os, sys, time
 
 try:
     import thread
@@ -57,8 +57,6 @@ def code_changed():
     for filename in filter(lambda v: v, map(lambda m: getattr(m, "__file__", None), sys.modules.values())):
         if filename.endswith(".pyc") or filename.endswith(".pyo"):
             filename = filename[:-1]
-        if filename.endswith("$py.class"):
-            filename = filename[:-9] + ".py"
         if not os.path.exists(filename):
             continue # File might be in an egg, so it can't be reloaded.
         stat = os.stat(filename)
@@ -75,18 +73,11 @@ def code_changed():
 
 def ensure_echo_on():
     if termios:
-        fd = sys.stdin
-        if fd.isatty():
-            attr_list = termios.tcgetattr(fd)
-            if not attr_list[3] & termios.ECHO:
-                attr_list[3] |= termios.ECHO
-                if hasattr(signal, 'SIGTTOU'):
-                    old_handler = signal.signal(signal.SIGTTOU, signal.SIG_IGN)
-                else:
-                    old_handler = None
-                termios.tcsetattr(fd, termios.TCSANOW, attr_list)
-                if old_handler is not None:
-                    signal.signal(signal.SIGTTOU, old_handler)
+        fd = sys.stdin.fileno()
+        attr_list = termios.tcgetattr(fd)
+        if not attr_list[3] & termios.ECHO:
+            attr_list[3] |= termios.ECHO
+            termios.tcsetattr(fd, termios.TCSANOW, attr_list)
 
 def reloader_thread():
     ensure_echo_on()
@@ -115,11 +106,7 @@ def python_reloader(main_func, args, kwargs):
             pass
     else:
         try:
-            exit_code = restart_with_reloader()
-            if exit_code < 0:
-                os.kill(os.getpid(), -exit_code)
-            else:
-                sys.exit(exit_code)
+            sys.exit(restart_with_reloader())
         except KeyboardInterrupt:
             pass
 

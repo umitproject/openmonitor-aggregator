@@ -2,16 +2,12 @@
 USA-specific Form helpers
 """
 
-from __future__ import absolute_import
-
-import re
-
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select, CharField
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext_lazy as _
-
+import re
 
 phone_digits_re = re.compile(r'^(?:1-?)?(\d{3})[-\.]?(\d{3})[-\.]?(\d{4})$')
 ssn_re = re.compile(r"^(?P<area>\d{3})[-\ ]?(?P<group>\d{2})[-\ ]?(?P<serial>\d{4})$")
@@ -21,9 +17,9 @@ class USZipCodeField(RegexField):
         'invalid': _('Enter a zip code in the format XXXXX or XXXXX-XXXX.'),
     }
 
-    def __init__(self, max_length=None, min_length=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(USZipCodeField, self).__init__(r'^\d{5}(?:-\d{4})?$',
-            max_length, min_length, *args, **kwargs)
+            max_length=None, min_length=None, *args, **kwargs)
 
 class USPhoneNumberField(CharField):
     default_error_messages = {
@@ -93,7 +89,7 @@ class USStateField(Field):
     }
 
     def clean(self, value):
-        from django.contrib.localflavor.us.us_states import STATES_NORMALIZED
+        from us_states import STATES_NORMALIZED
         super(USStateField, self).clean(value)
         if value in EMPTY_VALUES:
             return u''
@@ -113,7 +109,7 @@ class USStateSelect(Select):
     A Select widget that uses a list of U.S. states/territories as its choices.
     """
     def __init__(self, attrs=None):
-        from django.contrib.localflavor.us.us_states import STATE_CHOICES
+        from us_states import STATE_CHOICES
         super(USStateSelect, self).__init__(attrs, choices=STATE_CHOICES)
 
 class USPSSelect(Select):
@@ -122,5 +118,5 @@ class USPSSelect(Select):
     choices.
     """
     def __init__(self, attrs=None):
-        from django.contrib.localflavor.us.us_states import USPS_CHOICES
+        from us_states import USPS_CHOICES
         super(USPSSelect, self).__init__(attrs, choices=USPS_CHOICES)

@@ -12,31 +12,11 @@ Run with the extra option "help" for a list of additional options you can
 pass to this server.
 """
 
-import os
-import sys
 from django.utils import importlib
+import sys, os
 
 __version__ = "0.1"
 __all__ = ["runfastcgi"]
-
-FASTCGI_OPTIONS = {
-    'protocol': 'fcgi',
-    'host': None,
-    'port': None,
-    'socket': None,
-    'method': 'fork',
-    'daemonize': None,
-    'workdir': '/',
-    'pidfile': None,
-    'maxspare': 5,
-    'minspare': 2,
-    'maxchildren': 50,
-    'maxrequests': 0,
-    'debug': None,
-    'outlog': None,
-    'errlog': None,
-    'umask': None,
-}
 
 FASTCGI_HELP = r"""
   Run this project as a fastcgi (or some other protocol supported
@@ -46,19 +26,19 @@ FASTCGI_HELP = r"""
    runfcgi [options] [fcgi settings]
 
 Optional Fcgi settings: (setting=value)
-  protocol=PROTOCOL    fcgi, scgi, ajp, ... (default %(protocol)s)
+  protocol=PROTOCOL    fcgi, scgi, ajp, ... (default fcgi)
   host=HOSTNAME        hostname to listen on.
   port=PORTNUM         port to listen on.
   socket=FILE          UNIX socket to listen on.
-  method=IMPL          prefork or threaded (default %(method)s).
+  method=IMPL          prefork or threaded (default prefork).
   maxrequests=NUMBER   number of requests a child handles before it is
                        killed and a new child is forked (0 = no limit).
-  maxspare=NUMBER      max number of spare processes / threads (default %(maxspare)s).
-  minspare=NUMBER      min number of spare processes / threads (default %(minspare)s).
-  maxchildren=NUMBER   hard limit number of processes / threads (default %(maxchildren)s).
+  maxspare=NUMBER      max number of spare processes / threads.
+  minspare=NUMBER      min number of spare processes / threads.
+  maxchildren=NUMBER   hard limit number of processes / threads.
   daemonize=BOOL       whether to detach from terminal.
   pidfile=FILE         write the spawned process-id to this file.
-  workdir=DIRECTORY    change to this directory when daemonizing (default %(workdir)s).
+  workdir=DIRECTORY    change to this directory when daemonizing.
   debug=BOOL           set to true to enable flup tracebacks.
   outlog=FILE          write stdout to this file.
   errlog=FILE          write stderr to this file.
@@ -79,7 +59,26 @@ Examples:
     $ manage.py runfcgi socket=/tmp/fcgi.sock method=prefork \
         daemonize=true pidfile=/var/run/django-fcgi.pid
 
-""" % FASTCGI_OPTIONS
+"""
+
+FASTCGI_OPTIONS = {
+    'protocol': 'fcgi',
+    'host': None,
+    'port': None,
+    'socket': None,
+    'method': 'fork',
+    'daemonize': None,
+    'workdir': '/',
+    'pidfile': None,
+    'maxspare': 5,
+    'minspare': 2,
+    'maxchildren': 50,
+    'maxrequests': 0,
+    'debug': None,
+    'outlog': None,
+    'errlog': None,
+    'umask': None,
+}
 
 def fastcgi_help(message=None):
     print FASTCGI_HELP
@@ -127,20 +126,19 @@ def runfastcgi(argset=[], **kwargs):
             'maxThreads': int(options["maxchildren"]),
         }
     else:
-        return fastcgi_help("ERROR: Implementation must be one of prefork or "
-                            "thread.")
+        return fastcgi_help("ERROR: Implementation must be one of prefork or thread.")
 
     wsgi_opts['debug'] = options['debug'] is not None
 
     try:
         module = importlib.import_module('.%s' % flup_module, 'flup')
         WSGIServer = module.WSGIServer
-    except Exception:
+    except:
         print "Can't import flup." + flup_module
         return False
 
     # Prep up and go
-    from django.core.servers.basehttp import get_internal_wsgi_application
+    from django.core.handlers.wsgi import WSGIHandler
 
     if options["host"] and options["port"] and not options["socket"]:
         wsgi_opts['bindAddress'] = (options["host"], int(options["port"]))
@@ -160,8 +158,7 @@ def runfastcgi(argset=[], **kwargs):
         elif options["daemonize"].lower() in ('false', 'no', 'f'):
             daemonize = False
         else:
-            return fastcgi_help("ERROR: Invalid option for daemonize "
-                                "parameter.")
+            return fastcgi_help("ERROR: Invalid option for daemonize parameter.")
 
     daemon_kwargs = {}
     if options['outlog']:
@@ -180,7 +177,7 @@ def runfastcgi(argset=[], **kwargs):
         fp.write("%d\n" % os.getpid())
         fp.close()
 
-    WSGIServer(get_internal_wsgi_application(), **wsgi_opts).run()
+    WSGIServer(WSGIHandler(), **wsgi_opts).run()
 
 if __name__ == '__main__':
     runfastcgi(sys.argv[1:])

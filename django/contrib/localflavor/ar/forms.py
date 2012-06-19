@@ -3,14 +3,11 @@
 AR-specific Form helpers.
 """
 
-from __future__ import absolute_import
-
-from django.contrib.localflavor.ar.ar_provinces import PROVINCE_CHOICES
-from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
+from django.core.validators import EMPTY_VALUES
 from django.forms.fields import RegexField, CharField, Select
+from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext_lazy as _
-
 
 class ARProvinceSelect(Select):
     """
@@ -18,6 +15,7 @@ class ARProvinceSelect(Select):
     as its choices.
     """
     def __init__(self, attrs=None):
+        from ar_provinces import PROVINCE_CHOICES
         super(ARProvinceSelect, self).__init__(attrs, choices=PROVINCE_CHOICES)
 
 class ARPostalCodeField(RegexField):
@@ -30,9 +28,9 @@ class ARPostalCodeField(RegexField):
         'invalid': _("Enter a postal code in the format NNNN or ANNNNAAA."),
     }
 
-    def __init__(self, max_length=8, min_length=4, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ARPostalCodeField, self).__init__(r'^\d{4}$|^[A-HJ-NP-Za-hj-np-z]\d{4}\D{3}$',
-            max_length, min_length, *args, **kwargs)
+            min_length=4, max_length=8, *args, **kwargs)
 
     def clean(self, value):
         value = super(ARPostalCodeField, self).clean(value)
@@ -53,8 +51,8 @@ class ARDNIField(CharField):
         'max_digits': _("This field requires 7 or 8 digits."),
     }
 
-    def __init__(self, max_length=10, min_length=7, *args, **kwargs):
-        super(ARDNIField, self).__init__(max_length, min_length, *args,
+    def __init__(self, *args, **kwargs):
+        super(ARDNIField, self).__init__(max_length=10, min_length=7, *args,
                 **kwargs)
 
     def clean(self, value):
@@ -83,9 +81,9 @@ class ARCUITField(RegexField):
         'checksum': _("Invalid CUIT."),
     }
 
-    def __init__(self, max_length=None, min_length=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ARCUITField, self).__init__(r'^\d{2}-?\d{8}-?\d$',
-            max_length, min_length, *args, **kwargs)
+            *args, **kwargs)
 
     def clean(self, value):
         """

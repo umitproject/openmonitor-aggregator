@@ -1,14 +1,7 @@
 from django.test import TestCase
-from django.utils.unittest import skipUnless
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.management import call_command
 from StringIO import StringIO
-
-try:
-    import crypt as crypt_module
-except ImportError:
-    crypt_module = None
-
 
 class BasicTestCase(TestCase):
     def test_user(self):
@@ -37,17 +30,6 @@ class BasicTestCase(TestCase):
         # Check API-based user creation with no password
         u2 = User.objects.create_user('testuser2', 'test2@example.com')
         self.assertFalse(u.has_usable_password())
-
-    def test_user_no_email(self):
-        "Check that users can be created without an email"
-        u = User.objects.create_user('testuser1')
-        self.assertEqual(u.email, '')
-
-        u2 = User.objects.create_user('testuser2', email='')
-        self.assertEqual(u2.email, '')
-
-        u3 = User.objects.create_user('testuser3', email=None)
-        self.assertEqual(u3.email, '')
 
     def test_anonymous_user(self):
         "Check the properties of the anonymous user"
@@ -110,3 +92,4 @@ class BasicTestCase(TestCase):
         u = User.objects.get(username="joe+admin@somewhere.org")
         self.assertEqual(u.email, 'joe@somewhere.org')
         self.assertFalse(u.has_usable_password())
+

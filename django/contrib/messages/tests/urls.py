@@ -1,7 +1,8 @@
-from django.conf.urls import patterns
+from django.conf.urls.defaults import *
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, Template
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache

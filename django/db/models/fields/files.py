@@ -1,14 +1,20 @@
 import datetime
 import os
 
-from django import forms
+import django.utils.copycompat as copy
+
+from django.conf import settings
 from django.db.models.fields import Field
-from django.core.files.base import File
+from django.core.files.base import File, ContentFile
 from django.core.files.storage import default_storage
-from django.core.files.images import ImageFile
+from django.core.files.images import ImageFile, get_image_dimensions
+from django.core.files.uploadedfile import UploadedFile
+from django.utils.functional import curry
 from django.db.models import signals
 from django.utils.encoding import force_unicode, smart_str
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy, ugettext as _
+from django import forms
+from django.db.models.loading import cache
 
 class FieldFile(File):
     def __init__(self, instance, field, name):
@@ -211,7 +217,7 @@ class FileField(Field):
     # The descriptor to use for accessing the attribute off of the class.
     descriptor_class = FileDescriptor
 
-    description = _("File")
+    description = ugettext_lazy("File path")
 
     def __init__(self, verbose_name=None, name=None, upload_to='', storage=None, **kwargs):
         for arg in ('primary_key', 'unique'):
@@ -308,7 +314,6 @@ class ImageFileDescriptor(FileDescriptor):
             self.field.update_dimension_fields(instance, force=True)
 
 class ImageFieldFile(ImageFile, FieldFile):
-
     def delete(self, save=True):
         # Clear the image dimensions cache
         if hasattr(self, '_dimensions_cache'):
@@ -318,12 +323,11 @@ class ImageFieldFile(ImageFile, FieldFile):
 class ImageField(FileField):
     attr_class = ImageFieldFile
     descriptor_class = ImageFileDescriptor
-    description = _("Image")
+    description = ugettext_lazy("File path")
 
-    def __init__(self, verbose_name=None, name=None, width_field=None,
-            height_field=None, **kwargs):
+    def __init__(self, verbose_name=None, name=None, width_field=None, height_field=None, **kwargs):
         self.width_field, self.height_field = width_field, height_field
-        super(ImageField, self).__init__(verbose_name, name, **kwargs)
+        FileField.__init__(self, verbose_name, name, **kwargs)
 
     def contribute_to_class(self, cls, name):
         super(ImageField, self).contribute_to_class(cls, name)

@@ -6,12 +6,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.xheaders import populate_xheaders
 from django.db.models.fields import DateTimeField
 from django.http import Http404, HttpResponse
-from django.utils import timezone
 
 import warnings
 warnings.warn(
     'Function-based generic views have been deprecated; use class-based views instead.',
-    DeprecationWarning
+    PendingDeprecationWarning
 )
 
 
@@ -32,7 +31,7 @@ def archive_index(request, queryset, date_field, num_latest=15,
     if extra_context is None: extra_context = {}
     model = queryset.model
     if not allow_future:
-        queryset = queryset.filter(**{'%s__lte' % date_field: timezone.now()})
+        queryset = queryset.filter(**{'%s__lte' % date_field: datetime.datetime.now()})
     date_list = queryset.dates(date_field, 'year')[::-1]
     if not date_list and not allow_empty:
         raise Http404("No %s available" % model._meta.verbose_name)
@@ -75,7 +74,7 @@ def archive_year(request, year, queryset, date_field, template_name=None,
     """
     if extra_context is None: extra_context = {}
     model = queryset.model
-    now = timezone.now()
+    now = datetime.datetime.now()
 
     lookup_kwargs = {'%s__year' % date_field: year}
 
@@ -132,7 +131,7 @@ def archive_month(request, year, month, queryset, date_field,
         raise Http404
 
     model = queryset.model
-    now = timezone.now()
+    now = datetime.datetime.now()
 
     # Calculate first and last day of month, for use in a date-range lookup.
     first_day = date.replace(day=1)
@@ -206,7 +205,7 @@ def archive_week(request, year, week, queryset, date_field,
         raise Http404
 
     model = queryset.model
-    now = timezone.now()
+    now = datetime.datetime.now()
 
     # Calculate first and last day of week, for use in a date-range lookup.
     first_day = date
@@ -264,7 +263,7 @@ def archive_day(request, year, month, day, queryset, date_field,
         raise Http404
 
     model = queryset.model
-    now = timezone.now()
+    now = datetime.datetime.now()
 
     if isinstance(model._meta.get_field(date_field), DateTimeField):
         lookup_kwargs = {'%s__range' % date_field: (datetime.datetime.combine(date, datetime.time.min), datetime.datetime.combine(date, datetime.time.max))}
@@ -336,7 +335,7 @@ def object_detail(request, year, month, day, queryset, date_field,
         raise Http404
 
     model = queryset.model
-    now = timezone.now()
+    now = datetime.datetime.now()
 
     if isinstance(model._meta.get_field(date_field), DateTimeField):
         lookup_kwargs = {'%s__range' % date_field: (datetime.datetime.combine(date, datetime.time.min), datetime.datetime.combine(date, datetime.time.max))}

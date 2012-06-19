@@ -2,8 +2,6 @@
 ID-specific Form helpers
 """
 
-from __future__ import absolute_import
-
 import re
 import time
 
@@ -12,7 +10,6 @@ from django.forms import ValidationError
 from django.forms.fields import Field, Select
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_unicode
-
 
 postcode_re = re.compile(r'^[1-9]\d{4}$')
 phone_re = re.compile(r'^(\+62|0)[2-9]\d{7,10}$')
@@ -57,8 +54,7 @@ class IDProvinceSelect(Select):
     """
 
     def __init__(self, attrs=None):
-        # Load data in memory only when it is required, see also #17275
-        from django.contrib.localflavor.id.id_choices import PROVINCE_CHOICES
+        from id_choices import PROVINCE_CHOICES
         super(IDProvinceSelect, self).__init__(attrs, choices=PROVINCE_CHOICES)
 
 
@@ -94,8 +90,7 @@ class IDLicensePlatePrefixSelect(Select):
     """
 
     def __init__(self, attrs=None):
-        # Load data in memory only when it is required, see also #17275
-        from django.contrib.localflavor.id.id_choices import LICENSE_PLATE_PREFIX_CHOICES
+        from id_choices import LICENSE_PLATE_PREFIX_CHOICES
         super(IDLicensePlatePrefixSelect, self).__init__(attrs,
             choices=LICENSE_PLATE_PREFIX_CHOICES)
 
@@ -113,8 +108,6 @@ class IDLicensePlateField(Field):
     }
 
     def clean(self, value):
-        # Load data in memory only when it is required, see also #17275
-        from django.contrib.localflavor.id.id_choices import LICENSE_PLATE_PREFIX_CHOICES
         super(IDLicensePlateField, self).clean(value)
         if value in EMPTY_VALUES:
             return u''
@@ -127,6 +120,7 @@ class IDLicensePlateField(Field):
             raise ValidationError(self.error_messages['invalid'])
 
         # Make sure prefix is in the list of known codes.
+        from id_choices import LICENSE_PLATE_PREFIX_CHOICES
         prefix = matches.group('prefix')
         if prefix not in [choice[0] for choice in LICENSE_PLATE_PREFIX_CHOICES]:
             raise ValidationError(self.error_messages['invalid'])

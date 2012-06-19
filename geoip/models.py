@@ -235,14 +235,17 @@ class Location(models.Model):
         return locations
 
 
-UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
-                                                  country_name='Unknown',
-                                                  country_code='UN',
-                                                  state_region='UN',
-                                                  city='Unknown',
-                                                  zipcode='',
-                                                  lat=decimal.Decimal('0.0'),
-                                                  lon=decimal.Decimal('0.0'))[0]
+try:
+    UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
+                                                      country_name='Unknown',
+                                                      country_code='UN',
+                                                      state_region='UN',
+                                                      city='Unknown',
+                                                      zipcode='',
+                                                      lat=decimal.Decimal('0.0'),
+                                                      lon=decimal.Decimal('0.0'))[0]
+except:
+    UNKNOWN_LOCATION = None
 
 class BannedNetworks(models.Model):
     """This is an aggregation of Banned Networks that is built from

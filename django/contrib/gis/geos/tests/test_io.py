@@ -1,5 +1,4 @@
-import binascii
-import unittest
+import binascii, ctypes, unittest
 from django.contrib.gis.geos import GEOSGeometry, WKTReader, WKTWriter, WKBReader, WKBWriter, geos_version_info
 
 class GEOSIOTest(unittest.TestCase):

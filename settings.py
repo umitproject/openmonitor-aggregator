@@ -192,19 +192,13 @@ LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 #'django.core.mail.backends.console.EmailBackend'
 
-if on_production_server:
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_HOST_USER = 'gmailusername@gmail.com'
-    EMAIL_HOST_PASSWORD = 'xxxxxxx'
-    EMAIL_USE_TLS = True
-    DEFAULT_FROM_EMAIL = 'gmailusername@gmail.com'
-    SERVER_EMAIL = 'gmailusername@gmail.com'
-else:
-    # local
-    EMAIL_HOST = 'localhost'
-    EMAIL_PORT = 1025
-    DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'gmailusername@gmail.com'
+EMAIL_HOST_PASSWORD = 'xxxxxxx'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'gmailusername@gmail.com'
+SERVER_EMAIL = 'gmailusername@gmail.com'
 
 USE_I18N = True
 

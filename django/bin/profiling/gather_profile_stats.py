@@ -8,9 +8,8 @@ hotshot.stats (the formats are incompatible)
 """
 
 from hotshot import stats
-import os
 import pstats
-import sys
+import sys, os
 
 def gather_stats(p):
     profiles = {}

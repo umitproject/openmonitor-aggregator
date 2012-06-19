@@ -2,8 +2,7 @@
 """
 UY-specific form helpers.
 """
-
-from __future__ import absolute_import
+import re
 
 from django.core.validators import EMPTY_VALUES
 from django.forms.fields import Select, RegexField
@@ -17,7 +16,7 @@ class UYDepartamentSelect(Select):
     A Select widget that uses a list of Uruguayan departaments as its choices.
     """
     def __init__(self, attrs=None):
-        from django.contrib.localflavor.uy.uy_departaments import DEPARTAMENT_CHOICES
+        from uy_departaments import DEPARTAMENT_CHOICES
         super(UYDepartamentSelect, self).__init__(attrs, choices=DEPARTAMENT_CHOICES)
 
 

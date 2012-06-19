@@ -2,16 +2,11 @@
 DE-specific Form helpers
 """
 
-from __future__ import absolute_import
-
-import re
-
-from django.contrib.localflavor.de.de_states import STATE_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select
 from django.utils.translation import ugettext_lazy as _
-
+import re
 
 id_re = re.compile(r"^(?P<residence>\d{10})(?P<origin>\w{1,3})[-\ ]?(?P<birthday>\d{7})[-\ ]?(?P<validity>\d{7})[-\ ]?(?P<checksum>\d{1})$")
 
@@ -19,15 +14,16 @@ class DEZipCodeField(RegexField):
     default_error_messages = {
         'invalid': _('Enter a zip code in the format XXXXX.'),
     }
-    def __init__(self, max_length=None, min_length=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(DEZipCodeField, self).__init__(r'^\d{5}$',
-            max_length, min_length, *args, **kwargs)
+            max_length=None, min_length=None, *args, **kwargs)
 
 class DEStateSelect(Select):
     """
     A Select widget that uses a list of DE states as its choices.
     """
     def __init__(self, attrs=None):
+        from de_states import STATE_CHOICES
         super(DEStateSelect, self).__init__(attrs, choices=STATE_CHOICES)
 
 class DEIdentityCardNumberField(Field):

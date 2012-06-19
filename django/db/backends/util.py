@@ -1,11 +1,9 @@
 import datetime
 import decimal
-import hashlib
 from time import time
 
-from django.conf import settings
+from django.utils.hashcompat import md5_constructor
 from django.utils.log import getLogger
-from django.utils.timezone import utc
 
 
 logger = getLogger('django.db.backends')
@@ -16,12 +14,9 @@ class CursorWrapper(object):
         self.cursor = cursor
         self.db = db
 
-    def set_dirty(self):
+    def __getattr__(self, attr):
         if self.db.is_managed():
             self.db.set_dirty()
-
-    def __getattr__(self, attr):
-        self.set_dirty()
         if attr in self.__dict__:
             return self.__dict__[attr]
         else:
@@ -34,7 +29,6 @@ class CursorWrapper(object):
 class CursorDebugWrapper(CursorWrapper):
 
     def execute(self, sql, params=()):
-        self.set_dirty()
         start = time()
         try:
             return self.cursor.execute(sql, params)
@@ -47,27 +41,22 @@ class CursorDebugWrapper(CursorWrapper):
                 'time': "%.3f" % duration,
             })
             logger.debug('(%.3f) %s; args=%s' % (duration, sql, params),
-                extra={'duration': duration, 'sql': sql, 'params': params}
+                extra={'duration':duration, 'sql':sql, 'params':params}
             )
 
     def executemany(self, sql, param_list):
-        self.set_dirty()
         start = time()
         try:
             return self.cursor.executemany(sql, param_list)
         finally:
             stop = time()
             duration = stop - start
-            try:
-                times = len(param_list)
-            except TypeError:           # param_list could be an iterator
-                times = '?'
             self.db.queries.append({
-                'sql': '%s times: %s' % (times, sql),
+                'sql': '%s times: %s' % (len(param_list), sql),
                 'time': "%.3f" % duration,
             })
             logger.debug('(%.3f) %s; args=%s' % (duration, sql, param_list),
-                extra={'duration': duration, 'sql': sql, 'params': param_list}
+                extra={'duration':duration, 'sql':sql, 'params':param_list}
             )
 
 
@@ -110,10 +99,13 @@ def typecast_timestamp(s): # does NOT store time zone information
         seconds, microseconds = seconds.split('.')
     else:
         microseconds = '0'
-    tzinfo = utc if settings.USE_TZ else None
     return datetime.datetime(int(dates[0]), int(dates[1]), int(dates[2]),
-        int(times[0]), int(times[1]), int(seconds),
-        int((microseconds + '000000')[:6]), tzinfo)
+        int(times[0]), int(times[1]), int(seconds), int((microseconds + '000000')[:6]))
+
+def typecast_boolean(s):
+    if s is None: return None
+    if not s: return False
+    return str(s)[0].lower() == 't'
 
 def typecast_decimal(s):
     if s is None or s == '':
@@ -123,6 +115,9 @@ def typecast_decimal(s):
 ###############################################
 # Converters from Python to database (string) #
 ###############################################
+
+def rev_typecast_boolean(obj, d):
+    return obj and '1' or '0'
 
 def rev_typecast_decimal(d):
     if d is None:
@@ -135,8 +130,9 @@ def truncate_name(name, length=None, hash_len=4):
     if length is None or len(name) <= length:
         return name
 
-    hsh = hashlib.md5(name).hexdigest()[:hash_len]
-    return '%s%s' % (name[:length-hash_len], hsh)
+    hash = md5_constructor(name).hexdigest()[:hash_len]
+
+    return '%s%s' % (name[:length-hash_len], hash)
 
 def format_number(value, max_digits, decimal_places):
     """

@@ -2,12 +2,11 @@ import decimal
 import datetime
 
 from django.conf import settings
-from django.utils import dateformat, numberformat, datetime_safe
+from django.utils.translation import get_language, to_locale, check_for_language
 from django.utils.importlib import import_module
 from django.utils.encoding import smart_str
-from django.utils.functional import lazy
+from django.utils import dateformat, numberformat, datetime_safe
 from django.utils.safestring import mark_safe
-from django.utils.translation import get_language, to_locale, check_for_language
 
 # format_cache is a mapping from (format_type, lang) to the format string.
 # By using the cache, it is possible to avoid running get_format_modules
@@ -45,12 +44,11 @@ def iter_format_modules(lang):
                 except ImportError:
                     pass
 
-def get_format_modules(lang=None, reverse=False):
+def get_format_modules(reverse=False):
     """
     Returns a list of the format modules found
     """
-    if lang is None:
-        lang = get_language()
+    lang = get_language()
     modules = _format_modules_cache.setdefault(lang, list(iter_format_modules(lang)))
     if reverse:
         return list(reversed(modules))
@@ -71,14 +69,9 @@ def get_format(format_type, lang=None, use_l10n=None):
             lang = get_language()
         cache_key = (format_type, lang)
         try:
-            cached = _format_cache[cache_key]
-            if cached is not None:
-                return cached
-            else:
-                # Return the general setting by default
-                return getattr(settings, format_type)
+            return _format_cache[cache_key] or getattr(settings, format_type)
         except KeyError:
-            for module in get_format_modules(lang):
+            for module in get_format_modules():
                 try:
                     val = getattr(module, format_type)
                     _format_cache[cache_key] = val
@@ -87,8 +80,6 @@ def get_format(format_type, lang=None, use_l10n=None):
                     pass
             _format_cache[cache_key] = None
     return getattr(settings, format_type)
-
-get_format_lazy = lazy(get_format, unicode, list, tuple)
 
 def date_format(value, format=None, use_l10n=None):
     """
@@ -109,7 +100,7 @@ def time_format(value, format=None, use_l10n=None):
     """
     return dateformat.time_format(value, get_format(format or 'TIME_FORMAT', use_l10n=use_l10n))
 
-def number_format(value, decimal_pos=None, use_l10n=None, force_grouping=False):
+def number_format(value, decimal_pos=None, use_l10n=None):
     """
     Formats a numeric value using localization settings
 
@@ -126,7 +117,6 @@ def number_format(value, decimal_pos=None, use_l10n=None, force_grouping=False):
         decimal_pos,
         get_format('NUMBER_GROUPING', lang, use_l10n=use_l10n),
         get_format('THOUSAND_SEPARATOR', lang, use_l10n=use_l10n),
-        force_grouping=force_grouping
     )
 
 def localize(value, use_l10n=None):

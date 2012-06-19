@@ -18,7 +18,6 @@ To add your own serializers, use the SERIALIZATION_MODULES setting::
 
 from django.conf import settings
 from django.utils import importlib
-from django.core.serializers.base import SerializerDoesNotExist
 
 # Built-in serializers
 BUILTIN_SERIALIZERS = {
@@ -61,15 +60,11 @@ def unregister_serializer(format):
     "Unregister a given serializer. This is not a thread-safe operation."
     if not _serializers:
         _load_serializers()
-    if format not in _serializers:
-        raise SerializerDoesNotExist(format)
     del _serializers[format]
 
 def get_serializer(format):
     if not _serializers:
         _load_serializers()
-    if format not in _serializers:
-        raise SerializerDoesNotExist(format)
     return _serializers[format].Serializer
 
 def get_serializer_formats():
@@ -85,8 +80,6 @@ def get_public_serializer_formats():
 def get_deserializer(format):
     if not _serializers:
         _load_serializers()
-    if format not in _serializers:
-        raise SerializerDoesNotExist(format)
     return _serializers[format].Deserializer
 
 def serialize(format, queryset, **options):

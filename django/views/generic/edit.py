@@ -19,7 +19,7 @@ class FormMixin(object):
         """
         Returns the initial data to use for forms on this view.
         """
-        return self.initial.copy()
+        return self.initial
 
     def get_form_class(self):
         """

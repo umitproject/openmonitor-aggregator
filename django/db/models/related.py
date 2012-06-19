@@ -27,7 +27,7 @@ class RelatedObject(object):
         as SelectField choices for this field.
 
         Analogue of django.db.models.fields.Field.get_choices, provided
-        initially for utilisation by RelatedFieldListFilter.
+        initially for utilisation by RelatedFilterSpec.
         """
         first_choice = include_blank and blank_choice or []
         queryset = self.model._default_manager.all()

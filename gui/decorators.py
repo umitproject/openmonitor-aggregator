@@ -92,10 +92,11 @@ def login_required(view):
 def staff_member_required(view):
     if not settings.DEBUG:
         def new_view(request, *args, **kwargs):
+            # TODO: MIGRATE THIS TO WORK WITH EC2
             # This is in order to bypass authentication if this header is present,
             # which indicates that appengine's cron is issuing this command
-            if settings.GAE and request.META.get("X-AppEngine-Cron", False) == "true":
-                return view(request, *args, **kwargs)
+            #if settings.PRODUCTION and request.META.get("X-AppEngine-Cron", False) == "true":
+            #    return view(request, *args, **kwargs)
             return django_staff_member_required(view)(request, *args, **kwargs)
         return new_view
     return view

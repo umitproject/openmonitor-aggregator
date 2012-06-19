@@ -1,9 +1,6 @@
 import logging
-import traceback
-
-from django.conf import settings
+import sys
 from django.core import mail
-from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 
 # Make sure a NullHandler is available
 # This was added in Python 2.7/3.2
@@ -21,7 +18,27 @@ try:
 except ImportError:
     from django.utils.dictconfig import dictConfig
 
-getLogger = logging.getLogger
+if sys.version_info < (2, 5):
+    class LoggerCompat(object):
+        def __init__(self, logger):
+            self._logger = logger
+
+        def __getattr__(self, name):
+            val = getattr(self._logger, name)
+            if callable(val):
+                def _wrapper(*args, **kwargs):
+                    # Python 2.4 logging module doesn't support 'extra' parameter to
+                    # methods of Logger
+                    kwargs.pop('extra', None)
+                    return val(*args, **kwargs)
+                return _wrapper
+            else:
+                return val
+
+    def getLogger(name=None):
+        return LoggerCompat(logging.getLogger(name=name))
+else:
+    getLogger = logging.getLogger
 
 # Ensure the creation of the Django logger
 # with a null handler. This ensures we don't get any
@@ -30,76 +47,55 @@ logger = getLogger('django')
 if not logger.handlers:
     logger.addHandler(NullHandler())
 
-
 class AdminEmailHandler(logging.Handler):
-    """An exception log handler that emails log entries to site admins.
-
-    If the request is passed as the first argument to the log record,
-    request data will be provided in the email report.
-    """
-
     def __init__(self, include_html=False):
-        logging.Handler.__init__(self)
+        logging.Handler.__init__(self)        
         self.include_html = include_html
 
+    """An exception log handler that e-mails log entries to site admins.
+
+    If the request is passed as the first argument to the log record,
+    request data will be provided in the
+    """
     def emit(self, record):
+        import traceback
+        from django.conf import settings
+        from django.views.debug import ExceptionReporter
+
         try:
-            request = record.request
+            if sys.version_info < (2,5):
+                # A nasty workaround required because Python 2.4's logging
+                # module doesn't support passing in extra context.
+                # For this handler, the only extra data we need is the
+                # request, and that's in the top stack frame.
+                request = record.exc_info[2].tb_frame.f_locals['request']
+            else:
+                request = record.request
+
             subject = '%s (%s IP): %s' % (
                 record.levelname,
-                (request.META.get('REMOTE_ADDR') in settings.INTERNAL_IPS
-                 and 'internal' or 'EXTERNAL'),
-                record.getMessage()
+                (request.META.get('REMOTE_ADDR') in settings.INTERNAL_IPS and 'internal' or 'EXTERNAL'),
+                record.msg
             )
-            filter = get_exception_reporter_filter(request)
-            request_repr = filter.get_request_repr(request)
-        except Exception:
+            request_repr = repr(request)
+        except:
             subject = '%s: %s' % (
                 record.levelname,
-                record.getMessage()
+                record.msg
             )
+
             request = None
-            request_repr = "Request repr() unavailable."
-        subject = self.format_subject(subject)
+            request_repr = "Request repr() unavailable"
 
         if record.exc_info:
             exc_info = record.exc_info
             stack_trace = '\n'.join(traceback.format_exception(*record.exc_info))
         else:
-            exc_info = (None, record.getMessage(), None)
+            exc_info = (None, record.msg, None)
             stack_trace = 'No stack trace available'
 
         message = "%s\n\n%s" % (stack_trace, request_repr)
         reporter = ExceptionReporter(request, is_email=True, *exc_info)
         html_message = self.include_html and reporter.get_traceback_html() or None
-        mail.mail_admins(subject, message, fail_silently=True, html_message=html_message)
-
-    def format_subject(self, subject):
-        """
-        Escape CR and LF characters, and limit length.
-        RFC 2822's hard limit is 998 characters per line. So, minus "Subject: "
-        the actual subject must be no longer than 989 characters.
-        """
-        formatted_subject = subject.replace('\n', '\\n').replace('\r', '\\r')
-        return formatted_subject[:989]
-
-
-class CallbackFilter(logging.Filter):
-    """
-    A logging filter that checks the return value of a given callable (which
-    takes the record-to-be-logged as its only parameter) to decide whether to
-    log a record.
-
-    """
-    def __init__(self, callback):
-        self.callback = callback
-
-    def filter(self, record):
-        if self.callback(record):
-            return 1
-        return 0
-
-
-class RequireDebugFalse(logging.Filter):
-    def filter(self, record):
-        return not settings.DEBUG
+        mail.mail_admins(subject, message, fail_silently=True,
+                         html_message=html_message)

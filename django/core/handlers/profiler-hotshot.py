@@ -1,7 +1,4 @@
-import hotshot
-import os
-import time
-
+import hotshot, time, os
 from django.core.handlers.modpython import ModPythonHandler
 
 PROFILE_DATA_DIR = "/var/log/cmsprofile"

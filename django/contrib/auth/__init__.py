@@ -1,3 +1,4 @@
+import datetime
 from warnings import warn
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
@@ -20,10 +21,19 @@ def load_backend(path):
         cls = getattr(mod, attr)
     except AttributeError:
         raise ImproperlyConfigured('Module "%s" does not define a "%s" authentication backend' % (module, attr))
+    if not hasattr(cls, "supports_object_permissions"):
+        warn("Authentication backends without a `supports_object_permissions` attribute are deprecated. Please define it in %s." % cls,
+             DeprecationWarning)
+        cls.supports_object_permissions = False
+
+    if not hasattr(cls, 'supports_anonymous_user'):
+        warn("Authentication backends without a `supports_anonymous_user` attribute are deprecated. Please define it in %s." % cls,
+             DeprecationWarning)
+        cls.supports_anonymous_user = False
 
     if not hasattr(cls, 'supports_inactive_user'):
         warn("Authentication backends without a `supports_inactive_user` attribute are deprecated. Please define it in %s." % cls,
-             DeprecationWarning)
+             PendingDeprecationWarning)
         cls.supports_inactive_user = False
     return cls()
 
@@ -55,8 +65,7 @@ def authenticate(**credentials):
 def login(request, user):
     """
     Persist a user id and a backend in the request. This way a user doesn't
-    have to reauthenticate on every request. Note that data set during
-    the anonymous session is retained when the user logs in.
+    have to reauthenticate on every request.
     """
     if user is None:
         user = request.user

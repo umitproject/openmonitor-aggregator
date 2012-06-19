@@ -8,7 +8,6 @@ when explicitly needed.
 
 from django.utils.translation import ugettext_lazy as _
 
-# All 31 states, plus the `Distrito Federal`.
 STATE_CHOICES = (
     ('AGU', _(u'Aguascalientes')),
     ('BCN', _(u'Baja California')),
@@ -43,3 +42,4 @@ STATE_CHOICES = (
     ('YUC', _(u'Yucatán')),
     ('ZAC', _(u'Zacatecas')),
 )
+

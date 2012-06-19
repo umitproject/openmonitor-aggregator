@@ -3,18 +3,15 @@ Base classes for writing management commands (named commands which can
 be executed through ``django-admin.py`` or ``manage.py``).
 
 """
-from __future__ import with_statement
+
 import os
 import sys
-
 from optparse import make_option, OptionParser
-import traceback
 
 import django
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
 from django.utils.encoding import smart_str
-
 
 class CommandError(Exception):
     """
@@ -31,7 +28,6 @@ class CommandError(Exception):
     """
     pass
 
-
 def handle_default_options(options):
     """
     Include any default options that all commands should accept here
@@ -43,7 +39,6 @@ def handle_default_options(options):
         os.environ['DJANGO_SETTINGS_MODULE'] = options.settings
     if options.pythonpath:
         sys.path.insert(0, options.pythonpath)
-
 
 class BaseCommand(object):
     """
@@ -124,7 +119,7 @@ class BaseCommand(object):
     option_list = (
         make_option('-v', '--verbosity', action='store', dest='verbosity', default='1',
             type='choice', choices=['0', '1', '2', '3'],
-            help='Verbosity level; 0=minimal output, 1=normal output, 2=verbose output, 3=very verbose output'),
+            help='Verbosity level; 0=minimal output, 1=normal output, 2=all output'),
         make_option('--settings',
             help='The Python path to a settings module, e.g. "myproject.settings.main". If this isn\'t provided, the DJANGO_SETTINGS_MODULE environment variable will be used.'),
         make_option('--pythonpath',
@@ -138,7 +133,7 @@ class BaseCommand(object):
     # Configuration shortcuts that alter various logic.
     can_import_settings = True
     requires_model_validation = True
-    output_transaction = False  # Whether to wrap the output in a "BEGIN; COMMIT;"
+    output_transaction = False # Whether to wrap the output in a "BEGIN; COMMIT;"
 
     def __init__(self):
         self.style = color_style()
@@ -202,28 +197,21 @@ class BaseCommand(object):
         ``self.requires_model_validation``). If the command raises a
         ``CommandError``, intercept it and print it sensibly to
         stderr.
-        """
-        show_traceback = options.get('traceback', False)
 
+        """
         # Switch to English, because django-admin.py creates database content
         # like permissions, and those shouldn't contain any translations.
         # But only do this if we can assume we have a working settings file,
         # because django.utils.translation requires settings.
-        saved_lang = None
         if self.can_import_settings:
             try:
                 from django.utils import translation
-                saved_lang = translation.get_language()
                 translation.activate('en-us')
             except ImportError, e:
                 # If settings should be available, but aren't,
                 # raise the error and quit.
-                if show_traceback:
-                    traceback.print_exc()
-                else:
-                    sys.stderr.write(smart_str(self.style.ERROR('Error: %s\n' % e)))
+                sys.stderr.write(smart_str(self.style.ERROR('Error: %s\n' % e)))
                 sys.exit(1)
-
         try:
             self.stdout = options.get('stdout', sys.stdout)
             self.stderr = options.get('stderr', sys.stderr)
@@ -242,13 +230,8 @@ class BaseCommand(object):
                 if self.output_transaction:
                     self.stdout.write('\n' + self.style.SQL_KEYWORD("COMMIT;") + '\n')
         except CommandError, e:
-            if show_traceback:
-                traceback.print_exc()
-            else:
-                self.stderr.write(smart_str(self.style.ERROR('Error: %s\n' % e)))
+            self.stderr.write(smart_str(self.style.ERROR('Error: %s\n' % e)))
             sys.exit(1)
-        if saved_lang is not None:
-            translation.activate(saved_lang)
 
     def validate(self, app=None, display_num_errors=False):
         """
@@ -278,7 +261,6 @@ class BaseCommand(object):
 
         """
         raise NotImplementedError()
-
 
 class AppCommand(BaseCommand):
     """
@@ -315,7 +297,6 @@ class AppCommand(BaseCommand):
         """
         raise NotImplementedError()
 
-
 class LabelCommand(BaseCommand):
     """
     A management command which takes one or more arbitrary arguments
@@ -351,7 +332,6 @@ class LabelCommand(BaseCommand):
         """
         raise NotImplementedError()
 
-
 class NoArgsCommand(BaseCommand):
     """
     A command which takes no arguments on the command line.
@@ -376,3 +356,76 @@ class NoArgsCommand(BaseCommand):
 
         """
         raise NotImplementedError()
+
+def copy_helper(style, app_or_project, name, directory, other_name=''):
+    """
+    Copies either a Django application layout template or a Django project
+    layout template into the specified directory.
+
+    """
+    # style -- A color style object (see django.core.management.color).
+    # app_or_project -- The string 'app' or 'project'.
+    # name -- The name of the application or project.
+    # directory -- The directory to which the layout template should be copied.
+    # other_name -- When copying an application layout, this should be the name
+    #               of the project.
+    import re
+    import shutil
+    other = {'project': 'app', 'app': 'project'}[app_or_project]
+    if not re.search(r'^[_a-zA-Z]\w*$', name): # If it's not a valid directory name.
+        # Provide a smart error message, depending on the error.
+        if not re.search(r'^[_a-zA-Z]', name):
+            message = 'make sure the name begins with a letter or underscore'
+        else:
+            message = 'use only numbers, letters and underscores'
+        raise CommandError("%r is not a valid %s name. Please %s." % (name, app_or_project, message))
+    top_dir = os.path.join(directory, name)
+    try:
+        os.mkdir(top_dir)
+    except OSError, e:
+        raise CommandError(e)
+
+    # Determine where the app or project templates are. Use
+    # django.__path__[0] because we don't know into which directory
+    # django has been installed.
+    template_dir = os.path.join(django.__path__[0], 'conf', '%s_template' % app_or_project)
+
+    for d, subdirs, files in os.walk(template_dir):
+        relative_dir = d[len(template_dir)+1:].replace('%s_name' % app_or_project, name)
+        if relative_dir:
+            os.mkdir(os.path.join(top_dir, relative_dir))
+        for subdir in subdirs[:]:
+            if subdir.startswith('.'):
+                subdirs.remove(subdir)
+        for f in files:
+            if not f.endswith('.py'):
+                # Ignore .pyc, .pyo, .py.class etc, as they cause various
+                # breakages.
+                continue
+            path_old = os.path.join(d, f)
+            path_new = os.path.join(top_dir, relative_dir, f.replace('%s_name' % app_or_project, name))
+            fp_old = open(path_old, 'r')
+            fp_new = open(path_new, 'w')
+            fp_new.write(fp_old.read().replace('{{ %s_name }}' % app_or_project, name).replace('{{ %s_name }}' % other, other_name))
+            fp_old.close()
+            fp_new.close()
+            try:
+                shutil.copymode(path_old, path_new)
+                _make_writeable(path_new)
+            except OSError:
+                sys.stderr.write(style.NOTICE("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new))
+
+def _make_writeable(filename):
+    """
+    Make sure that the file is writeable. Useful if our source is
+    read-only.
+
+    """
+    import stat
+    if sys.platform.startswith('java'):
+        # On Jython there is no os.access()
+        return
+    if not os.access(filename, os.W_OK):
+        st = os.stat(filename)
+        new_permissions = stat.S_IMODE(st.st_mode) | stat.S_IWUSR
+        os.chmod(filename, new_permissions)

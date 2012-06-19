@@ -9,7 +9,6 @@ import decimal
 import yaml
 
 from django.db import models
-from django.core.serializers.base import DeserializationError
 from django.core.serializers.python import Serializer as PythonSerializer
 from django.core.serializers.python import Deserializer as PythonDeserializer
 
@@ -52,11 +51,6 @@ def Deserializer(stream_or_string, **options):
         stream = StringIO(stream_or_string)
     else:
         stream = stream_or_string
-    try:
-        for obj in PythonDeserializer(yaml.safe_load(stream), **options):
-            yield obj
-    except GeneratorExit:
-        raise
-    except Exception, e:
-        # Map to deserializer error
-        raise DeserializationError(e)
+    for obj in PythonDeserializer(yaml.load(stream), **options):
+        yield obj
+

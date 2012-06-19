@@ -1,16 +1,8 @@
-import getpass
-from optparse import make_option
-
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
-from django.db import DEFAULT_DB_ALIAS
-
+import getpass
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".'),
-    )
     help = "Change a user's password for django.contrib.auth."
 
     requires_model_validation = False
@@ -31,11 +23,11 @@ class Command(BaseCommand):
             username = getpass.getuser()
 
         try:
-            u = User.objects.using(options.get('database')).get(username=username)
+            u = User.objects.get(username=username)
         except User.DoesNotExist:
             raise CommandError("user '%s' does not exist" % username)
 
-        self.stdout.write("Changing password for user '%s'\n" % u.username)
+        print "Changing password for user '%s'" % u.username
 
         MAX_TRIES = 3
         count = 0
@@ -44,7 +36,7 @@ class Command(BaseCommand):
             p1 = self._get_pass()
             p2 = self._get_pass("Password (again): ")
             if p1 != p2:
-                self.stdout.write("Passwords do not match. Please try again.\n")
+                print "Passwords do not match. Please try again."
                 count = count + 1
 
         if count == MAX_TRIES:

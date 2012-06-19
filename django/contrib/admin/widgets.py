@@ -2,18 +2,18 @@
 Form Widget classes specific to the Django admin site.
 """
 
-import copy
+import django.utils.copycompat as copy
+
 from django import forms
-from django.contrib.admin.templatetags.admin_static import static
-from django.core.urlresolvers import reverse
 from django.forms.widgets import RadioFieldRenderer
 from django.forms.util import flatatt
 from django.utils.html import escape
-from django.utils.text import Truncator
+from django.utils.text import truncate_words
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
-
+from django.conf import settings
+from django.core.urlresolvers import reverse, NoReverseMatch
 
 class FilteredSelectMultiple(forms.SelectMultiple):
     """
@@ -22,10 +22,10 @@ class FilteredSelectMultiple(forms.SelectMultiple):
     Note that the resulting JavaScript assumes that the jsi18n
     catalog has been loaded in the page
     """
-    @property
-    def media(self):
-        js = ["core.js", "SelectBox.js", "SelectFilter2.js"]
-        return forms.Media(js=[static("admin/js/%s" % path) for path in js])
+    class Media:
+        js = (settings.ADMIN_MEDIA_PREFIX + "js/core.js",
+              settings.ADMIN_MEDIA_PREFIX + "js/SelectBox.js",
+              settings.ADMIN_MEDIA_PREFIX + "js/SelectFilter2.js")
 
     def __init__(self, verbose_name, is_stacked, attrs=None, choices=()):
         self.verbose_name = verbose_name
@@ -33,44 +33,32 @@ class FilteredSelectMultiple(forms.SelectMultiple):
         super(FilteredSelectMultiple, self).__init__(attrs, choices)
 
     def render(self, name, value, attrs=None, choices=()):
-        if attrs is None:
-            attrs = {}
+        if attrs is None: attrs = {}
         attrs['class'] = 'selectfilter'
-        if self.is_stacked:
-            attrs['class'] += 'stacked'
+        if self.is_stacked: attrs['class'] += 'stacked'
         output = [super(FilteredSelectMultiple, self).render(name, value, attrs, choices)]
         output.append(u'<script type="text/javascript">addEvent(window, "load", function(e) {')
         # TODO: "id_" is hard-coded here. This should instead use the correct
         # API to determine the ID dynamically.
-        output.append(u'SelectFilter.init("id_%s", "%s", %s, "%s"); });</script>\n'
-            % (name, self.verbose_name.replace('"', '\\"'), int(self.is_stacked), static('admin/')))
+        output.append(u'SelectFilter.init("id_%s", "%s", %s, "%s"); });</script>\n' % \
+            (name, self.verbose_name.replace('"', '\\"'), int(self.is_stacked), settings.ADMIN_MEDIA_PREFIX))
         return mark_safe(u''.join(output))
 
 class AdminDateWidget(forms.DateInput):
+    class Media:
+        js = (settings.ADMIN_MEDIA_PREFIX + "js/calendar.js",
+              settings.ADMIN_MEDIA_PREFIX + "js/admin/DateTimeShortcuts.js")
 
-    @property
-    def media(self):
-        js = ["calendar.js", "admin/DateTimeShortcuts.js"]
-        return forms.Media(js=[static("admin/js/%s" % path) for path in js])
-
-    def __init__(self, attrs=None, format=None):
-        final_attrs = {'class': 'vDateField', 'size': '10'}
-        if attrs is not None:
-            final_attrs.update(attrs)
-        super(AdminDateWidget, self).__init__(attrs=final_attrs, format=format)
+    def __init__(self, attrs={}, format=None):
+        super(AdminDateWidget, self).__init__(attrs={'class': 'vDateField', 'size': '10'}, format=format)
 
 class AdminTimeWidget(forms.TimeInput):
+    class Media:
+        js = (settings.ADMIN_MEDIA_PREFIX + "js/calendar.js",
+              settings.ADMIN_MEDIA_PREFIX + "js/admin/DateTimeShortcuts.js")
 
-    @property
-    def media(self):
-        js = ["calendar.js", "admin/DateTimeShortcuts.js"]
-        return forms.Media(js=[static("admin/js/%s" % path) for path in js])
-
-    def __init__(self, attrs=None, format=None):
-        final_attrs = {'class': 'vTimeField', 'size': '8'}
-        if attrs is not None:
-            final_attrs.update(attrs)
-        super(AdminTimeWidget, self).__init__(attrs=final_attrs, format=format)
+    def __init__(self, attrs={}, format=None):
+        super(AdminTimeWidget, self).__init__(attrs={'class': 'vTimeField', 'size': '8'}, format=format)
 
 class AdminSplitDateTime(forms.SplitDateTimeWidget):
     """
@@ -112,7 +100,7 @@ def url_params_from_lookup_dict(lookups):
     if lookups and hasattr(lookups, 'items'):
         items = []
         for k, v in lookups.items():
-            if isinstance(v, (tuple, list)):
+            if isinstance(v, list):
                 v = u','.join([str(x) for x in v])
             elif isinstance(v, bool):
                 # See django.db.fields.BooleanField.get_prep_lookup
@@ -128,38 +116,28 @@ class ForeignKeyRawIdWidget(forms.TextInput):
     A Widget for displaying ForeignKeys in the "raw_id" interface rather than
     in a <select> box.
     """
-    def __init__(self, rel, admin_site, attrs=None, using=None):
+    def __init__(self, rel, attrs=None, using=None):
         self.rel = rel
-        self.admin_site = admin_site
         self.db = using
         super(ForeignKeyRawIdWidget, self).__init__(attrs)
 
     def render(self, name, value, attrs=None):
-        rel_to = self.rel.to
         if attrs is None:
             attrs = {}
-        extra = []
-        if rel_to in self.admin_site._registry:
-            # The related object is registered with the same AdminSite
-            related_url = reverse('admin:%s_%s_changelist' %
-                                    (rel_to._meta.app_label,
-                                    rel_to._meta.module_name),
-                                    current_app=self.admin_site.name)
-
-            params = self.url_parameters()
-            if params:
-                url = u'?' + u'&amp;'.join([u'%s=%s' % (k, v) for k, v in params.items()])
-            else:
-                url = u''
-            if "class" not in attrs:
-                attrs['class'] = 'vForeignKeyRawIdAdminField' # The JavaScript code looks for this hook.
-            # TODO: "lookup_id_" is hard-coded here. This should instead use
-            # the correct API to determine the ID dynamically.
-            extra.append(u'<a href="%s%s" class="related-lookup" id="lookup_id_%s" onclick="return showRelatedObjectLookupPopup(this);"> '
-                            % (related_url, url, name))
-            extra.append(u'<img src="%s" width="16" height="16" alt="%s" /></a>'
-                            % (static('admin/img/selector-search.gif'), _('Lookup')))
-        output = [super(ForeignKeyRawIdWidget, self).render(name, value, attrs)] + extra
+        related_url = '../../../%s/%s/' % (self.rel.to._meta.app_label, self.rel.to._meta.object_name.lower())
+        params = self.url_parameters()
+        if params:
+            url = u'?' + u'&amp;'.join([u'%s=%s' % (k, v) for k, v in params.items()])
+        else:
+            url = u''
+        if "class" not in attrs:
+            attrs['class'] = 'vForeignKeyRawIdAdminField' # The JavaScript looks for this hook.
+        output = [super(ForeignKeyRawIdWidget, self).render(name, value, attrs)]
+        # TODO: "id_" is hard-coded here. This should instead use the correct
+        # API to determine the ID dynamically.
+        output.append(u'<a href="%s%s" class="related-lookup" id="lookup_id_%s" onclick="return showRelatedObjectLookupPopup(this);"> ' % \
+            (related_url, url, name))
+        output.append(u'<img src="%simg/admin/selector-search.gif" width="16" height="16" alt="%s" /></a>' % (settings.ADMIN_MEDIA_PREFIX, _('Lookup')))
         if value:
             output.append(self.label_for_value(value))
         return mark_safe(u''.join(output))
@@ -177,7 +155,7 @@ class ForeignKeyRawIdWidget(forms.TextInput):
         key = self.rel.get_related_field().name
         try:
             obj = self.rel.to._default_manager.using(self.db).get(**{key: value})
-            return '&nbsp;<strong>%s</strong>' % escape(Truncator(obj).words(14, truncate='...'))
+            return '&nbsp;<strong>%s</strong>' % escape(truncate_words(obj, 14))
         except (ValueError, self.rel.to.DoesNotExist):
             return ''
 
@@ -189,9 +167,7 @@ class ManyToManyRawIdWidget(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        if self.rel.to in self.admin_site._registry:
-            # The related object is registered with the same AdminSite
-            attrs['class'] = 'vManyToManyRawIdAdminField'
+        attrs['class'] = 'vManyToManyRawIdAdminField'
         if value:
             value = ','.join([force_unicode(v) for v in value])
         else:
@@ -248,23 +224,26 @@ class RelatedFieldWidgetWrapper(forms.Widget):
         memo[id(self)] = obj
         return obj
 
-    @property
-    def media(self):
+    def _media(self):
         return self.widget.media
+    media = property(_media)
 
     def render(self, name, value, *args, **kwargs):
         rel_to = self.rel.to
         info = (rel_to._meta.app_label, rel_to._meta.object_name.lower())
+        try:
+            related_url = reverse('admin:%s_%s_add' % info, current_app=self.admin_site.name)
+        except NoReverseMatch:
+            info = (self.admin_site.root_path, rel_to._meta.app_label, rel_to._meta.object_name.lower())
+            related_url = '%s%s/%s/add/' % info
         self.widget.choices = self.choices
         output = [self.widget.render(name, value, *args, **kwargs)]
         if self.can_add_related:
-            related_url = reverse('admin:%s_%s_add' % info, current_app=self.admin_site.name)
-            # TODO: "add_id_" is hard-coded here. This should instead use the
-            # correct API to determine the ID dynamically.
-            output.append(u'<a href="%s" class="add-another" id="add_id_%s" onclick="return showAddAnotherPopup(this);"> '
-                          % (related_url, name))
-            output.append(u'<img src="%s" width="10" height="10" alt="%s"/></a>'
-                          % (static('admin/img/icon_addlink.gif'), _('Add Another')))
+            # TODO: "id_" is hard-coded here. This should instead use the correct
+            # API to determine the ID dynamically.
+            output.append(u'<a href="%s" class="add-another" id="add_id_%s" onclick="return showAddAnotherPopup(this);"> ' % \
+                (related_url, name))
+            output.append(u'<img src="%simg/admin/icon_addlink.gif" width="10" height="10" alt="%s"/></a>' % (settings.ADMIN_MEDIA_PREFIX, _('Add Another')))
         return mark_safe(u''.join(output))
 
     def build_attrs(self, extra_attrs=None, **kwargs):

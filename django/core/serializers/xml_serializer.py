@@ -85,10 +85,9 @@ class Serializer(base.Serializer):
         differently from regular fields).
         """
         self._start_relational_field(field)
-        related_att = getattr(obj, field.get_attname())
-        if related_att is not None:
-            if self.use_natural_keys and hasattr(field.rel.to, 'natural_key'):
-                related = getattr(obj, field.name)
+        related = getattr(obj, field.name)
+        if related is not None:
+            if self.use_natural_keys and hasattr(related, 'natural_key'):
                 # If related object has a natural key, use it
                 related = related.natural_key()
                 # Iterable natural keys are rolled out as subelements
@@ -97,7 +96,13 @@ class Serializer(base.Serializer):
                     self.xml.characters(smart_unicode(key_value))
                     self.xml.endElement("natural")
             else:
-                self.xml.characters(smart_unicode(related_att))
+                if field.rel.field_name == related._meta.pk.name:
+                    # Related to remote object via primary key
+                    related = related._get_pk_val()
+                else:
+                    # Related to remote object via other field
+                    related = getattr(related, field.rel.field_name)
+                self.xml.characters(smart_unicode(related))
         else:
             self.xml.addQuickElement("None")
         self.xml.endElement("field")

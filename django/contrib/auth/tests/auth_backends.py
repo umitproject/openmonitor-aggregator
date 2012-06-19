@@ -1,12 +1,8 @@
-import warnings
-
 from django.conf import settings
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
-from django.db import connection
 from django.test import TestCase
-from django.utils import unittest
 
 
 class BackendTest(TestCase):
@@ -102,21 +98,16 @@ class BackendTest(TestCase):
         user = User.objects.get(username='test2')
         self.assertEqual(len(user.get_all_permissions()), len(Permission.objects.all()))
 
-BackendTest = unittest.skipIf(not connection.features.supports_joins,
-                              'Requires JOIN support')(BackendTest)
-
 class TestObj(object):
     pass
 
 
 class SimpleRowlevelBackend(object):
-    supports_object_permissions = True
     supports_inactive_user = False
 
     # This class also supports tests for anonymous user permissions, and
     # inactive user permissions via subclasses which just set the
     # 'supports_anonymous_user' or 'supports_inactive_user' attribute.
-
 
     def has_perm(self, user, perm, obj=None):
         if not obj:
@@ -126,7 +117,6 @@ class SimpleRowlevelBackend(object):
             if user.username == 'test2':
                 return True
             elif user.is_anonymous() and perm == 'anon':
-                # not reached due to supports_anonymous_user = False
                 return True
             elif not user.is_active and perm == 'inactive':
                 return True
@@ -176,13 +166,9 @@ class RowlevelBackendTest(TestCase):
         self.user1 = User.objects.create_user('test', 'test@example.com', 'test')
         self.user2 = User.objects.create_user('test2', 'test2@example.com', 'test')
         self.user3 = User.objects.create_user('test3', 'test3@example.com', 'test')
-        self.save_warnings_state()
-        warnings.filterwarnings('ignore', category=DeprecationWarning,
-                                module='django.contrib.auth')
 
     def tearDown(self):
         settings.AUTHENTICATION_BACKENDS = self.curr_auth
-        self.restore_warnings_state()
         # The get_group_permissions test messes with ContentTypes, which will
         # be cached; flush the cache to ensure there are no side effects
         # Refs #14975, #14925
@@ -208,24 +194,14 @@ class RowlevelBackendTest(TestCase):
         self.user3.groups.add(group)
         self.assertEqual(self.user3.get_group_permissions(TestObj()), set(['group_perm']))
 
-RowlevelBackendTest = unittest.skipIf(not connection.features.supports_joins,
-                                      'Requires JOIN support')(RowlevelBackendTest)
 
 class AnonymousUserBackend(SimpleRowlevelBackend):
-
-    supports_anonymous_user = True
-    supports_inactive_user = False
-
-
-class NoAnonymousUserBackend(SimpleRowlevelBackend):
-
-    supports_anonymous_user = False
     supports_inactive_user = False
 
 
 class AnonymousUserBackendTest(TestCase):
     """
-    Tests for AnonymousUser delegating to backend if it has 'supports_anonymous_user' = True
+    Tests for AnonymousUser delegating to backend.
     """
 
     backend = 'django.contrib.auth.tests.auth_backends.AnonymousUserBackend'
@@ -254,33 +230,6 @@ class AnonymousUserBackendTest(TestCase):
         self.assertEqual(self.user1.get_all_permissions(TestObj()), set(['anon']))
 
 
-class NoAnonymousUserBackendTest(TestCase):
-    """
-    Tests that AnonymousUser does not delegate to backend if it has 'supports_anonymous_user' = False
-    """
-    backend = 'django.contrib.auth.tests.auth_backends.NoAnonymousUserBackend'
-
-    def setUp(self):
-        self.curr_auth = settings.AUTHENTICATION_BACKENDS
-        settings.AUTHENTICATION_BACKENDS = tuple(self.curr_auth) + (self.backend,)
-        self.user1 = AnonymousUser()
-
-    def tearDown(self):
-        settings.AUTHENTICATION_BACKENDS = self.curr_auth
-
-    def test_has_perm(self):
-        self.assertEqual(self.user1.has_perm('perm', TestObj()), False)
-        self.assertEqual(self.user1.has_perm('anon', TestObj()), False)
-
-    def test_has_perms(self):
-        self.assertEqual(self.user1.has_perms(['anon'], TestObj()), False)
-
-    def test_has_module_perms(self):
-        self.assertEqual(self.user1.has_module_perms("app1"), False)
-        self.assertEqual(self.user1.has_module_perms("app2"), False)
-
-    def test_get_all_permissions(self):
-        self.assertEqual(self.user1.get_all_permissions(TestObj()), set())
 
 
 class NoBackendsTest(TestCase):
@@ -300,14 +249,10 @@ class NoBackendsTest(TestCase):
 
 
 class InActiveUserBackend(SimpleRowlevelBackend):
-
-    supports_anonymous_user = False
     supports_inactive_user = True
 
 
 class NoInActiveUserBackend(SimpleRowlevelBackend):
-
-    supports_anonymous_user = False
     supports_inactive_user = False
 
 
@@ -355,7 +300,7 @@ class NoInActiveUserBackendTest(TestCase):
 
     def test_has_perm(self):
         self.assertEqual(self.user1.has_perm('perm', TestObj()), False)
-        self.assertEqual(self.user1.has_perm('inactive', TestObj()), True)
+        self.assertEqual(self.user1.has_perm('inactive', TestObj()), False)
 
     def test_has_module_perms(self):
         self.assertEqual(self.user1.has_module_perms("app1"), False)

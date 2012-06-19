@@ -33,7 +33,7 @@ class MultiPartParser(object):
     A rfc2388 multipart/form-data parser.
 
     ``MultiValueDict.parse()`` reads the input stream in ``chunk_size`` chunks
-    and returns a tuple of ``(MultiValueDict(POST), MultiValueDict(FILES))``. If
+    and returns a tuple of ``(MultiValueDict(POST), MultiValueDict(FILES))``.
     """
     def __init__(self, META, input_data, upload_handlers, encoding=None):
         """
@@ -65,17 +65,14 @@ class MultiPartParser(object):
             raise MultiPartParserError('Invalid boundary in multipart: %s' % boundary)
 
 
-        #
         # Content-Length should contain the length of the body we are about
         # to receive.
-        #
         try:
             content_length = int(META.get('HTTP_CONTENT_LENGTH', META.get('CONTENT_LENGTH',0)))
         except (ValueError, TypeError):
-            # For now set it to 0; we'll try again later on down.
             content_length = 0
 
-        if content_length <= 0:
+        if content_length < 0:
             # This means we shouldn't continue...raise an error.
             raise MultiPartParserError("Invalid content length: %r" % content_length)
 
@@ -105,12 +102,15 @@ class MultiPartParser(object):
         encoding = self._encoding
         handlers = self._upload_handlers
 
-        limited_input_data = LimitBytes(self._input_data, self._content_length)
+        # HTTP spec says that Content-Length >= 0 is valid
+        # handling content-length == 0 before continuing
+        if self._content_length == 0:
+            return QueryDict(MultiValueDict(), encoding=self._encoding), MultiValueDict()
 
         # See if the handler will want to take care of the parsing.
         # This allows overriding everything if somebody wants it.
         for handler in handlers:
-            result = handler.handle_raw_input(limited_input_data,
+            result = handler.handle_raw_input(self._input_data,
                                               self._meta,
                                               self._content_length,
                                               self._boundary,
@@ -123,7 +123,7 @@ class MultiPartParser(object):
         self._files = MultiValueDict()
 
         # Instantiate the parser and stream:
-        stream = LazyStream(ChunkIter(limited_input_data, self._chunk_size))
+        stream = LazyStream(ChunkIter(self._input_data, self._chunk_size))
 
         # Whether or not to signal a file-completion at the beginning of the loop.
         old_field_name = None
@@ -145,6 +145,8 @@ class MultiPartParser(object):
                     continue
 
                 transfer_encoding = meta_data.get('content-transfer-encoding')
+                if transfer_encoding is not None:
+                    transfer_encoding = transfer_encoding[0].strip()
                 field_name = force_unicode(field_name, encoding, errors='replace')
 
                 if item_type == FIELD:
@@ -169,11 +171,8 @@ class MultiPartParser(object):
                     file_name = self.IE_sanitize(unescape_entities(file_name))
 
                     content_type = meta_data.get('content-type', ('',))[0].strip()
-                    content_type_extra = meta_data.get('content-type', (0,{}))[1]
-                    if content_type_extra is None:
-                        content_type_extra = {}
                     try:
-                        charset = content_type_extra.get('charset', None)
+                        charset = meta_data.get('content-type', (0,{}))[1].get('charset', None)
                     except:
                         charset = None
 
@@ -188,7 +187,7 @@ class MultiPartParser(object):
                             try:
                                 handler.new_file(field_name, file_name,
                                                  content_type, content_length,
-                                                 charset, content_type_extra.copy())
+                                                 charset)
                             except StopFutureHandlers:
                                 break
 
@@ -221,10 +220,10 @@ class MultiPartParser(object):
                     exhaust(stream)
         except StopUpload, e:
             if not e.connection_reset:
-                exhaust(limited_input_data)
+                exhaust(self._input_data)
         else:
             # Make sure that the request data is all fed
-            exhaust(limited_input_data)
+            exhaust(self._input_data)
 
         # Signal that the upload has completed.
         for handler in handlers:
@@ -385,27 +384,6 @@ class ChunkIter(object):
 
     def __iter__(self):
         return self
-
-class LimitBytes(object):
-    """ Limit bytes for a file object. """
-    def __init__(self, fileobject, length):
-        self._file = fileobject
-        self.remaining = length
-
-    def read(self, num_bytes=None):
-        """
-        Read data from the underlying file.
-        If you ask for too much or there isn't anything left,
-        this will raise an InputStreamExhausted error.
-        """
-        if self.remaining <= 0:
-            raise InputStreamExhausted()
-        if num_bytes is None:
-            num_bytes = self.remaining
-        else:
-            num_bytes = min(num_bytes, self.remaining)
-        self.remaining -= num_bytes
-        return self._file.read(num_bytes)
 
 class InterBoundaryIter(object):
     """

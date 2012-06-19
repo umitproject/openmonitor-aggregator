@@ -1,11 +1,11 @@
 import urllib
-from urlparse import urlparse, urlunparse, urlsplit
 import sys
 import os
 import re
 import mimetypes
 import warnings
 from copy import copy
+from urlparse import urlparse, urlsplit
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -24,7 +24,7 @@ from django.utils.encoding import smart_str
 from django.utils.http import urlencode
 from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
-from django.db import transaction, close_connection
+from django.db import close_connection
 from django.test.utils import ContextList
 
 __all__ = ('Client', 'RequestFactory', 'encode_file', 'encode_multipart')
@@ -146,10 +146,7 @@ def encode_multipart(boundary, data):
 
 def encode_file(boundary, key, file):
     to_str = lambda s: smart_str(s, settings.DEFAULT_CHARSET)
-    if hasattr(file, 'content_type'):
-        content_type = file.content_type
-    else:
-        content_type = mimetypes.guess_type(file.name)[0]
+    content_type = mimetypes.guess_type(file.name)[0]
     if content_type is None:
         content_type = 'application/octet-stream'
     return [
@@ -185,10 +182,13 @@ class RequestFactory(object):
         """
         The base environment for a request.
         """
+        # This is a minimal valid WSGI environ dictionary, plus:
+        # - HTTP_COOKIE: for cookie support,
+        # - REMOTE_ADDR: often useful, see #8551.
+        # See http://www.python.org/dev/peps/pep-3333/#environ-variables
         environ = {
             'HTTP_COOKIE':       self.cookies.output(header='', sep='; '),
             'PATH_INFO':         '/',
-            'QUERY_STRING':      '',
             'REMOTE_ADDR':       '127.0.0.1',
             'REQUEST_METHOD':    'GET',
             'SCRIPT_NAME':       '',
@@ -197,6 +197,7 @@ class RequestFactory(object):
             'SERVER_PROTOCOL':   'HTTP/1.1',
             'wsgi.version':      (1,0),
             'wsgi.url_scheme':   'http',
+            'wsgi.input':        FakePayload(''),
             'wsgi.errors':       self.errors,
             'wsgi.multiprocess': True,
             'wsgi.multithread':  False,
@@ -209,6 +210,18 @@ class RequestFactory(object):
     def request(self, **request):
         "Construct a generic request object."
         return WSGIRequest(self._base_environ(**request))
+
+    def _encode_data(self, data, content_type, ):
+        if content_type is MULTIPART_CONTENT:
+            return encode_multipart(BOUNDARY, data)
+        else:
+            # Encode the content so that the byte representation is correct.
+            match = CONTENT_TYPE_RE.match(content_type)
+            if match:
+                charset = match.group(1)
+            else:
+                charset = settings.DEFAULT_CHARSET
+            return smart_str(data, encoding=charset)
 
     def _get_path(self, parsed):
         # If there are parameters, add them
@@ -226,7 +239,6 @@ class RequestFactory(object):
             'PATH_INFO':       self._get_path(parsed),
             'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
             'REQUEST_METHOD': 'GET',
-            'wsgi.input':      FakePayload('')
         }
         r.update(extra)
         return self.request(**r)
@@ -235,16 +247,7 @@ class RequestFactory(object):
              **extra):
         "Construct a POST request."
 
-        if content_type is MULTIPART_CONTENT:
-            post_data = encode_multipart(BOUNDARY, data)
-        else:
-            # Encode the content so that the byte representation is correct.
-            match = CONTENT_TYPE_RE.match(content_type)
-            if match:
-                charset = match.group(1)
-            else:
-                charset = settings.DEFAULT_CHARSET
-            post_data = smart_str(data, encoding=charset)
+        post_data = self._encode_data(data, content_type)
 
         parsed = urlparse(path)
         r = {
@@ -267,7 +270,6 @@ class RequestFactory(object):
             'PATH_INFO':       self._get_path(parsed),
             'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
             'REQUEST_METHOD': 'HEAD',
-            'wsgi.input':      FakePayload('')
         }
         r.update(extra)
         return self.request(**r)
@@ -280,7 +282,6 @@ class RequestFactory(object):
             'PATH_INFO':       self._get_path(parsed),
             'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
             'REQUEST_METHOD': 'OPTIONS',
-            'wsgi.input':      FakePayload('')
         }
         r.update(extra)
         return self.request(**r)
@@ -289,25 +290,16 @@ class RequestFactory(object):
             **extra):
         "Construct a PUT request."
 
-        if content_type is MULTIPART_CONTENT:
-            post_data = encode_multipart(BOUNDARY, data)
-        else:
-            post_data = data
-
-        # Make `data` into a querystring only if it's not already a string. If
-        # it is a string, we'll assume that the caller has already encoded it.
-        query_string = None
-        if not isinstance(data, basestring):
-            query_string = urlencode(data, doseq=True)
+        put_data = self._encode_data(data, content_type)
 
         parsed = urlparse(path)
         r = {
-            'CONTENT_LENGTH': len(post_data),
+            'CONTENT_LENGTH': len(put_data),
             'CONTENT_TYPE':   content_type,
             'PATH_INFO':      self._get_path(parsed),
-            'QUERY_STRING':   query_string or parsed[4],
+            'QUERY_STRING':   parsed[4],
             'REQUEST_METHOD': 'PUT',
-            'wsgi.input':     FakePayload(post_data),
+            'wsgi.input':     FakePayload(put_data),
         }
         r.update(extra)
         return self.request(**r)
@@ -320,7 +312,6 @@ class RequestFactory(object):
             'PATH_INFO':       self._get_path(parsed),
             'QUERY_STRING':    urlencode(data, doseq=True) or parsed[4],
             'REQUEST_METHOD': 'DELETE',
-            'wsgi.input':      FakePayload('')
         }
         r.update(extra)
         return self.request(**r)
@@ -424,7 +415,7 @@ class Client(RequestFactory):
             # Provide a backwards-compatible (but pending deprecation) response.template
             def _get_template(self):
                 warnings.warn("response.template is deprecated; use response.templates instead (which is always a list)",
-                              PendingDeprecationWarning, stacklevel=2)
+                              DeprecationWarning, stacklevel=2)
                 if not self.templates:
                     return None
                 elif len(self.templates) == 1:
@@ -555,19 +546,18 @@ class Client(RequestFactory):
         response.redirect_chain = []
         while response.status_code in (301, 302, 303, 307):
             url = response['Location']
-            scheme, netloc, path, query, fragment = urlsplit(url)
-
             redirect_chain = response.redirect_chain
             redirect_chain.append((url, response.status_code))
 
-            if scheme:
-                extra['wsgi.url_scheme'] = scheme
+            url = urlsplit(url)
+            if url.scheme:
+                extra['wsgi.url_scheme'] = url.scheme
+            if url.hostname:
+                extra['SERVER_NAME'] = url.hostname
+            if url.port:
+                extra['SERVER_PORT'] = str(url.port)
 
-            # The test client doesn't handle external links,
-            # but since the situation is simulated in test_client,
-            # we fake things here by ignoring the netloc portion of the
-            # redirected URL.
-            response = self.get(path, QueryDict(query), follow=False, **extra)
+            response = self.get(url.path, QueryDict(url.query), follow=False, **extra)
             response.redirect_chain = redirect_chain
 
             # Prevent loops

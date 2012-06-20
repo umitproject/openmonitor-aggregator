@@ -33,8 +33,6 @@ from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404
 from django.template import RequestContext
 
-from google.appengine.api import channel
-
 from gui.forms import SuggestServiceForm, SuggestWebsiteForm, WebsiteEventForm, ServiceEventForm
 from gui.decorators import cant_repeat_form, staff_member_required
 from geoip.models import Location
@@ -57,7 +55,7 @@ def home(request):
 
 
 def map(request):
-    token = channel.create_channel('map')
+    token = None#channel.create_channel('map')
     
     # Our current limit 
     events = Event.get_active_events(SHOW_EVENT_LIMIT)
@@ -71,7 +69,7 @@ def map(request):
 
 
 def realtimebox(request):
-    token = channel.create_channel('realtimebox')
+    token = None#channel.create_channel('realtimebox')
     events = Event.get_active_events(SHOW_EVENT_LIMIT)
     events_dict = []
     for event in events:

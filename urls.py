@@ -30,7 +30,6 @@ admin.autodiscover()
 handler500 = 'djangotoolbox.errorviews.server_error'
 
 urlpatterns = patterns('',
-    ('^_ah/warmup$', 'djangoappengine.views.warmup'),
     (r'', include('gui.urls')),
     (r'', include('geoip.urls')),
     (r'^map/$', 'gui.views.map'),

@@ -28,17 +28,26 @@ djcelery.setup_loader()
 
 # Activate django-dbindexer for the default database
 
-DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
-                         'NAME':'openmonitor',
-                         'USER':'',
-                         'PASSWORD':'',
-                         'HOST':'localhost',
-                         'PORT':'9160',
-                         'SUPPORTS_TRANSACTIONS':False,
-                         'CASSANDRA_REPLICATION_FACTOR':2,
-                         'CASSANDRA_ENABLE_CASCADING_DELETES':True,
-                         'TEST_NAME':'openmonitor_test'},
+DATABASES = {'cassandra': {'ENGINE': 'django_cassandra.db',
+                           'NAME':'openmonitor',
+                           'USER':'',
+                           'PASSWORD':'',
+                           'HOST':'localhost',
+                           'PORT':'9160',
+                           'SUPPORTS_TRANSACTIONS':False,
+                           'CASSANDRA_REPLICATION_FACTOR':2,
+                           'CASSANDRA_ENABLE_CASCADING_DELETES':True,
+                           'TEST_NAME':'openmonitor_test'},
+             "mysql": {'ENGINE': 'mysql',
+                       'NAME':'openmonitor',
+                       'USER':'root',
+                       'PASSWORD':'root',
+                       'HOST':'localhost',
+                       'PORT':3306,
+                       'TEST_NAME':'openmonitor_test'}
              }
+
+DATABASE_ROUTERS = ['gui.dbrouters.GeoIPRouter']
 
 AUTOLOAD_SITECONF = 'indexes'
 

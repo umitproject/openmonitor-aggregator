@@ -37,7 +37,7 @@ GEO_LOCATION_CSV = "GeoLiteCity_20110906/GeoLiteCity-Location.csv"
 COUNTRY_CODE_CSV = "country_codes.csv"
 GEO_LITE = "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity_CSV/" + GEO_FILE_ZIP 
 BATCH_SIZE = 30
-SAVE_GEOIP_URL = "http://localhost:9000/geoip/save_geoip/"
+SAVE_GEOIP_URL = "http://east1.openmonitor.org/geoip/save_geoip/"
 
 
 def downloader(url, fpath):

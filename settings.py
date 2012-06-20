@@ -28,7 +28,7 @@ djcelery.setup_loader()
 
 # Activate django-dbindexer for the default database
 
-DATABASES = {'cassandra': {'ENGINE': 'django_cassandra.db',
+DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
                            'NAME':'openmonitor',
                            'USER':'',
                            'PASSWORD':'',
@@ -61,6 +61,13 @@ SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 CACHE_MIDDLEWARE_SECONDS = 30
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
 
 # PISTON SETTINGS
 PISTON_DISPLAY_ERRORS = DEBUG

@@ -33,7 +33,7 @@ class GeoIPRouter(object):
         if model._meta.app_label == 'geoip':
             return "mysql"
         
-        return "cassandra"
+        return "default"
         
 
     def db_for_write(self, model, **hints):
@@ -41,16 +41,20 @@ class GeoIPRouter(object):
         if model._meta.app_label == 'geoip':
             return "mysql"
         
-        return "cassandra"
+        return "default"
 
 
     def allow_syncdb(self, db, model):
         "Explicitly put all models on all databases."
+        print "SyncDB on database %s and model %s" % (db, model) 
         if db == 'mysql' and model._meta.app_label == 'geoip':
             # This will prevent syncdb from creating sentry tables on crowdspring databases.
+            print "Sync IT!"
             return True
-        elif db != 'mysql' and model._meta.app_label == 'geoip':
+        elif db == 'mysql' and model._meta.app_label != 'geoip':
+            print "Don't sync!"
             return False
         
+        print "Sync IT!!"
         return True
 

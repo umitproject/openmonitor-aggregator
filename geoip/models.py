@@ -234,7 +234,7 @@ class Location(models.Model):
         
         return locations
 
-'''
+
 UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
                                                   country_name='Unknown',
                                                   country_code='UN',
@@ -243,7 +243,6 @@ UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
                                                   zipcode='',
                                                   lat=decimal.Decimal('0.0'),
                                                   lon=decimal.Decimal('0.0'))[0]
-'''
 
 class BannedNetworks(models.Model):
     """This is an aggregation of Banned Networks that is built from

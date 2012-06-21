@@ -121,7 +121,7 @@ class Report(models.Model):
     #############
     # Traceroute
     target = models.CharField(max_length=255)
-    hops = models.PositiveSmallIntegerField()
+    hops = models.PositiveSmallIntegerField(blank=True, null=True)
     packet_size = models.PositiveIntegerField()
     
     #############################

@@ -386,7 +386,7 @@ class WebsiteReport(UserReport):
             report.target_lat = iprange.lat
             report.target_lon = iprange.lon
             report.target_location_id = iprange.location_id
-            report.target_location_name = iprange.location.name
+            report.target_location_name = iprange.location.fullname
             report.target_zipcode = iprange.zipcode
             report.target_state_region = iprange.state_region
             report.target_city = iprange.city
@@ -479,7 +479,7 @@ class ServiceReport(UserReport):
             report.target_lat = iprange.lat
             report.target_lon = iprange.lon
             report.target_location_id = iprange.location_id
-            report.target_location_name = iprange.location.name
+            report.target_location_name = iprange.location.fullname
             report.target_zipcode = iprange.zipcode
             report.target_state_region = iprange.state_region
             report.target_city = iprange.city

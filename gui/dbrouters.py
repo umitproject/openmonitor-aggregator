@@ -55,6 +55,5 @@ class GeoIPRouter(object):
             print "Don't sync!"
             return False
         
-        print "Sync IT!!"
         return True
 

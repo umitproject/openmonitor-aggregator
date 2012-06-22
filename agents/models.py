@@ -350,7 +350,7 @@ class Agent(models.Model):
             loggedAgent.latitude = iprange.lat
             loggedAgent.longitude = iprange.lon
             loggedAgent.location_id = iprange.location_id
-            loggedAgent.location_name = iprange.location.name
+            loggedAgent.location_name = iprange.location.fullname
             loggedAgent.zipcode = iprange.zipcode
             loggedAgent.state_region = iprange.state_region
             loggedAgent.city = iprange.city

@@ -209,7 +209,7 @@ def create_website_event(request):
 
             if location!=None:
                 event.location_ids.append(location.id)
-                event.location_names.append(location.name)
+                event.location_names.append(location.fullname)
                 event.location_country_names.append(location.country_name)
                 event.location_country_codes.append(location.country_code)
                 event.lats.append(location.lat)
@@ -262,7 +262,7 @@ def create_service_event(request):
 
             if location!=None:
                 event.location_ids.append(location.id)
-                event.location_names.append(location.name)
+                event.location_names.append(location.fullname)
                 event.location_country_names.append(location.country_name)
                 event.location_country_codes.append(location.country_code)
                 event.lats.append(location.lat)

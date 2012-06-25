@@ -25,7 +25,8 @@ import decimal
 
 import simplejson
 
-from google.appengine.api import channel
+#TODO(orc.avs): implement channel equivalent with HTTP polling.
+#from google.appengine.api import channel
 
 from twitter.views import send_event_tweet
 from notificationsystem.views import send_event_email

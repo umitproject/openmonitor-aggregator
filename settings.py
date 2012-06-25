@@ -26,8 +26,6 @@ import os
 import djcelery
 djcelery.setup_loader()
 
-# Activate django-dbindexer for the default database
-
 DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
                            'NAME':'openmonitor',
                            'USER':'',
@@ -49,12 +47,7 @@ DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
 
 DATABASE_ROUTERS = ['gui.dbrouters.GeoIPRouter']
 
-AUTOLOAD_SITECONF = 'indexes'
-
-DBINDEXER_BACKENDS = ('dbindexer.backends.BaseResolver',
-                      'dbindexer.backends.FKNullFix',
-                      #'dbindexer.backends.InMemoryJOINResolver',
-                      'dbindexer.backends.ConstantFieldJOINResolver',)
+#AUTOLOAD_SITECONF = 'indexes'
 
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
@@ -86,7 +79,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'djangotoolbox',
     'autoload',
-    'dbindexer',
     'mediagenerator',
     #'djangologging',
     'protobuf',

@@ -128,7 +128,7 @@ class BaseWebsiteSuggestionAggregation(BaseSuggestionAggregation):
 class WebsiteUserAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
 
     @staticmethod
@@ -143,7 +143,7 @@ class WebsiteUrlAggregation(models.Model, BaseWebsiteSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     website_url = models.URLField(max_length=300)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -160,7 +160,7 @@ class WebsiteLocationAggregation(models.Model,
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @cache_model_method('website_location_aggregation_', 300, 'location_id')
@@ -183,7 +183,7 @@ class WebsiteAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
     website_url = models.URLField(max_length=300)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @cache_model_method('website_aggregation_', 300, 'location_id')
@@ -259,7 +259,7 @@ class ServiceNameAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     service_name = models.CharField(max_length=100)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -273,7 +273,7 @@ class ServiceHostAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     host_name = models.CharField(max_length=100)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -287,7 +287,7 @@ class ServiceIPAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     ip = models.CharField(max_length=60)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -301,7 +301,7 @@ class ServicePortAggregation(models.Model, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     port = models.IntegerField()
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @staticmethod
@@ -316,7 +316,7 @@ class ServiceLocationAggregation(models.Model,
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location_id = models.IntegerField(null=True)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @cache_model_method('service_location_aggregation_', 300, 'location_id')
@@ -336,7 +336,7 @@ class ServiceLocationAggregation(models.Model,
 class ServiceUserAggregation(UserModel, BaseServiceSuggestionAggregation):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
 
     @staticmethod
@@ -354,7 +354,7 @@ class ServiceAggregation(UserModel, BaseServiceSuggestionAggregation):
     ip = models.CharField(max_length=60)
     host_name = models.CharField(max_length=100)
     service_name = models.CharField(max_length=100)
-    suggestions = ListField(py_type=int)
+    suggestions = ListField(py_type=str)
     count = models.IntegerField(default=1)
     
     @cache_model_method('service_aggregation', 300, 'location_id')

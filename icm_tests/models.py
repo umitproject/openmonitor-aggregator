@@ -33,10 +33,17 @@ class Test(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=False)
-    location = models.ForeignKey(Location, blank=True, null=True)
+    location_id = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
         abstract = True
+
+    @property
+    def location(self):
+        if not self.location_id:
+            return None
+        else:
+            return Location.objects.get(pk=self.location_id)
 
     @staticmethod
     def create_from_suggestion(suggestion):
@@ -182,11 +189,18 @@ def delete_service_test(sender, *args, **kwargs):
 class TestAggregation(models.Model):
 
     version = models.IntegerField(default=1)
-    location = models.ForeignKey(Location, blank=True, null=True)
+    location_id = models.PositiveIntegerField(blank=True, null=True)
     test_ids = ListField(py_type=int)
 
     class Meta:
         abstract = True
+
+    @property
+    def location(self):
+        if not self.location_id:
+            return None
+        else:
+            return Location.objects.get(pk=self.location_id)
 
     @staticmethod
     def _update_aggregation_for_model(Model, test, filter_kwargs=None):
@@ -202,8 +216,8 @@ class TestAggregation(models.Model):
         except Model.DoesNotExist:
             aggr = Model(version=1)
             aggr.test_ids = [test.id]
-            if test and test.location:
-                aggr.location = test.location
+            if test and test.location_id:
+                aggr.location_id = test.location_id
             aggr.save()
 
     @staticmethod
@@ -240,7 +254,7 @@ class TestAggregation(models.Model):
         if test.location.city:
             TestAggregation._update_aggregation_for_model(
                 aggr_models['city'], test,
-                {'location__city': test.location.city})
+                {'location_d_city': test.location.city})
 
             return
 
@@ -248,7 +262,7 @@ class TestAggregation(models.Model):
         if test.location.state_region:
             TestAggregation._update_aggregation_for_model(
                 aggr_models["region"], test,
-                {'location__state_region': test.location.state_region})
+                {'location_d_state_region': test.location.state_region})
 
             return
 
@@ -256,7 +270,7 @@ class TestAggregation(models.Model):
         if test.location.country_name:
             TestAggregation._update_aggregation_for_model(
                 aggr_models["country"], test,
-                {'location__country_name': test.location.country_name})
+                {'location_d_country_name': test.location.country_name})
 
 
     @staticmethod
@@ -278,7 +292,7 @@ class TestAggregation(models.Model):
         if test.location.city:
             TestAggregation._remove_test_from_aggregation(
                 aggr_models['city'], test,
-                {'location__city': test.location.city})
+                {'location_d_city': test.location.city})
 
             return
 
@@ -286,7 +300,7 @@ class TestAggregation(models.Model):
         if test.location.state_region:
             TestAggregation._remove_test_from_aggregation(
                 aggr_models["region"], test,
-                {'location__state_region': test.location.state_region})
+                {'location_d_state_region': test.location.state_region})
 
             return
 
@@ -294,7 +308,7 @@ class TestAggregation(models.Model):
         if test.location.country_name:
             TestAggregation._remove_test_from_aggregation(
                 aggr_models["country"], test,
-                {'location__country_name': test.location.country_name})
+                {'location_d_country_name': test.location.country_name})
 
 
     @staticmethod
@@ -311,32 +325,38 @@ class WebsiteTestsGlobalAggregation(TestAggregation):
 
 class WebsiteTestsCountryAggregation(TestAggregation):
 
+    location_d_country_name = models.CharField(max_length=100)
+
     @staticmethod
     def get_for_agent(agent):
         if not agent.location:
             return None
         return WebsiteTestsCountryAggregation.objects.get(
-                location__country_name=agent.location.country_name)
+                location_d_country_name=agent.location.country_name)
 
 
 class WebsiteTestsRegionAggregation(TestAggregation):
+
+    location_d_state_region = models.CharField(max_length=2)
 
     @staticmethod
     def get_for_agent(agent):
         if not agent.location:
             return None
         return WebsiteTestsRegionAggregation.objects.get(
-                location__state_region=agent.location.state_region)
+                location_d_state_region=agent.location.state_region)
 
 
 class WebsiteTestsCityAggregation(TestAggregation):
+
+    location_d_city = models.CharField(max_length=255)
 
     @staticmethod
     def get_for_agent(agent):
         if not agent.location:
             return None
         return WebsiteTestsCityAggregation.objects.get(
-                location__city=agent.location.city)
+                location_d_city=agent.location.city)
 
 
 class ServiceTestsGlobalAggregation(TestAggregation):
@@ -348,32 +368,38 @@ class ServiceTestsGlobalAggregation(TestAggregation):
 
 class ServiceTestsCountryAggregation(TestAggregation):
 
+    location_d_country_name = models.CharField(max_length=100)
+
     @staticmethod
     def get_for_agent(agent):
         if not agent.location:
             return None
         return ServiceTestsCountryAggregation.objects.get(
-            location__country_name=agent.location.country_name)
+            location_d_country_name=agent.location.country_name)
 
 
 class ServiceTestsRegionAggregation(TestAggregation):
+
+    location_d_state_region = models.CharField(max_length=2)
 
     @staticmethod
     def get_for_agent(agent):
         if not agent.location:
             return None
         return ServiceTestsRegionAggregation.objects.get(
-            location__state_region=agent.location.state_region)
+            location_d_state_region=agent.location.state_region)
 
 
 class ServiceTestsCityAggregation(TestAggregation):
+
+    location_d_city = models.CharField(max_length=255)
 
     @staticmethod
     def get_for_agent(agent):
         if not agent.location:
             return None
         return ServiceTestsCityAggregation.objects.get(
-                location__city=agent.location.city)
+                location_d_city=agent.location.city)
 
 
 WEBSITE_TESTS_AGGREGATION_MODELS = {

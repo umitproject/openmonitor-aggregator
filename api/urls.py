@@ -44,6 +44,7 @@ logout_handler = Resource(LogoutHandler)
 get_netlist_handler = Resource(GetNetlistHandler)
 get_banlist_handler = Resource(GetBanlistHandler)
 get_bannets_handler = Resource(GetBannetsHandler)
+get_location_handler = Resource(GetLocationHandler)
 
 
 urlpatterns = patterns('',
@@ -66,5 +67,6 @@ urlpatterns = patterns('',
    url(r'^get_netlist/$', get_netlist_handler),
    url(r'^get_banlist/$', get_banlist_handler),
    url(r'^get_bannets/$', get_bannets_handler),
+   url(r'^get_location/$', get_location_handler),
    url(r'^$', checkaggregator_handler),
 )

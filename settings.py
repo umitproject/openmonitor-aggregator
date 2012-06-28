@@ -29,6 +29,7 @@ import os
 
 
 # Activate django-dbindexer for the default database
+PROJECT_DIR = os.path.dirname(__file__)
 DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native',
                         'HIGH_REPLICATION': True}

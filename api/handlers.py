@@ -632,3 +632,30 @@ class TestsHandler(BaseHandler):
         
         return HttpResponse(str(IPRange.ip_location('78.43.34.120').dump()))
 
+
+class GetLocationHandler(BaseHandler):
+    allowed_methods = ('POST',)
+
+    @message_handler(messages_pb2.GetLocation,messages_pb2.GetLocationResponse)
+    def create(self, request, received_msg, aes_key, agent, software_version, test_version, response):
+
+        # Received message has the required information.
+        logging.critical("Received message : %s" % received_msg)
+        try:
+            # Check condition - If there are two super peers for that country already - then make it a normal peer
+            logging.info("Using geoip to convert IP Address ",received_msg.agentIP)
+            response.location="IN"
+            
+        except Exception,e:
+            response.location="INVALID"
+
+        try:
+            response_str = response.SerializeToString()
+        except:
+            logging.critical("Unable to construct protobuf from the message")
+
+        return response_str
+
+    def _testSuperPeers():
+        # Should include logic using geoip to check if two super peers are present for the same country. 
+        return False

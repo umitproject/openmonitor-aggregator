@@ -23,7 +23,8 @@
 import os
 import base64
 import logging
-
+import sys
+logging.info("Runtime PP : %s" % sys.path)
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 

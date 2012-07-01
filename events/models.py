@@ -21,6 +21,7 @@
 ##
 
 import decimal
+import simplejson as json
 
 from django.db import models
 from django.utils import simplejson
@@ -109,6 +110,15 @@ class Event(models.Model):
             cache.set(EVENT_LIST_CACHE_KEY, events, EVENT_CACHE_TIME)
         
         return events
+
+    @staticmethod
+    def get_active_events_as_json(limit=20):
+        events = Event.get_active_events(limit)
+        events_dict = []
+        for event in events:
+            events_dict.append(event.get_dict())
+        initialEvents = json.dumps(events_dict, use_decimal=True)
+        return initialEvents
 
     @staticmethod
     def get_active_events_region(regions, limit=20):

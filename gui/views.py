@@ -55,28 +55,16 @@ def home(request):
 
 
 def map(request):
-    token = None#channel.create_channel('map')
-    
-    # Our current limit 
-    events = Event.get_active_events(SHOW_EVENT_LIMIT)
-    events_dict = []
-    for event in events:
-        events_dict.append(event.get_dict())
-    initialEvents = json.dumps(events_dict, use_decimal=True)
+    initialEvents = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
     return render_to_response('notificationsystem/map.html',
-                              {'token': token, 'initial_events': initialEvents},
+                              {'initial_events': initialEvents},
                               context_instance=RequestContext(request))
 
 
 def realtimebox(request):
-    token = None#channel.create_channel('realtimebox')
-    events = Event.get_active_events(SHOW_EVENT_LIMIT)
-    events_dict = []
-    for event in events:
-        events_dict.append(event.get_dict())
-    initialEvents = json.dumps(events_dict, use_decimal=True)
+    initialEvents = Events.get_active_events_as_json(SHOW_EVENT_LIMIT)
     return render_to_response('notificationsystem/realtimebox.html',
-                              {'token': token, 'initial_events': initialEvents},
+                              {'initial_events': initialEvents},
                               context_instance=RequestContext(request))
 
 

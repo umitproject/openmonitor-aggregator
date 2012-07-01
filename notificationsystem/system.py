@@ -31,7 +31,6 @@ import simplejson
 from twitter.views import send_event_tweet
 from notificationsystem.views import send_event_email
 
-
 class NotificationInterface:
     def eventReceived(self, event):
         return NotImplemented
@@ -62,16 +61,20 @@ class NotificationSystem:
 
 class RealtimeBox(NotificationInterface):
     def eventReceived(self, event):
+	'''
         logging.info("event received on realtimebox")
         try:
             message = simplejson.dumps(event.get_dict(), use_decimal=True)
             channel.send_message('realtimebox', message)
         except Exception,ex:
             logging.error(ex)
+	'''
+	pass
 
 
 class RealtimeMap(NotificationInterface):
     def eventReceived(self, event):
+	'''
         logging.info("event received on realtimemap")
         try:
             logging.info("%s,%s" % (event.lats[0], event.lons[0]))
@@ -79,6 +82,8 @@ class RealtimeMap(NotificationInterface):
             channel.send_message('map', message)
         except Exception,ex:
             logging.error(ex)
+	'''
+	pass
 
 
 class EmailNotification(NotificationInterface):

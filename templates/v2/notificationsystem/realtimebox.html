@@ -24,6 +24,6 @@
 	$(document).ready(function() {
 		  initializeMapSystem('{{ initial_events|safe }}');
 		  initializeRealTime('{{ initial_events|safe }}');
-		  receiveEvents('{{ token }}', '{{ initial_events|safe }}');
+		  setTimeout(receiveEvents());
 	});
 </script>

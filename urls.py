@@ -32,6 +32,7 @@ handler500 = 'djangotoolbox.errorviews.server_error'
 urlpatterns = patterns('',
     (r'', include('gui.urls')),
     (r'', include('geoip.urls')),
+    (r'^events/poll$', 'gui.views.poll_active_events'),
     (r'^map/$', 'gui.views.map'),
     (r'^realtimebox/$', 'gui.views.realtimebox'),
     (r'^events/(?P<event_id>\d+)/$', 'gui.views.event'),

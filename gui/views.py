@@ -68,6 +68,13 @@ def realtimebox(request):
                               context_instance=RequestContext(request))
 
 
+def poll_active_events(request):
+    """Returns json response of new events to AJAX caller.
+    """
+    events = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
+    return HttpResponse(events)
+
+
 def event(request, event_id):
     try:
         event = Event.objects.get(pk=event_id)
@@ -98,7 +105,6 @@ def event(request, event_id):
                                'event': event,
                                'event_json': event_json},
                               context_instance=RequestContext(request))
-
 
 
 def about(request):

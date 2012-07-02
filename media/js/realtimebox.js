@@ -85,7 +85,8 @@ function createEventSummaryDiv(event, show_all_countries) {
 	    return event_div;
 }
 
-function receiveEvents(token, events){
+function receiveEvents(){
+	/*
 	var channel = new goog.appengine.Channel(token);
     var handler = {
         'onopen': onMapOpened,
@@ -96,7 +97,20 @@ function receiveEvents(token, events){
     var socket = channel.open(handler);
     socket.onopen = onMapOpened;
     socket.onmessage = onMapMessage;
-    socket.onerror = onMapError;
+    socket.onerror = onMapError;*/
+
+    $.ajax({
+        url: "/events/poll",
+        dataType: "html",
+        type: "POST",
+        success: function(data){
+            updateInitialRealTimeEvents({data: data});
+            setTimeout('receiveEvents()', 60000); //poll again after 60 sec.
+        },
+        error: function(data){
+            setTimeout('receiveEvents()', 60000); //poll again after 60 sec.
+        }
+    });
 }
 
 function onMapOpened() {
@@ -131,7 +145,8 @@ function addEventToList(event, appear)
 
 updateInitialRealTimeEvents = function(m)
 {
-    events = JSON.parse(m.data)
+    $("#events-box").html("");
+    events = JSON.parse(m.data);
     for(var i=0; i<events.length; i++)
     {
         addEventToList(events[i], false)

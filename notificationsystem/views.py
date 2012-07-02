@@ -27,7 +27,8 @@ from django.http import HttpResponse
 from django.core.cache import cache
 from django.conf import settings
 
-from google.appengine.api import taskqueue
+#TODO(orc.avs): implement taskqueue equivalent
+#from google.appengine.api import taskqueue
 
 from gui.decorators import staff_member_required
 from utils import send_mail
@@ -43,7 +44,7 @@ def send_event_email(event):
     notification.region = event.region
     notification.build_email_data()
     notification.save()
-    
+
     # The following is going to put the email sending task to the background
     # and unblock the current request. If it fails, will try again later,
     # in a cron job that catches the msg sending failures.
@@ -61,16 +62,16 @@ def send_event_emails_task(notification):
         logging.critical('Task %s is still processing...' %
                             (CHECK_NOTIFICATION_KEY % notification.id))
         return
-    
+
     try:
         task_name = 'check_notification_%s_%s' % (notification.id, uuid.uuid4())
         task = taskqueue.add(url='/cron/send_notification_task/%s' % notification.id,
                              name= task_name, queue_name='cron')
         if task is None:
             logging.critical("!!!! TASK IS NONE! %s " % task_name)
-        
+
         cache.set(not_key, task)
-        
+
     except taskqueue.TaskAlreadyExistsError, e:
         logging.info('Task is still running for notification %s: %s' % \
              (notification,'/cron/create_notification_queue/%s' % notification.id))
@@ -84,10 +85,10 @@ def check_notifications(request):
     entries and call this view more than once per minute.
     """
     notifications = EmailNotification.objects.filter(sent_at=None, send=True).order_by('-created_at')
-    
+
     for notification in notifications:
         send_event_emails_task(notification)
-    
+
     return HttpResponse("OK")
 
 @staff_member_required
@@ -96,7 +97,7 @@ def send_notification_task(request, notification_id):
     """
     notification = EmailNotification.objects.get(pk=notification_id)
     notification.build_email_data()
-    
+
     sent = send_mail(settings.NOTIFICATION_SENDER,
                      settings.NOTIFICATION_TO,
                      bcc=notification.list_emails,

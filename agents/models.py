@@ -31,6 +31,7 @@ from django.contrib.auth import authenticate
 from django.core.cache import cache
 
 from dbextra.fields import ListField
+from dbextra.fields import CassandraKeyField
 
 from agents.CryptoLib import *
 from geoip.models import *
@@ -45,7 +46,7 @@ BAN_FLAGS = dict(
 
 class LoginProcess(models.Model):
     processID     = models.AutoField(primary_key=True)
-    agent_id       = models.IntegerField()
+    agent_id       = CassandraKeyField()
     loginTime     = models.DateTimeField(auto_now_add=True)
     ip            = models.CharField(max_length=255)
     port          = models.PositiveIntegerField()
@@ -53,7 +54,7 @@ class LoginProcess(models.Model):
 
 
 class LoggedAgent(models.Model):
-    agent_id = models.IntegerField()
+    agent_id = CassandraKeyField()
     country_code = models.CharField(max_length=2)
     country_name = models.CharField(max_length=100)
     location_id = models.IntegerField()
@@ -153,7 +154,7 @@ class LoggedAgent(models.Model):
     _getPeers = staticmethod(_getPeers)
 
 class BannedAgents(models.Model):
-    agent_ids = ListField(py_type=int)
+    agent_ids = ListField(py_type=str)
     
     @classmethod
     def banned_agents(cls):
@@ -350,7 +351,7 @@ class Agent(models.Model):
             loggedAgent.latitude = iprange.lat
             loggedAgent.longitude = iprange.lon
             loggedAgent.location_id = iprange.location_id
-            loggedAgent.location_name = iprange.location.name
+            loggedAgent.location_name = iprange.location.fullname
             loggedAgent.zipcode = iprange.zipcode
             loggedAgent.state_region = iprange.state_region
             loggedAgent.city = iprange.city

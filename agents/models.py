@@ -89,17 +89,18 @@ class LoggedAgent(models.Model):
             cache.set(key, agent, CACHE_EXPIRATION)
         return agent
 
-    def _getPeers(agent_id, country_code, superPeer, totalPeers):
+    def _getPeers(agent_id, country_code, superPeer):
         selectedPeers = []
         
-        peersIDs = []
-
         # select near peers
         nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
                                                     Q(superPeer=superPeer),
                                                     ~Q(agent_id=agent_id)))
+        selectedPeers.extend(nearPeers)
 
+        '''
         # if more peers are needed, get far peers
+        peersIDs = []
         neededPeers = totalPeers-len(nearPeers)
         if neededPeers>0:
 
@@ -140,6 +141,7 @@ class LoggedAgent(models.Model):
             random.shuffle(nearPeers)
             # just select totalPeers
             selectedPeers.extend(nearPeers[:totalPeers])
+        '''
 
         return selectedPeers
 
@@ -410,9 +412,9 @@ class Agent(models.Model):
                                      self.lastKnownCountry,
                                      False, totalPeers)
 
-    def getSuperPeers(self, totalPeers=100):
+    def getSuperPeers(self, country_code = 'US'):
         #return Agent._getPeers(country, True, totalPeers)
-        return LoggedAgent._getPeers(self.id, self.lastKnownCountry, True, totalPeers)
+        return LoggedAgent._getPeers(self.id, country_code, True)
 
     def encodeMessage(self, message):
         # get cryptolib instance

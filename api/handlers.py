@@ -247,12 +247,12 @@ class GetSuperPeerListHandler(BaseHandler):
                      messages_pb2.GetSuperPeerListResponse)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
-        if received_msg.HasField('count'):
-            totalPeers = received_msg.count
+        if received_msg.HasField('location'):
+            country_code = received_msg.location
         else:
-            totalPeers = 100
+            country_code = "UN"
 
-        superpeers = agent.getSuperPeers(totalPeers)
+        superpeers = agent.getSuperPeers(country_code)
 
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
@@ -643,8 +643,8 @@ class GetLocationHandler(BaseHandler):
         logging.critical("Received message : %s" % received_msg)
         try:
             # Check condition - If there are two super peers for that country already - then make it a normal peer
-            logging.info("Using geoip to convert IP Address ",received_msg.agentIP)
-            response.location="IN"
+            logging.info("Using geoip to convert IP Address %s",received_msg.agentIP)
+            response.location="UN"
             
         except Exception,e:
             response.location="INVALID"
@@ -653,7 +653,7 @@ class GetLocationHandler(BaseHandler):
             response_str = response.SerializeToString()
         except:
             logging.critical("Unable to construct protobuf from the message")
-
+        logging.info("Response from Aggregator : %s" % response_str)
         return response_str
 
     def _testSuperPeers():

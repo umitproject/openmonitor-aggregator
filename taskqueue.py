@@ -53,17 +53,21 @@ if not hasattr(CallbackManager, 'sanitize'):
 
 class TaskRunner(threading.Thread):
 
-    def runTask(self, ch, method, properties, body):
+    def runTask(self, *args, **kwargs):
         """Callback for running all the tasks.
 
         A task is consist of a URL and parameters to send with the request.
         Task runner simply makes local HTTP calls for each task.
         """
-        print "new task"
+        try:
+            self.run_task(*args, **kwargs)
+        except Exception, e:
+            logging.error("RABBITMQ ERROR: "+e.__class__.__name__+"-"+e.message)
+
+    def runTask_(self, ch, method, properties, body):
         message = json.loads(body)
         url = message['url']
         parameters = message['parameters']
-        print 'http://%s:%s%s' % (HOST_IP, PORT, url)
         urllib2.urlopen('http://%s:%s%s' % (HOST_IP, PORT, url),
                         data=urllib.urlencode(parameters))
 
@@ -83,7 +87,6 @@ def add(url='', parameters={}, **kwargs):
     if not PIKA:
         return None
 
-    print "new task2"
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='localhost'))
     channel = connection.channel()
@@ -91,7 +94,6 @@ def add(url='', parameters={}, **kwargs):
 
     parameters['SECRET_KEY'] = TASKQUEUE_SECRET_KEY
     message = json.dumps({'url': url, 'parameters': parameters})
-    print message
     channel.basic_publish(
         exchange='', routing_key='taskqueue', body=message)
     connection.close()
@@ -107,5 +109,5 @@ def init(daemon=True):
 if __name__ == "__main__":
     #DO SOME TESTS
     init(daemon=False)
-    add()
+    add('/dsads')
     add()

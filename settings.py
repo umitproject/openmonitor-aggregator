@@ -254,3 +254,7 @@ AJAX_SELECT_INLINES = 'inline'
 AJAX_LOOKUP_CHANNELS = {
     'location': ('geoip.lookups', 'LocationLookup'),
 }
+
+#####################
+#TASKQUEUE SECRET
+TASKQUEUE_SECRET_KEY = '123456'

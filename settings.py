@@ -26,6 +26,10 @@ import os
 import djcelery
 djcelery.setup_loader()
 
+
+HOST_IP = '127.0.0.1'
+PORT = 8000
+
 DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
                            'NAME':'openmonitor',
                            'USER':'',

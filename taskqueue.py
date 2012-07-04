@@ -111,3 +111,7 @@ if __name__ == "__main__":
     init(daemon=False)
     add('/dsads')
     add()
+
+else:
+    if PIKA:
+        init()

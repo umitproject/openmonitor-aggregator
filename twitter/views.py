@@ -32,6 +32,7 @@ from django.utils import simplejson as json
 import oauth2 as oauth
 
 from twitter.models import *
+import taskqueue
 
 
 def send_event_tweet(event):

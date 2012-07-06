@@ -27,7 +27,7 @@ import logging
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Util.number import bytes_to_long
-from Crypto.Cipher import PKCS1_v1_5
+from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA
 
 from django.conf import settings
@@ -123,11 +123,10 @@ class CryptoLib:
     def verifySignatureRSA(self, challenge, signedChallenge, key):
         publicKey = key.getPublicKey()
         signedChallenge = base64.b64decode(signedChallenge)
-        try:
-            signedChallenge = long(signedChallenge)
-        except ValueError:
-            signedChallenge = bytes_to_long(signedChallenge)
-        return publicKey.verify(str(challenge), signedChallenge)
+        verifier = PKCS1_v1_5.new(publicKey)
+        challenge = SHA.new(challenge)
+        verified = verifier.verify(challenge, signedChallenge)
+        return verified
 
     def generateChallenge(self):
         return base64.b64encode(os.urandom(CHALLENGE_SIZE))

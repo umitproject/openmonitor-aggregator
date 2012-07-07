@@ -99,6 +99,7 @@ INSTALLED_APPS = (
     'registration',
     'filetransfers',
     'ajax_select',
+    'djcelery',
 )
 
 MIDDLEWARE_CLASSES = (

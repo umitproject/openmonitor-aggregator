@@ -29,7 +29,7 @@ Steps to follow:
    in settings.py.
  * Create a Cassandra key space named "openmonitor".
  * Start MySQL, Cassandra servers.
- * Do "python manage.py syncdb" and "python manage.py syncdb --database=geoip".
+ * Do "python manage.py syncdb" and "python manage.py syncdb --database=mysql".
  * To enable tasks, start RabbitMQ server and do "python manage.py celeryd"
    to start messaging for tasks (OPTIONAL).
  * Start applciation with "python manage.py runserver".

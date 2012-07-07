@@ -22,6 +22,7 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
-    url('^/cron/send_tweet_cron$', 'twitter.views.send_tweet_cron', name='send_tweet_cron'),
-    url('^/taks/send_tweet_task/(?P<tweet_id>\d+)/?$', 'twitter.views.send_tweet_task', name='send_tweet_task'),
+    url('^/cron/send_tweet_cron$',
+        'twitter.views.send_tweet_cron',
+        name='send_tweet_cron'),
 )

@@ -27,7 +27,7 @@ from django.http import HttpResponse
 from django.core.cache import cache
 from django.conf import settings
 
-import taskqueue
+#import taskqueue
 
 from gui.decorators import staff_member_required
 from utils import send_mail

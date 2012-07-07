@@ -20,14 +20,32 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-"""Module containing shortcut functions to easily send tweets.
+"""Module containing main shortcut functions to easily send tweets.
 """
 
-from django.http import HttpResponse
+from django.template.loader import render_to_string
 
+from twitter.models import TwitterMessage
 from twitter.tasks import send_tweets_task
 
 
-def send_tweet_cron(request):
-    send_tweets_task.delay()
-    return HttpResponse("OK")
+def send_event_tweet(event):
+    tweet = TwitterMessage()
+    tweet.message = render_to_string("notificatonsystem/event_tweet.html", locals())
+    tweet.save()
+
+    # The following is going to put the tweet sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_tweets_task.delay(tweet.id)
+
+
+def send_tweet(message):
+    tweet = TwitterMessage()
+    tweet.message = message
+    tweet.save()
+
+    # The following is going to put the tweet sending task to the background
+    # and unblock the current request. If it fails, will try again later,
+    # in a cron job that catches the msg sending failures.
+    send_tweets_task.delay(tweet.id)

@@ -63,10 +63,11 @@ class RegisterAgentHandler(BaseHandler):
             publicKeyExp = register_obj.agentPublicKey.exp
             username = register_obj.credentials.username
             password = register_obj.credentials.password
+            superPeer = register_obj.superPeer
             agent = Agent.create(register_obj.versionNo,
                                  register_obj.agentType,
                                  agent_ip, publicKeyMod, publicKeyExp,
-                                 username, password, aes_key)
+                                 username, password, aes_key, superPeer)
             
             m = hashlib.sha1()
             m.update(agent.publicKeyMod)
@@ -222,7 +223,7 @@ class AddPeerHandler(BaseHandler):
             hasTwoSPeers = self._testSuperPeers()
             if hasTwoSPeers :
                 received_msg.superPeer = False
-            LoggedAgent.addPeer(received_msg.newPeer)
+            LoggedAgent.addPeer(received_msg.newPeer,received_msg.cagePort)
             response.response = "Success"
         except Exception,e:
             response.response = "Failure %s" % e
@@ -234,7 +235,7 @@ class AddPeerHandler(BaseHandler):
 
         return response_str
 
-    def _testSuperPeers():
+    def _testSuperPeers(self):
         # Should include logic using geoip to check if two super peers are present for the same country. 
         return False
 
@@ -247,13 +248,14 @@ class GetSuperPeerListHandler(BaseHandler):
                      messages_pb2.GetSuperPeerListResponse)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
-        if received_msg.HasField('location'):
+        if received_msg.HasField('location') and  str(received_msg.location)!='':
             country_code = received_msg.location
         else:
-            country_code = "UN"
+            country_code = "IN"
 
+        logging.info("Called GetSuperPeerlistHandler with country code %s" % country_code)
         superpeers = agent.getSuperPeers(country_code)
-
+        logging.info("list of super peers from the aggregator model is %s" % superpeers.__str__())
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
             knownSuperPeer.agentID = peer.agent_id
@@ -271,7 +273,7 @@ class GetSuperPeerListHandler(BaseHandler):
 
         # send back response
         response_str = response.SerializeToString()
-        
+        logging.info("Reponse for GetSuperPeerlist from the aggreagator is %s" % response.__str__())
         return response_str
 
 class GetNetlistHandler(BaseHandler):
@@ -644,7 +646,7 @@ class GetLocationHandler(BaseHandler):
         try:
             # Check condition - If there are two super peers for that country already - then make it a normal peer
             logging.info("Using geoip to convert IP Address %s",received_msg.agentIP)
-            response.location="UN"
+            response.location="IN"
             
         except Exception,e:
             response.location="INVALID"
@@ -653,9 +655,9 @@ class GetLocationHandler(BaseHandler):
             response_str = response.SerializeToString()
         except:
             logging.critical("Unable to construct protobuf from the message")
-        logging.info("Response from Aggregator : %s" % response_str)
+        logging.info("Response from Aggregator : %s" % str(response_str))
         return response_str
 
-    def _testSuperPeers():
-        # Should include logic using geoip to check if two super peers are present for the same country. 
+    def _testSuperPeers(self):
+        # Should include logic using geoip to check if two super peers are present for the same country.
         return False

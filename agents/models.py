@@ -70,7 +70,8 @@ class LoggedAgent(models.Model):
     publicKeyMod = models.TextField()
     publicKeyExp = models.TextField()
     token = models.CharField(max_length=56)
-    
+    cagePort = models.PositiveIntegerField()
+
     @property
     def location(self):
         key = LOCATION_CACHE_KEY % self.location_id
@@ -96,8 +97,9 @@ class LoggedAgent(models.Model):
         nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
                                                     Q(superPeer=superPeer),
                                                     ~Q(agent_id=agent_id)))
+        logging.info("List populated at the model level in aggregator : %s" % nearPeers.__str__())
         selectedPeers.extend(nearPeers)
-
+        logging.info("List populated at the model level in aggregator : %s" % selectedPeers.__str__())
         '''
         # if more peers are needed, get far peers
         peersIDs = []
@@ -146,9 +148,9 @@ class LoggedAgent(models.Model):
         return selectedPeers
 
     @staticmethod
-    def addPeer(newpeer):
+    def addPeer(newpeer,cagePortfromICMAgent):
         p = LoggedAgent(agent_id = newpeer.agentID,current_ip = newpeer.agentIP,port = newpeer.agentPort,token = newpeer.token, \
-            publicKeyMod=newpeer.publicKey,location_id=1,latitude=10.0,longitude=20.3)
+            publicKeyMod=newpeer.publicKey,location_id=1,latitude=10.0,longitude=20.3,cagePort = cagePortfromICMAgent)
         p.save();
 
         return p
@@ -250,7 +252,7 @@ class Agent(models.Model):
     @staticmethod
     def create(versionNo, agentType, ip,
                publicKeyMod, publicKeyExp,
-               username, password, AESKey):
+               username, password, AESKey, superPeer):
         from geoip.models import IPRange
         # check username and password
         user = authenticate(username=username, password=password)
@@ -265,7 +267,7 @@ class Agent(models.Model):
             agent.user = user
             agent.AESKey = AESKey
             agent.activated = True
-
+            agent.superPeer = superPeer
             # get country by geoip
             iprange = IPRange.ip_location(ip)
             agent.country = iprange.country_code
@@ -352,6 +354,7 @@ class Agent(models.Model):
             loggedAgent.publicKeyMod = agent.publicKeyMod
             loggedAgent.publicKeyExp = agent.publicKeyExp
             loggedAgent.AESKey = agent.AESKey
+            loggedAgent.cagePort = 0
 
             # get country by geoip
             from geoip.models import IPRange
@@ -414,6 +417,7 @@ class Agent(models.Model):
 
     def getSuperPeers(self, country_code = 'US'):
         #return Agent._getPeers(country, True, totalPeers)
+        logging.info("Called getSuperPeers function with Agent ID - %s , country code - %s " % (self.id,country_code))
         return LoggedAgent._getPeers(self.id, country_code, True)
 
     def encodeMessage(self, message):

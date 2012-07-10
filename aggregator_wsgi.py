@@ -1,6 +1,6 @@
 SITE_DIR = '/om'
 import site
-site.addsitedir(SITE_DIR) 
+site.addsitedir(SITE_DIR)
 
 import os
 import sys

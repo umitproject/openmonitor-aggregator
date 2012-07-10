@@ -31,6 +31,7 @@ from django.core.files import File
 from icm_utils.json import ICMJSONEncoder
 
 from dbextra.fields import ListField
+from dbextra.fields import CassandraKeyField
 from dbextra.decorators import cache_model_method
 from geoip.models import Location, IPRange
 
@@ -159,7 +160,7 @@ class Report(models.Model):
     # Occurrences of similar reports
     count = models.IntegerField(default=1)
     
-    user_reports_ids = ListField(py_type=int)
+    user_reports_ids = ListField(py_type=str)
     
     @cache_model_method('report_', 300, 'id')
     @property
@@ -226,15 +227,15 @@ class Report(models.Model):
 
 class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    report_id = models.CharField(max_length=150)
-    agent_id = models.BigIntegerField()
-    test_id = models.PositiveIntegerField()
+    report_id = CassandraKeyField()
+    agent_id = CassandraKeyField()
+    test_id = CassandraKeyField()
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)
     bandwidth = models.FloatField(null=True)
     nodes = ListField()
-    user_id = models.IntegerField()
+    user_id = CassandraKeyField()
     
     #############
     # Traceroute
@@ -307,7 +308,7 @@ class WebsiteReport(UserReport):
     status_code = models.PositiveSmallIntegerField()
     redirect_link = models.URLField(max_length=255, blank=True)
     html_response = models.TextField(blank=True)
-    media_ids = ListField(py_type=int)
+    media_ids = ListField(py_type=str)
     
     @cache_model_method('website_report_', 300, 'id')
     @property
@@ -386,7 +387,7 @@ class WebsiteReport(UserReport):
             report.target_lat = iprange.lat
             report.target_lon = iprange.lon
             report.target_location_id = iprange.location_id
-            report.target_location_name = iprange.location.name
+            report.target_location_name = iprange.location.fullname
             report.target_zipcode = iprange.zipcode
             report.target_state_region = iprange.state_region
             report.target_city = iprange.city
@@ -410,7 +411,7 @@ class WebsiteReport(UserReport):
 
 
 class WebsiteReportMedia(models.Model):
-    report_id = models.IntegerField()
+    report_id = CassandraKeyField()
     file = models.FileField(upload_to='wsrdata/')
     
     @cache_model_method('website_report_media_', 300, 'report_id')
@@ -479,7 +480,7 @@ class ServiceReport(UserReport):
             report.target_lat = iprange.lat
             report.target_lon = iprange.lon
             report.target_location_id = iprange.location_id
-            report.target_location_name = iprange.location.name
+            report.target_location_name = iprange.location.fullname
             report.target_zipcode = iprange.zipcode
             report.target_state_region = iprange.state_region
             report.target_city = iprange.city

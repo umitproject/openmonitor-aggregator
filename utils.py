@@ -25,18 +25,14 @@ from django.utils import simplejson as json
 
 urlfetch = None
 
-if settings.GAE:
-    from google.appengine.api import urlfetch
-else:
-    import urllib2 as urlfetch
+import urllib2 as urlfetch
 
 EmailMessage = None
-if settings.GAE:
-    from google.appengine.api.mail import EmailMessage
 
 def send_mail(sender, to, cc='', bcc='', reply_to='', subject='', body='', html='', attachments=[], headers={}):
-    if settings.GAE:
-        return _gae_send_mail(sender, to, cc, bcc, reply_to, subject, body, html, attachments, headers)
+    #if settings.GAE:
+    #    return _gae_send_mail(sender, to, cc, bcc, reply_to, subject, body, html, attachments, headers)
+    pass
 
 def _gae_send_mail(sender, to, cc=None, bcc=None, reply_to=None, subject='', body='', html='', attachments=[], headers={}):
     email = EmailMessage()
@@ -55,51 +51,19 @@ def _gae_send_mail(sender, to, cc=None, bcc=None, reply_to=None, subject='', bod
 
 
 def fetch(url):
-    if settings.GAE:
-        result = urlfetch.fetch(url,
-                                follow_redirects=True,
-                                allow_truncated=True,
-                                deadline=60)
-        return result
-    
-    
-    ##########################
-    # Outside GAE environment
-    
     result = urlfetch.urlopen(url)
     return result
 
 def fetch_status(url):
     response = fetch(url)
-    
-    if settings.GAE:
-        return response.status_code
-    
-    ##########################
-    # Outside GAE environment
-    
     return response.getcode()
 
 def fetch_response(url):
     response = fetch(url)
-    
-    if settings.GAE:
-        return response.content
-    
-    ##########################
-    # Outside GAE environment
-    
     return response.read()
 
 def fetch_response_status(url):
     response = fetch(url)
-    
-    if settings.GAE:
-        return response.content, response.status_code
-    
-    ##########################
-    # Outside GAE environment
-    
     return response.read(), response.getcode()
 
 def fetch_obj(url):

@@ -6,6 +6,8 @@ var eventLvl3 = media_url("images/alert3.png");
 var newevent  = media_url("images/newevent.gif");
 var newEventTime = 2000
 
+var MAP_EVENT_URLS = new Array();
+
 function initializeMap()
 {
     var latlng = new google.maps.LatLng(0, 0);
@@ -104,9 +106,16 @@ function addEventToMap(event, appear)
 function updateInitialMapEvents(m)
 {
     events = JSON.parse(m.data);
-    for(var i=0; i<events.length; i++)
+    for(var i=(events.length-1); i>-1; i--)
     {
-        addEventToMap(events[i], false)
+        var event = events[i];
+        if (MAP_EVENT_URLS.indexOf(event['url']) == -1){
+            MAP_EVENT_URLS.push(event['url']);
+            addEventToMap(event,false);
+        }
+        else {
+            break;
+        }
     }
 }
 

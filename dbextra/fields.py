@@ -64,6 +64,11 @@ class ListField(models.TextField):
         return valueio.getvalue()
 
 
+class CassandraKeyField(models.CharField):
+    """This field is a CharField with predefined max_length=128.
+    """
 
-
+    def __init__(self):
+        kwargs = {'max_length': 128}
+        super(CassandraKeyField, self).__init__(**kwargs)
 

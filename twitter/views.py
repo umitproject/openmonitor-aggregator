@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## Author: Adriano Monteiro Marques <adriano@umitproject.org>
+## Author: Orcun Avsar <orc.avs[at]gmail.com>
 ##
 ## Copyright (C) 2011 S2S Network Consultoria e Tecnologia da Informacao LTDA
 ##
@@ -19,124 +20,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+"""Module containing shortcut functions to easily send tweets.
+"""
 
-
-import time
-import urllib
-
-from django.conf import settings
 from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.utils import simplejson as json
 
-import oauth2 as oauth
+from twitter.tasks import send_tweets_task
 
-from twitter.models import *
-
-
-def send_event_tweet(event):
-    tweet = TwitterMessage()
-    tweet.message = render_to_string("notificatonsystem/event_tweet.html", locals())
-    tweet.save()
-    
-    # The following is going to put the tweet sending task to the background
-    # and unblock the current request. If it fails, will try again later,
-    # in a cron job that catches the msg sending failures.
-    send_tweet_task(tweet)
-
-def send_tweet(message):
-    tweet = TwitterMessage()
-    tweet.message = message
-    tweet.save()
-    
-    # The following is going to put the tweet sending task to the background
-    # and unblock the current request. If it fails, will try again later,
-    # in a cron job that catches the msg sending failures.
-    send_tweet_task(tweet)
-
-def send_tweet_task(tweet):
-    """This is a non-blocking method safe to be called from anywhere in our
-    views. If we need to suddenly send a tweet, use this method and it will
-    send the task to background and continue processing. If sending fails,
-    our cron job will manage to retry later.
-    """
-    task = None
-    
-    try:
-        task_name = 'send_tweet_%s' % tweet.id
-        task = taskqueue.add(url='/tasks/send_tweet_task/%s' % tweet.id,
-                             name=task_name, queue_name='twitter')
-        tweet.locked = True
-        tweet.save()
-        
-        logging.info('Scheduled task %s' % task_name)
-    except taskqueue.TaskAlreadyExistsError, e:
-        logging.info('Task is still running for tweet %s: %s' % \
-             (tweet.id, '/cron/send_tweet_task/%s' % tweet.id))
-    
-    return task
 
 def send_tweet_cron(request):
-    tweets = TwitterMessage.objects.filter(sent=False, locked=False).order_by("-created_at", "-updated_at")
-    
-    for tweet in tweets:
-        task = create_send_tweet_task(tweet)
-    
+    send_tweets_task.delay()
     return HttpResponse("OK")
-
-def send_tweet_task(request, tweet_id):
-    tweet = TwitterMessage.objects.get(pk=tweet_id)
-    resp = send_tweet(tweet)
-    
-    if not resp:
-        # Twitter unavailable for the moment.
-        # Try again later.
-        tweet.locked = False
-        tweet.save()
-    else:
-        tweet.sent = True
-        tweet.save()
-    
-    return HttpResponse("OK")
-
-def send_tweet(tweet):
-    params = {"status":tweet.message}
-    url = "http://api.twitter.com/1/statuses/update.json"
-    method = "POST"
-    
-    return call_twitter(url, method, params)
-
-def call_twitter(url, method, params):
-    twitter_account = get_twitter_account()
-    
-    if twitter_account is None:
-        logging.warning(">>> No twitter account object was created. Can't send tweets!")
-        return False
-    
-    consumer = oauth.Consumer(key=twitter_account.consumer_key,
-                              secret=twitter_account.consumer_secret)
-    token = oauth.Token(key=twitter_account.access_token,
-                        secret=twitter_account.access_secret)
-    
-    auth_params = {
-        'oauth_version': "1.0",
-        'oauth_nonce': oauth.generate_nonce(),
-        'oauth_timestamp': int(time.time()),
-        'oauth_signature_method': 'HMAC-SHA1',
-        'oauth_token': token.key,
-        'oauth_consumer_key': consumer.key,
-    }
-    
-    client = oauth.Client(consumer, token)
-    
-    req = oauth.Request(method=method, url=url, parameters=params)
-    
-    resp, content = client.request(url, method=method,
-            body=urllib.urlencode(params, True).replace('+', '%20'),
-            headers=req.to_header(),
-            force_auth_header=True)
-    
-    if resp['status'][0] == '5':
-        return False
-    
-    return True

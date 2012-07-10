@@ -19,9 +19,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-
 from django.db import models
 from django.core.cache import cache
+
 
 class TwitterMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -29,9 +29,10 @@ class TwitterMessage(models.Model):
     message = models.CharField(max_length=140)
     sent = models.BooleanField(default=False)
     locked = models.BooleanField(default=False)
-    
+
     def __unicode__(self):
         return "%s - %s" % (self.message, "SENT" if self.sent else "NOT SENT")
+
 
 class TwitterAccount(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -46,13 +47,14 @@ class TwitterAccount(models.Model):
     def __unicode__(self):
         return "@%s" % self.account
 
-def get_twitter_account():
-    twitter_account = cache.get("twitter_account", False)
-    if not twitter_account:
-        twitter_account = TwitterAccount.objects.all()
+    @staticmethod
+    def get_twitter_account():
+        twitter_account = cache.get("twitter_account", False)
         if not twitter_account:
-            twitter_account = None
-        else:
-            twitter_account = twitter_account[0]
-            cache.set("twitter_account", twitter_account, 120)
-    return twitter_account
+            twitter_account = TwitterAccount.objects.all()
+            if not twitter_account:
+                twitter_account = None
+            else:
+                twitter_account = twitter_account[0]
+                cache.set("twitter_account", twitter_account, 120)
+        return twitter_account

@@ -33,8 +33,6 @@ from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404
 from django.template import RequestContext
 
-from google.appengine.api import channel
-
 from gui.forms import SuggestServiceForm, SuggestWebsiteForm, WebsiteEventForm, ServiceEventForm
 from gui.decorators import cant_repeat_form, staff_member_required
 from geoip.models import Location
@@ -57,29 +55,24 @@ def home(request):
 
 
 def map(request):
-    token = channel.create_channel('map')
-    
-    # Our current limit 
-    events = Event.get_active_events(SHOW_EVENT_LIMIT)
-    events_dict = []
-    for event in events:
-        events_dict.append(event.get_dict())
-    initialEvents = json.dumps(events_dict, use_decimal=True)
+    initialEvents = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
     return render_to_response('notificationsystem/map.html',
-                              {'token': token, 'initial_events': initialEvents},
+                              {'initial_events': initialEvents},
                               context_instance=RequestContext(request))
 
 
 def realtimebox(request):
-    token = channel.create_channel('realtimebox')
-    events = Event.get_active_events(SHOW_EVENT_LIMIT)
-    events_dict = []
-    for event in events:
-        events_dict.append(event.get_dict())
-    initialEvents = json.dumps(events_dict, use_decimal=True)
+    initialEvents = Events.get_active_events_as_json(SHOW_EVENT_LIMIT)
     return render_to_response('notificationsystem/realtimebox.html',
-                              {'token': token, 'initial_events': initialEvents},
+                              {'initial_events': initialEvents},
                               context_instance=RequestContext(request))
+
+
+def poll_active_events(request):
+    """Returns json response of new events to AJAX caller.
+    """
+    events = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
+    return HttpResponse(events)
 
 
 def event(request, event_id):
@@ -112,7 +105,6 @@ def event(request, event_id):
                                'event': event,
                                'event_json': event_json},
                               context_instance=RequestContext(request))
-
 
 
 def about(request):
@@ -211,7 +203,7 @@ def create_website_event(request):
 
             if location!=None:
                 event.location_ids.append(location.id)
-                event.location_names.append(location.name)
+                event.location_names.append(location.fullname)
                 event.location_country_names.append(location.country_name)
                 event.location_country_codes.append(location.country_code)
                 event.lats.append(location.lat)
@@ -264,7 +256,7 @@ def create_service_event(request):
 
             if location!=None:
                 event.location_ids.append(location.id)
-                event.location_names.append(location.name)
+                event.location_names.append(location.fullname)
                 event.location_country_names.append(location.country_name)
                 event.location_country_codes.append(location.country_code)
                 event.lats.append(location.lat)

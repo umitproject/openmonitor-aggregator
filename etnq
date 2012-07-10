@@ -1,0 +1,2113 @@
+commit e04f5f78178b81ec7c4bd603b969414ac6c8e1fc
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Sun Jul 8 11:40:14 2012 +0530
+
+    Before pulling orcun's changes
+
+commit 7533ed3059e6f48f91545a8769cc54819c08b4b8
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Tue Jul 3 08:07:28 2012 +0530
+
+    Changed super_peer list request type, modified the way super_peer list is stored, added country_code to peer details for geolocation
+
+commit 95ffc52072213175cf6a541f1cccc3be72cd677f
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Thu Jun 28 07:32:40 2012 +0530
+
+    Added API and resource messages for geoLocation service
+
+commit 55167c136486926d9ca104a19ee7c6e68f3360b9
+Merge: 8f645f8 22ea054
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Thu Jun 21 22:27:20 2012 +0530
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator into narendran
+
+commit 22ea0547df08735f135dec4fc71b1587cde9e98c
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Wed Jun 20 11:35:22 2012 +0300
+
+    Revert "EC2 changes."
+    
+    This reverts commit 9326fb608e4b817b1df59b9241cc8bf80ea402e5.
+
+commit 9326fb608e4b817b1df59b9241cc8bf80ea402e5
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun Jun 17 15:07:05 2012 +0300
+
+    EC2 changes.
+
+commit c90f903e0c09800e05f199d6ba82c87826c430da
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Sat Jun 16 09:46:12 2012 -0500
+
+    uwsgi module
+
+commit 465f10f2903423222d268c0974d4c472af3d698e
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat Jun 16 15:56:00 2012 +0300
+
+    Make hops optional on reports.
+
+commit 8f645f8c93f5bf2e8550eb6841f41d9dfb8fcbf8
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Sat Jun 16 13:36:01 2012 +0530
+
+    Added SuperPeer capability checking to aggregator
+
+commit 38bcbfbe3b0f2eff29eb783546ddfd3ce73e1519
+Merge: 26bd823 0e2ac7b
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Sat Jun 16 06:25:40 2012 +0530
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator into narendran
+
+commit 26bd823268fa6122890dd623b9a953c4c7218186
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Sat Jun 16 06:24:02 2012 +0530
+
+    Temp commit - need to work on geoip models to aid in bootstrapping based on geographical factors
+
+commit 0e2ac7ba8b8a17059b6ed96106c3f3aafd833fca
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat Jun 16 03:37:15 2012 +0300
+
+    Revert "fixed AES padding issue"
+    
+    This reverts commit c2c557a45db958bc381edea5141766cc2e8d536f.
+
+commit 4d5f2232e1fd82b492404f0033712db4c10b9558
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri Jun 15 14:05:19 2012 +0300
+
+    Fix login2 handler.
+
+commit 9179a6b2aec261d1d7124f5fd5ea03d0542a39b3
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu Jun 14 05:42:04 2012 +0300
+
+    Disable verifying of software version URLs.
+
+commit 9c7b2957bc69481632cdf4454e4ae39dc7aaa9a7
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu Jun 14 05:19:18 2012 +0300
+
+    Fix imports.
+
+commit 17c71c17c348f24aeb6a0be4c80ba8feea0542ae
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu Jun 14 04:50:15 2012 +0300
+
+    Fix behaviour of test aggregation.
+
+commit 89ef5e909631112b9a3b54c3ee6fc0fb45824515
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu Jun 14 04:49:16 2012 +0300
+
+    Fix check_aggregator call.
+
+commit 179e79e6ab429bc8fcbf047848a84b3989e3182b
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu Jun 14 04:33:50 2012 +0300
+
+    Use list instead of dict for all agregation models.
+
+commit db06003ef73fa7ba8366f8b3521a41490daa4cd8
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Thu Jun 14 06:48:44 2012 +0530
+
+    Implemented REST API for adding new peers into the aggregator's peerlist
+
+commit abd1627ebc98b52e42343dfccb9f2513d5df723a
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 12 16:28:02 2012 +0300
+
+    Fix wrong aggregation class names.
+
+commit c2c557a45db958bc381edea5141766cc2e8d536f
+Author: DAI Zhiwei <shinysky1986_AT_gmail.com>
+Date:   Wed Jun 13 14:19:32 2012 +0800
+
+    fixed AES padding issue
+
+commit a30e336a2698c97c8fa6210d9016b55329485eb0
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Wed Jun 13 00:31:23 2012 +0530
+
+    Added AddPeer service to aggregator
+
+commit 44675a259a22a3073d05be2d11297e572ceeec3c
+Merge: 2f969de 5829bf9
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun Jun 10 17:11:25 2012 +0300
+
+    Merge branch 'new_tests'
+
+commit 2f969dece5510dea043b837e91094b3b2d12ac6e
+Author: Narendran Thangarajan <narendran.thangarajan@gmail.com>
+Date:   Sun Jun 10 17:13:23 2012 +0530
+
+    Aggregator login issue solved.
+
+commit 5829bf92563b64113abf1489d5166b238eb71357
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat Jun 9 14:52:52 2012 +0300
+
+    Quick fixes.
+
+commit b0d442d42f89e253ef0aa5d35fee41742ae89a69
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat Jun 9 14:09:34 2012 +0300
+
+    Various fixes.
+
+commit 17c234b5d97ec032ec1f12e923f71876ec77e35b
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri Jun 8 09:16:02 2012 +0300
+
+    SuggestionModel attribute should be placed in MetaData class.
+
+commit e53dec20ca86524bfad912ff0a63935b4893f9fa
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri Jun 8 09:14:51 2012 +0300
+
+    Concert suggestions into service tests, too.
+
+commit 3149d48203f0d4dd4e9b3ddd6a90bc999be972e7
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri Jun 8 09:07:46 2012 +0300
+
+    Remove test from aggregations when it's deleted.
+
+commit a1cf306d18bcf36f381ed7908c940260d6e3eb02
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri Jun 8 08:58:42 2012 +0300
+
+    Update aggregations when test is changed, too.
+
+commit 09b928f5ff27396ac3e6035eabf6a572c658130a
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 15:02:32 2012 +0300
+
+    Change function name: create_tests > create_test.
+
+commit c40bb7a8e141c6fe67a7c1009d72c41149145947
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:50:47 2012 +0300
+
+    Remove obselete imports.
+
+commit ad4a84c963dd8a63cf806fdcd6227b73db6d3a11
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:50:05 2012 +0300
+
+    API decorator now calls Test.get_test_version with the agent as parameter.
+
+commit e04aeee07e21154fdb82b2dc98746a4c6aaae04f
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:49:12 2012 +0300
+
+    Add method to create test from a suggestion.
+
+commit e4199a5b5b3a5ee970d0db5a8797c08f196a4d3d
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:48:27 2012 +0300
+
+    Add method to remove a test from its aggregations.
+
+commit 29b92a88b629bc4e1aa4e4dfdd73206b228c9ddf
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:42:02 2012 +0300
+
+    Add methods to get corresponding aggregations (global and local) for the agents.
+
+commit 2258c26fce3d1cb1f4147433c00f2760fac592a5
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:38:24 2012 +0300
+
+    New version number system for agents.
+    
+    Now, test versions for each agent is sum of global tests' and local tests' versions.
+    Whenever a local or global test group for an agent changes, test version increases by 1.
+
+commit 445dc4bab483160f019e36753bafb47e03114556
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue Jun 5 14:32:04 2012 +0300
+
+    Add variable to hold all aggregation models for tests.
+
+commit 0d00bedcbfd8e5abb97c240356c409a15a393b4e
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun Jun 3 08:43:28 2012 +0300
+
+    Register test aggregation models into admin.
+
+commit d97c8b7460a6d269c34aed850e655cf631e7ea0f
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 27 01:11:05 2012 +0300
+
+    Add aggregations for grouping tests based on locations.
+
+commit 6983b9d7dca67466b7a16c702694063947585d3d
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 26 21:17:19 2012 +0300
+
+    Add base method for creating tests from suggestions.
+
+commit c20f3af26cec9b19ca63eb249b8eb70833866c86
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 26 21:17:03 2012 +0300
+
+    Add Django admin action to accept suggestion aggregations.
+
+commit 962e6cf47558a464d74157eb8e78ddbc5f2cfb50
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 26 21:15:52 2012 +0300
+
+    Fix errors on suggestion models.
+
+commit af35255c7f8ba79ef3b28246ae56f3b4c99283a2
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 26 21:14:48 2012 +0300
+
+    Remove unused delete method.
+
+commit 252889b56302020ad98816a2e69ac4f06879e6f5
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu May 24 03:08:07 2012 +0300
+
+    Add accept methods into suggestions.
+    
+    Features are:
+     - Admins can accept an aggregation instead of single suggestions. With this, for example, when admin wants to accept all suggestions for a domain, he can accept corresponding WebsiteURLSuggestionAggregation object.
+     - Admins can also accept single suggestions.
+     - When a suggestion is accepted, it creates corresponding tests if they are not created and removes itself from all aggregations and deletes itself.
+
+commit 71ff1babb95f4b1c41bc99146613c52d5aa2788e
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Thu May 24 03:07:37 2012 +0300
+
+    Add location field into tests.
+
+commit e19d7ce78271071cb5b6afdcd28bac583712d97e
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:22:49 2012 +0300
+
+    Fix representation of lookups.
+
+commit 4c36fdacd0461ffe4ff1edc6955f12dbb5ed38f2
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:22:10 2012 +0300
+
+    Add ajax field for website suggestion location.
+
+commit a231b533bb2bbd04db4ddc3c79ceaf2f0b457dd3
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:21:29 2012 +0300
+
+    Fix suggestion form submit view.
+
+commit 7858e444015d424b5ef30b58a02e800b7dfe286c
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:03:50 2012 +0300
+
+    Add v2 templates for suggestions.
+
+commit b7d76120680b9f2cd63469ce4af53e9ec7d28299
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:03:25 2012 +0300
+
+    Add ajax_select settings.
+
+commit fbc780c7beb94d73b2a4ea110e733f8c87763741
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:02:41 2012 +0300
+
+    Add location name lookup for ajax_select.
+
+commit fbba73e772e5055dce81dd2a3f8814011733f882
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:01:47 2012 +0300
+
+    Add ajax_select lookup url.
+
+commit e39f99d414d9994f0eb160e0ded94d84c19ce6b2
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 14:00:09 2012 +0300
+
+    Add index for location name lookup, icontains
+
+commit 91712fbfc3bb68c00e62a1f57f666a354a7b9cc7
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 13:57:42 2012 +0300
+
+    Add dbindexer settings.
+
+commit 1bbfdcf2c5647b4870e23b1343c67741491f59d1
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 13:54:27 2012 +0300
+
+    Remove old autocomplete function.
+
+commit af647d1fdfa6edfa52e26814acc8f0426d68d0ce
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 13:44:17 2012 +0300
+
+    Add thirdparty 'ajax_select' to the project.
+
+commit c364cf3e9c1283cfb4691d1fa994f77e2ab46ad3
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 13:43:23 2012 +0300
+
+    Add missing import.
+
+commit 563bba0aa58533d3e48bc9d5b3140d617d0595f2
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 19 02:39:21 2012 +0300
+
+    Fix typo: IPrange > IPRange.
+
+commit 02530eba8c391e76c59d2af4c6e18432af5efce7
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue May 15 20:15:39 2012 +0300
+
+    Add event page's new template.
+
+commit 5398c086c6d1f4d1fbf07d030e99fdc55d22c7a0
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue May 15 20:14:32 2012 +0300
+
+    Add details to the event page.
+
+commit aebe06fd3fba7a7fafb5536f488fe81dfe41e531
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:39:13 2012 +0300
+
+    Fix links in navbar and include active page control.
+
+commit 1b339ca542235d9e71f659979afbfcc686296382
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:16:33 2012 +0300
+
+    Style patch for bootstrap-Google map concurrency problem.
+
+commit a1eb846898b424c16f234ba9e6032702941e8b3f
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:14:04 2012 +0300
+
+    Use v2 design by default.
+
+commit 956b6715a48bcc5f6c311bf07792957c2f822b3a
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:12:24 2012 +0300
+
+    Use existing 'createEventSummaryDiv' function to create map point's info boxes.
+
+commit cb98ff5f0c3a2675800d9ac8e14b895f221a07f4
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:10:58 2012 +0300
+
+    Make EVENT_SUMMARY_TEMPLATE bootstrap friend and include an extra info hole.
+
+commit e0b5e7db30e62419267dbb478d14c0e9d160343a
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:09:13 2012 +0300
+
+    Add a function that humanizes location info into a string.
+
+commit 9940ebaef9788b0667549670274117a37d2f8fcb
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sun May 13 21:08:19 2012 +0300
+
+    Add 'g' paremeter to Regex to render same variables multiple times in a JS template.
+
+commit 187d3194217d484936660383248637725b546228
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:25:33 2012 +0300
+
+    Move registration files to v2 and make changes to use generic bootstrap form.
+
+commit 1a42803640eff3277d3740e7ae88ec4324e41a18
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:25:22 2012 +0300
+
+    Move notification system to v2.
+
+commit 8e835fe0948d2a0168d15a1e625e0797cc59eb66
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:24:54 2012 +0300
+
+    Add a generic bootstrap compatible form template to use with all the forms.
+
+commit 4eaf31ebd036440c1e2d8aa65fced5335e1e96fb
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:24:01 2012 +0300
+
+    Add bootstrap compatible base.html for v2.
+
+commit fe70327c41394458d57d4f3a65c522f50f4b37cd
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:23:11 2012 +0300
+
+    Render a template to show incoming events from Channel API.
+
+commit 236e35e8d63bd29328ef0e79fceebab7bac57ffb
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:21:54 2012 +0300
+
+    Remove event_info_template as there is another alike.
+
+commit 566dcceedab9d903accd1c5f919527490ebedbfb
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:20:01 2012 +0300
+
+    Remove alerting JS line.
+
+commit 594debdb127c771aab67bd215851fbe6ff0b9333
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:18:53 2012 +0300
+
+    Add option to switch into v2 design.
+
+commit 7713aef32893700a19057d26656c9288ab27a7e1
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:18:35 2012 +0300
+
+    Add media bundles for bootstrap.
+
+commit b29b78c108651f1ad5a18130e80fbc83635d5fc3
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 02:17:14 2012 +0300
+
+    Add RequestContext context to each view.
+
+commit 8817540e4c0e376edf5152b46fd7983c5fdf341a
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Sat May 12 01:01:55 2012 +0300
+
+    Change bootstrap folder name.
+
+commit 83ad91d716d3cc19842a25437b6bb33e134b13d7
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri May 11 20:38:19 2012 +0300
+
+    Add a symbolic link to the compiled bootstrap files' directory.
+
+commit d6efe31c67d0502a727ac603be5c61ffff8dc299
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri May 11 20:36:24 2012 +0300
+
+    Add twitter-bootsrap (compiled) to the project tree.
+
+commit 8021fda01bafd192541c0b3162d2f404633e2853
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri May 11 19:53:10 2012 +0300
+
+    Add more files to .gitignore and delete some ignored files manually.
+
+commit 85679f72c3ad725a52cdbd64728cc67e8e5713b4
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Fri May 11 19:48:59 2012 +0300
+
+    Add a JS template renderer for basic Django templates.
+
+commit 99a75aac07cb9d01f19502d1cf422a095bc38d05
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue May 8 02:21:40 2012 +0300
+
+    Fix static method defination.
+
+commit 222f2904b98482a6971a7c4f73437d6489674bbe
+Author: Orcun Avsar <orc.avs@gmail.com>
+Date:   Tue May 8 01:57:39 2012 +0300
+
+    Add static method to get LoggedAgent from agent_id.
+
+commit acd9c169c260f8f90537b482d244a3c012337021
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Mar 29 07:35:07 2012 -0700
+
+    Fixing the bug found by Orcun.
+
+commit 56f52f0b3b6f6bd85685b9de2cbe4a7ac35340cc
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Mar 27 16:09:47 2012 -0700
+
+    Fixing a bug on ListField.
+
+commit e2a2524ed9a5bc3ce946693896ed25211441e6e7
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Mar 15 07:35:55 2012 -0700
+
+    Adding batch capability for gae/django nonrel
+
+commit 44b26a67bdb7aa0ed04ff665d2dc176b9d7e6833
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Feb 23 03:50:32 2012 -0800
+
+    Further work on the decision system and tests composition.
+
+commit 4e5d7c78b0091a4c62efc798741decdcdf475a14
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Feb 18 11:02:40 2012 -0800
+
+    Porting code from python 25 and master/slave datastore to python27, with concurrent requests and high replication datastore on appengine. Port is running succesfully on dev environment now.
+
+commit 2591f71bf83174694d1eba21332558a86802ae2f
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Feb 17 05:02:58 2012 -0800
+
+    Solving issue with media
+
+commit f48cd71a3cb47182e8268c3afbb9f070fec9d55a
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Feb 16 12:01:39 2012 -0800
+
+    Further work on banning agents and networks from aggregator
+
+commit 2a5241b76e6ebe59db5d0df5bd2b262b7bce1008
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Feb 15 19:39:36 2012 -0800
+
+    Added ban feature for agents and networks.
+
+commit 3eb66a9dff5b48e9231c1b0b99612f896e3ceeb6
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Feb 10 07:11:20 2012 -0800
+
+    Further improvements to aggregator.
+
+commit 7de0fb98e7d93c0ae78cdf2568f397643a4e8d4c
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Feb 1 07:58:34 2012 -0800
+
+    Get netlist is now working. Still need a few tweaks (like randomizing results) but already returning content as expected.
+
+commit e3175a009d4af9e717d364cad2e4dcbcf2c4d14c
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Jan 31 11:16:39 2012 -0800
+
+    Compiled netlists
+
+commit b2b12688f60afa718bfecbf7cd9fa3062f6fbcbf
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Jan 31 11:15:43 2012 -0800
+
+    Work on refactoring and fixing aggregator api for net lists and ban lists.
+
+commit 23fb3bf12ed137ac247aafc36c8e4eee4f8d4f67
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Mon Jan 30 04:39:33 2012 -0800
+
+    The compiled messages for BannedNetworkData, GetNetList, GetBanlist and GetBannets.
+
+commit f541429acf6b06ed92535cc8fe2128c8406dbba8
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Mon Jan 30 04:36:48 2012 -0800
+
+    Fixes and adding the api for get_netlist, get_banlist and get_bannets. Still need to implement the apis, although they already have handlers and respond on their respective urls.
+
+commit e00cdd32deaa8e7d598149a9d4043cf4d9c6f22c
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Jan 27 08:00:34 2012 -0800
+
+    Send website and service suggestions are now working.
+
+commit 5888bea131c17816f813d581ff54a99f8c2a5cb6
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Jan 27 04:41:39 2012 -0800
+
+    Send service report api is now working.
+
+commit 2474540a318c7526249aa4a2d8a25e05396832f4
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Jan 27 04:06:03 2012 -0800
+
+    Send Website Report now working.
+
+commit 15cb76d4169398e2e66bd22110ca8052516616e2
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Jan 25 20:30:37 2012 -0800
+
+    Adapted getevents handler to use new handling decorator.
+
+commit cd84e60fc79871253e53bc07068251919a3eb5b8
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Jan 25 20:24:41 2012 -0800
+
+    More fixes
+
+commit 18782b1c3f95618112b9ffaf03a07f32e689f83e
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Jan 25 08:35:20 2012 -0800
+
+    More fixes. Converted super peer list and peer list apis to use the new message handler decorator.
+
+commit bd51c1c471f36ab64d165ee1845af9726637fccf
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Jan 25 04:25:36 2012 -0800
+
+    Created the message handler decorator to deal with encryption/decryption of messages, added agents model to the admin and fixed some code related to encryption, decryption, registration and version checking.
+
+commit 30f1d21c61d857691dc1cd40de605114b80cae8a
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Jan 20 07:10:44 2012 -0800
+
+    Various fixes. Now aggregator is working fine with ibot, and passed the registration test. Added a few more debugs. Now when a piston api handler fails, it will show the error message.
+
+commit d72ddc2c489207cda4b5eade84b0dede2f87435a
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Jan 11 04:31:24 2012 -0800
+
+    Updated all dependencies.
+
+commit 23898b177227b019f14ae2554167db251dcb8f4f
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Jan 7 11:57:03 2012 -0800
+
+    Adding new mapreduce module from updated djangoappengine
+
+commit 6d0c9e9a6b1c76fbeb53f75b9e781bf1806b0fe7
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Jan 7 11:56:31 2012 -0800
+
+    Aggregator working once again locally.
+
+commit 5e0de93d97d650a11bd1ee4dd760c5748bab03bf
+Merge: 5b823d4 3559ef0
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Oct 26 16:17:55 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 3559ef0469df55472609522138603831d3ca62c2
+Author: Luís A. Bastião Silva <bastiao@ua.pt>
+Date:   Wed Dec 7 14:13:48 2011 +0000
+
+    Added: "How to run locally?" in aggregator
+
+commit 5b823d4861fea511d53f39891f2fd6fefb8935fb
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Oct 26 16:17:41 2011 -0700
+
+    Updating to latest djangoappengine to fix a few issues with new SDK.
+
+commit de1aca5f19bc79d4d5971f8632c9645e125a72cc
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 21:40:06 2011 +0100
+
+    Reverted last commit.
+
+commit 7b2b09e75bfd500dc0cdc05cec44f97f8c7bad48
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 21:09:43 2011 +0100
+
+    Fixed problem with encoding when creating LocationName aggregation
+
+commit 43253fce97801fb4cd2040a5ebb663c9d93c1b5b
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 17:12:21 2011 +0100
+
+    Fixed problem with location aggregations and country names
+
+commit 85e74bbc1c1c8860687f904d2726d95a34a4571c
+Merge: 670047b 7cf5930
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 16:04:11 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 7cf59302c8fed77ad42ab5afc68075a9c33b88e1
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 22 07:31:53 2011 -0700
+
+    Fix in the suggestion model
+
+commit 670047b85a404ba1eb13a32c8d4cfa29848ca6d7
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 12:46:53 2011 +0100
+
+    Changed css for map tooltip
+    Fixed problem with markercluster
+    Fixed problem of event just appearing in realtime or map (not on both)
+
+commit 045a6d31ec406c394c4f5d9302b9c13b22c2724c
+Author: Rodolfo Carvalho <rodolfo.ueg@gmail.com>
+Date:   Sat Oct 22 00:31:14 2011 -0700
+
+    Forced ISO-8859-1 encoding on Maxmind Locations CSV file.
+
+commit b561d4609f473108d38687e0141598afd94fc90f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 02:57:06 2011 +0100
+
+    Fixed map json parsing
+
+commit 991428decc7dcabb2808c6cdc53d724f6544dbd4
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 02:56:24 2011 +0100
+
+    Fixed json encode
+    Fixed realtimebox json parsing
+    Fixed add events forms
+
+commit 43de9a09e9317deb18effd364d1c513bce8e0bb5
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 02:53:49 2011 +0100
+
+    Fixed some problems in geoip model
+
+commit 3ffc0cb0f84becdf25602b540a31c38e9b5d470a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 02:52:26 2011 +0100
+
+    Fixed agent model
+
+commit ae318f3c22d267cee64bc72b3f21c247dac6fae3
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 22 00:23:50 2011 +0100
+
+    Fixes
+
+commit 090d4a5a5c847fd454a1203889b894ca1beab7a0
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:35:31 2011 +0100
+
+    Fixed notification system
+
+commit 35d791a69cb93898ad65bfa320be26e194c6f77f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:34:46 2011 +0100
+
+    Fixed problem in reports
+
+commit 081c05cbc4a4f5d54959209ce7006157314cb57c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:33:57 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit d2e757d1feade0c7cc3af3ac9f9230edc8a5736c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:33:35 2011 +0100
+
+    Removed csrf token from forms
+
+commit 75dbfca909368b2bdeb062117292497ba04d95e4
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:33:13 2011 +0100
+
+    Geoip correction
+
+commit ae508b8611b562f80692f4c3f0c9fa694bd7750d
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:31:23 2011 +0100
+
+    Event cache deleted when new event created
+
+commit d6bc0cf5bf5e208a4cd4cb2eb5a97926ea793c85
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:31:04 2011 +0100
+
+    Fixed decision system
+
+commit aa56f96e84f68b06421c33f254a111b2553a7e44
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:30:39 2011 +0100
+
+    Fixed bug in handler and tests
+
+commit 1864daa6e93d19e47d7aae799b46508ef97da796
+Merge: a26319c 85c2fdf
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:22:07 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit a26319c7a7a2823624fa2cead7b3648334c46a5c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 21 23:22:00 2011 +0100
+
+    Forms to create events
+
+commit 85c2fdf8c7df1f69150463f384f754731c8fae6d
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Oct 21 04:15:23 2011 -0700
+
+    Passing user to about template rendering
+
+commit f7da494261255958373822a8bb3f39b375f4e97f
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Oct 21 04:07:37 2011 -0700
+
+    Fixing the user set attribute for suggestions
+
+commit 922b926ec8fcd520ca47de7eb2d17ad91cfe96c1
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Oct 21 04:06:35 2011 -0700
+
+    Fixing the user set attribute for suggestions
+
+commit 24b9befeab373fc96e346edacad367bcdfe4467a
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Oct 21 04:04:15 2011 -0700
+
+    Fixing the user set attribute for suggestions
+
+commit 0d42b0e72536bd7a9c69cbbf7f699e729379f239
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Oct 21 04:02:40 2011 -0700
+
+    Fixing the user set attribute for suggestions
+
+commit beb643fc68135eedf2ec49fcedc021a01c3dc346
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 20 19:37:05 2011 -0700
+
+    Fixing the user set attribute for suggestions
+
+commit ab1afafc7bd56e792c521ee0658eb8fcf0b352e7
+Merge: 284fb4c 3d3b5ba
+Author: Luís A. Bastião Silva <luis.kop@gmail.com>
+Date:   Sun Oct 16 13:28:57 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:aggregator
+    
+    Conflicts:
+    	README
+
+commit 3d3b5ba6a1ecd6dfba7b7b3833f1fe0968cbcc87
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 22:02:18 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit 68ba9bc40e2af7e279551a065eb12b272524a1fb
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 22:02:05 2011 +0100
+
+    Added EventLocationAggregation
+
+commit 730f78df1ca748a880ee8d356b11d3c40a32aa2a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 22:01:51 2011 +0100
+
+    AgentTest: getEvents
+
+commit 90d7f4757faa6922ae74973ed537ee25da60f08e
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 22:01:32 2011 +0100
+
+    Fixed events handler
+
+commit 903c980de19c19a97edde27f474d0d155fac2144
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 22:01:14 2011 +0100
+
+    Added public key to LoggedAgent
+    Fixed problem with ip
+
+commit a214fa345350ca7573ec0586cba7787d7f2b8d54
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 21:57:23 2011 +0100
+
+    Fixed ListField
+
+commit 3d1ad2a1b68434b4eb43fdded736420e00452eb8
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 19:48:52 2011 +0100
+
+    Fixed bug in ListField
+
+commit 216f1902704d88dc17374b6f6787e6e4965b3b2d
+Merge: 79b76d5 af65d63
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 17:30:52 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 79b76d54e5ab1132bfe95fcd83d47e00c02141a9
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 17:30:44 2011 +0100
+
+    events handler
+
+commit 9e8d56981654cf7f09ffdec5d5e33bae2e099efe
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 17:30:00 2011 +0100
+
+    Fixed problem on icm tests when no tests are available on datastore
+
+commit af65d63d9c68d0889a92a8ec46fc7102f41903e4
+Merge: 333af6b 1b5a462
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 15 08:59:50 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 333af6b3c5ef714ed1afa6a7382e57b3ff5c291e
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 15 08:56:34 2011 -0700
+
+    Added logging all over register handler
+
+commit 1b5a462df75b472f60fcd39469eb16e7fa21432d
+Merge: 933fd6b 2e0aaf6
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 16:32:58 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 933fd6b5466bd52c1b722f3a8bd9432f27520f07
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 16:32:38 2011 +0100
+
+    Fixed some problems in Reports
+
+commit 80322450d2543c41dd62b51f551c8a185efdccf5
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 16:32:15 2011 +0100
+
+    Added more methods to test agent
+
+commit e0046e49e9956d005c5480bbe38d2f873419dbdc
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Oct 15 16:31:50 2011 +0100
+
+    Fixed getPeers and getSuperPeers handlers
+
+commit 2e0aaf60db0fc48d7e8e5c1f6349f99787e749cc
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 15 07:14:51 2011 -0700
+
+    Added logging all over register handler
+
+commit dbe9e3481a54241576e01922c04bf5a0a17a8f91
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 15 07:02:28 2011 -0700
+
+    Added logging all over register handler
+
+commit 223e8b0c77cd871736c830f5be49af32a16a5344
+Merge: 2b7e1fd dfafaa6
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 15 06:54:01 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 2b7e1fd8d4b6cbab2e22d3ed8fff2b7809c5d527
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 15 06:53:46 2011 -0700
+
+    Added logging all over register handler
+
+commit dfafaa6acd12f9bf8c98f2bf6307aeaf0bd2724e
+Merge: c5126f0 94e0d30
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 18:03:37 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit c5126f0a2481bdf403f36430c8fbadffbd4482c1
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 18:03:23 2011 +0100
+
+    Fixed get new tests
+
+commit 94e0d304ef6e6df02fce1fa029b851c8631e47f0
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 13 18:26:48 2011 -0700
+
+    Fix to the social module
+
+commit b0155a4433106504d8462990e1b68e5019b1d158
+Merge: b9651b0 4b98a40
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 13 18:23:31 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit b9651b065fb5af2463d7a95cb6bb5617404dc97d
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 13 18:23:12 2011 -0700
+
+    Fix to the social module
+
+commit 4b98a402c67114cea5300c3c902d6828f8940c4d
+Merge: 4b5cb47 6129537
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 01:27:35 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 4b5cb4738ee290038d4d9d4390af5b0496c622a9
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 01:27:07 2011 +0100
+
+    Fixed bug in __unicode__ function
+    Port value readed from service suggestion message
+
+commit b0fa4b5f474a2d9a5ef32a4e70f1840c74284618
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 01:26:21 2011 +0100
+
+    Auto generated protobuf messages
+
+commit 1f891d7a296c755db6506fa48ebbe78810b1c215
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 01:25:49 2011 +0100
+
+    Created functions to simulate a agent
+
+commit af1aa2e8d58faeb7a99f288d073012274bec5927
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 01:25:11 2011 +0100
+
+    Fixed Test.get_last_test
+    Added method get_updated_tests to ServiceTest
+
+commit 1147f6d1ec393c2c1c86f695fc4a604d1b65ff4b
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Oct 14 01:23:48 2011 +0100
+
+    Fixed problem getting last test version.
+    Code cleanup
+
+commit 61295373532331cf23b6c12f6a8c8619f127a580
+Merge: 9d99ff4 efe2160
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 13 17:14:39 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 9d99ff4f26062f0ba7f7700bc7692fa7cbbd04f0
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 13 17:14:33 2011 -0700
+
+    Minor fixes
+
+commit efe2160d33c13be7ef0dc44513f1688f24bdcb18
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Oct 13 01:30:24 2011 +0100
+
+    Fixed a bug in Tests model
+
+commit 8ca235cd9808b7e9e304a6bb967a22b16eb62129
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Oct 13 00:13:19 2011 +0100
+
+    Changed test model to become abstract
+
+commit f120ff72dba7de12636331066d1261db5e78f7bf
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Oct 12 23:59:18 2011 +0100
+
+    Replaced user foreign key
+
+commit 7690e57f1756b8da199387c1317ad0c88af6019b
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Oct 12 23:50:00 2011 +0100
+
+    Added user to suggestion aggregations
+    Removed email address from suggestions
+
+commit a2f00c6b46cd271901bd65c9c8ba11febb8b04d8
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Oct 12 23:49:21 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit 284fb4cb17cf83a7e1722053fffffad07b4a4625
+Author: Luís A. Bastião Silva <luis.kop@gmail.com>
+Date:   Wed Oct 12 22:59:53 2011 +0100
+
+    How to deploy? Added to README
+
+commit a6e4f0b4603f5876ee17340e144f15d1cae33763
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Oct 12 13:47:56 2011 +0100
+
+    User associated with reports
+
+commit 37dd826e8e9718c6a7bca1cf32f74ffd210b68bf
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Oct 12 13:47:16 2011 +0100
+
+    More fields added to ServiceTest model
+
+commit d3deac1004f3dc0300838a3378b973ff1c10d1a8
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Oct 12 13:46:41 2011 +0100
+
+    Code cleanup
+
+commit 102f92d5b68ad3b2654d05b6f0f08a1726d033fc
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Oct 11 23:39:21 2011 +0100
+
+    User associated to suggestions
+
+commit d2383988bb754c4148c024fd27c52e1fdd408cdf
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Oct 11 23:38:21 2011 +0100
+
+    Fixed module name
+
+commit 2dd13bd3e464157700287dc16ab439fd453fa366
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Oct 11 23:38:00 2011 +0100
+
+    Fixed login url in template
+
+commit c104a22d14f9c69baeba7ad67a50c0819325fc12
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Oct 11 07:52:10 2011 -0700
+
+    Renamed ICMtests to icm_tests to match our naming standards, and also adapted the models.py to feature aggregations and an optimized architecture.
+
+commit 0a26a63e1e1c0a0599c300f1eb85f9076b33cf3d
+Merge: 363c955 2d2c0d2
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Oct 11 07:50:59 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 363c95587181289e72c340cdaa396f71af60bd52
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Oct 11 07:50:31 2011 -0700
+
+    Renamed ICMtests to icm_tests to match our naming standards, and also adapted the models.py to feature aggregations and an optimized architecture.
+
+commit 2d2c0d25414601195f0a36856cb8e460ae8c62bf
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Oct 11 12:18:03 2011 +0100
+
+    Updated gitignore
+
+commit 2dac9bc89083fa4759c2c43c7b9a4ffea60f8a31
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Mon Oct 10 19:12:16 2011 -0700
+
+    Fixed a few code errors and implemented a new event dict to feed the map and realtimebox. It now features all the locations that might be involved in a given event and test id.
+
+commit 7e855b1d891e2b3f6e647b2bbc6241f95f671e92
+Merge: 2e77e88 f5ed093
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Mon Oct 10 18:09:43 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 2e77e88f7f74a628006988986e676ad10829bb48
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Mon Oct 10 18:09:28 2011 -0700
+
+    Suggestions are now working once again, and generating proper aggregations
+
+commit f5ed093359f7808a487235837f3a1e71a9a5efed
+Merge: 42b4811 e7de442
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Oct 9 13:28:41 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+    
+    Conflicts:
+    	agents/models.py
+    	api/handlers.py
+    	geoip/core.py
+
+commit 42b481111253c8025b09a28d69f7b80f9e29b77f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Oct 9 13:10:12 2011 +0100
+
+    Added RSA Keysize to settings
+
+commit 0a36014245780864d51ca095382c1731eb491eb6
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Oct 9 13:08:08 2011 +0100
+
+    Fixed register and authentication processes
+
+commit cba50523516fa45efaad30156e9febb1ec1a99ef
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Oct 9 13:07:27 2011 +0100
+
+    Added methods to sign and verify signature
+
+commit 8a07fde7201b2dce399c37f553ef2dfdd612bada
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Oct 9 13:06:33 2011 +0100
+
+    Auto generated protobuf messages
+
+commit cd7e388fa22b61d3457e7deb251d201a1d9b14c5
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Oct 9 13:06:22 2011 +0100
+
+    GeoIP may not find the location, so its better to check it
+
+commit e7de442b6c0bb7400861079f3bb8715c08570fdd
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 8 15:17:03 2011 -0700
+
+    Further improvements on events, reports and caching. It passes the api tests now, but it isn't saving reports yet. Gotta figure if this is lacking on the tests or if it is failing.
+
+commit 5029ece2eeb84a7078d8d73f58e4621aaf831a59
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 8 13:48:17 2011 -0700
+
+    Added _generated_media dir to the gitignore list.
+
+commit 17c0a50067edebe7c71b3493a19fc61fe0479e33
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 8 12:43:31 2011 -0700
+
+    Removed unecessary .svn dirs and files.
+
+commit 9be0caeca2aff6103bd759de8848ab6bb209648e
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 8 07:57:13 2011 -0700
+
+    Adding the django filetransfer app to handle upload/download of website media and content to be served.
+
+commit 9b13606f44b09662bebc092f16a2c76cf9e2a90f
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 6 19:00:28 2011 -0700
+
+    Progress on removing the old GeoIp from code.
+
+commit e2f453875aa39f687c3ba281b2f0fe6c5f02fd31
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 6 18:16:08 2011 -0700
+
+    Added the dbextra module that adds an important field to automate the aggregations stored in TextFields
+
+commit 6103b0da6d7da693e8e08c4a246cdeceebc97ec6
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 6 09:58:49 2011 -0700
+
+    Ditched the geodata and old geoip lib. Moving everything into datastore, creating aggregations, caching and using data in a smarter way inside appengine. This revision is broken. Just won't work. Next revision will fix everything, but I wanted to do this intermediary commit to settle changes down before tackling the fixes.
+
+commit ae68aa61f1376c9ecce6e17e02a95211f1978cf4
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Thu Oct 6 09:57:25 2011 -0700
+
+    Ditched the geodata and old geoip lib. Moving everything into datastore, creating aggregations, caching and using data in a smarter way inside appengine. This revision is broken. Just won't work. Next revision will fix everything, but I wanted to do this intermediary commit to settle changes down before tackling the fixes.
+
+commit 661e148835ebbc6d0f0f7aa42a8cbcb567a96a2a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Oct 6 09:01:18 2011 +0100
+
+    Fixed problem in RegisterAgent
+
+commit c9a87ec93165ab0e00fb9e20586e83d330e49c07
+Merge: 3d639c6 d7c98e9
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Oct 4 17:52:29 2011 -0700
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 3d639c66347c776f609e88630810089b6e815118
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Oct 4 17:51:53 2011 -0700
+
+    Fix to js media urls
+
+commit 96182238414008534c48bcd4659044f9effbc9ad
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Oct 4 17:11:27 2011 -0700
+
+    Fixed the annoying error message about missing media. Also, added cache to some high profile views and limited event queries.
+
+commit d7c98e9f1a0fc43e878be4e409455b54a8c855a7
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Oct 4 23:41:27 2011 +0100
+
+    Added registration templates
+
+commit 49e9e1212d8872ea6af68f42c6d3a897fcf5b54f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Oct 4 23:40:49 2011 +0100
+
+    Updated protobuf messages
+
+commit 689cb0baddb32c7a7a5e10d7d15babb0c675f045
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Oct 3 00:40:23 2011 +0100
+
+    Added registration module
+    Changed project settings
+
+commit 7a5890b4b54c488cba387c74df40b3bf6607cabb
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Oct 3 00:38:04 2011 +0100
+
+    Added user profile class
+
+commit e45a539aeb7a413e0f75e268936101a4dcb0b6f0
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Oct 3 00:37:20 2011 +0100
+
+    Implemented register and login process
+
+commit d1777318636de7fb5c8706d72aef4b3a4a7257a5
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Oct 3 00:36:28 2011 +0100
+
+    Added method generateChallenge to cryptoLib
+
+commit cd40d8b838c00e390b1d299c7b9645418a6e5c86
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Oct 3 00:34:47 2011 +0100
+
+    Implemented crypto methods
+    Auto generated protobuf messages
+    Changed urls to include the new login step
+
+commit fc0b7ac2937863e5907f5ea575e5bb2a9239d61a
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 1 17:55:50 2011 -0700
+
+    Fixed some issues on the email sending system for notifications. Also, added the portable send_mail method.
+
+commit 3b5df4b0091b77f66a29a3ee753c5882700fcbb3
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Oct 1 16:20:10 2011 -0700
+
+    Website and Service suggestions are ready to go. Will accept users suggestions, create all necessary aggregations on the fly and make sure we don't receive the same suggestion more than once from the same user.
+
+commit 9cb0c584a739256c60e0f69506831f58e596f17f
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Sep 30 17:57:01 2011 -0700
+
+    Region system is now operating, and suggestions are completing based on name aggregations. Scripts to feed our database are ready also.
+
+commit e9db75274fbb05104263fd50d9436741ab868872
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Wed Sep 21 05:39:57 2011 -0700
+
+    Work on suggestions, regions and form autocompletion.
+
+commit ba1cd58f8c2a0eac66f32f2a1387e9114512592f
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Sep 17 08:51:36 2011 -0700
+
+    Realtime box and map events are now working
+
+commit 07e32f17f2340ab89929c698288538ed4cb5976c
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Sat Sep 17 08:38:19 2011 -0700
+
+    Map is now working, and new design looks neater
+
+commit 434f92b33d5a7d0dbe0409fe7de1a6fc78d7b1ac
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Sep 16 19:43:07 2011 -0700
+
+    Moving javascripts into the bundle, so they can get compressed.
+
+commit 7386a6a2a3d9a5eb43f246ee697a0bf06efa9ade
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Sep 16 17:44:29 2011 -0700
+
+    Moved relevant files out of template and into the app inner template dir.
+
+commit 657e90c4bd8971cb20563abe068e0b9a6659af46
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Fri Sep 16 10:02:35 2011 -0700
+
+    Work on new design, added admin to events and moved around media files and created media bundles
+
+commit dd0d316ce9646f56d4531470a37dda819455a952
+Author: Adriano Marques <adriano@umitproject.org>
+Date:   Tue Sep 13 21:00:39 2011 -0700
+
+    Adding the httplib2 lib to avoid import issues, work on the twitter module and recompilation of the protobuf message.
+
+commit c90059b59e29027b6303bb46da16552773611672
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Tue Sep 6 11:10:05 2011 -0300
+
+    Removing files that should have been ignored
+
+commit 0a44cba739ee7e1e8dbce2e5ca62d5bac64fe5d1
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Tue Sep 6 11:08:27 2011 -0300
+
+    Adding more files to gitignore
+
+commit 702f778cf3fbf42327a1d21997fe84416cee9a7f
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Tue Sep 6 09:09:01 2011 -0300
+
+    Added admin for notificationsystem models
+
+commit 456f567909202b6eab75988c60f035a2617bc362
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Tue Sep 6 08:32:30 2011 -0300
+
+    Updating libs
+
+commit 3b80cc800f2b7f6a104c12f01cdfdf92426a4312
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 23:57:34 2011 -0300
+
+    geoip.geoip refactor
+
+commit 6edcdb274f1dc98062fb1adb66dca36b5e279a28
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 23:57:18 2011 -0300
+
+    Refactores notificationsystem.notificationsystem and geoip.geoip. Minor code improvements added.
+
+commit cd44f4a037f91b9e10f2ba5fedcc2353ad9e5ee3
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 23:16:05 2011 -0300
+
+    Further improvements and fixes to twitter and notificationsystem apps.
+
+commit 2f44d06ac793b8f864ff12c3788e75a672e6c5f9
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 21:45:09 2011 -0300
+
+    Further work on notification system
+
+commit 4cc349c25d9f0258f161ab7bf1db84bc1645b5ee
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 21:44:51 2011 -0300
+
+    Email sending almost over. Need to nail down final details and connect the dots. It is already supposed to send the email upon an event, since it is subscribed to the notification system.
+
+commit b7ab1c9264cf725f0001affaccf6a01827736956
+Merge: 52735ec 5199dfb
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 19:41:26 2011 -0300
+
+    Merge from master
+
+commit 52735ec48a7dfcfb489a439272d3fcbd2bc94bc2
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 19:37:04 2011 -0300
+
+    Notification via twitter is now implemented. Need to tweak a bit the tweet template, but it will already send automatically when an event occurs, because it is registered in the notification system already.
+
+commit 5199dfbf9bbfd8bc4654c513856364cc9167c40c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Sep 5 18:49:25 2011 +0100
+
+    Joined agent public key into agent table
+    Added more information to agent
+
+commit f685dec8dcd6465eff71f66c11dcf5a9b6d1d20b
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 14:09:33 2011 -0300
+
+    Added a specific file to ignore
+
+commit 3cc84fdbc30181c6f2ef8db30e22a5e5afa38a4b
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 14:09:13 2011 -0300
+
+    Initial work on the notification system. Still plenty to finish before the first notification breaks out.
+
+commit 958e5d3bf56ccd1cde5f7fdeef37d7968b7a3590
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Mon Sep 5 12:40:37 2011 -0300
+
+    More work on issue #494. Addthis is fully integrated and working now. In order to use, just call the appropriate tag from social templatetag
+
+commit d18d6a49aaddb4426d36b882089b88eb8884d882
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Sep 5 11:37:27 2011 +0100
+
+    Fixed checkAggregator handler to check agent type from field received in message
+
+commit 5d0e669a59ae79ca36f3b8f15cae6aa63999edc2
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Sep 5 11:36:41 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit a417fd319b62d4ea48554820a685823a8df8c936
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Sep 4 18:58:19 2011 +0100
+
+    Updated gitignore
+
+commit 58bda2b9bff7f376ac2e523d1769c76d5031cbca
+Merge: 7a31249 4a2fda6
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Sep 4 18:55:40 2011 +0100
+
+    Merge branch 'master' of dev.umitproject.org:/aggregator
+
+commit 7a312490353e2d108a67d31018746b9fb34aff55
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Sep 4 18:49:30 2011 +0100
+
+    Added last known information fields to Agent
+    getPeers and getSuperPeers now returns offline peers too (if needed)
+    Added logout method
+
+commit a2dd45feb237972044d0af6e40d8455afd4244f9
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Sep 4 18:47:35 2011 +0100
+
+    Changed getPeerList and getSuperPeerList handlers to support offline peers
+    Fixed checkAggregator - now it doesnt verify if agent exists
+
+commit 8136cd532867dcc4db71f82657f2e13ca75ed609
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Sep 4 18:43:22 2011 +0100
+
+    Autogenerated indexes
+
+commit 4a2fda6a3812d1bdf7ca41b3b792c5aaae0e0cc0
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Fri Sep 2 09:18:37 2011 -0300
+
+    Removing remaining pyc files
+
+commit e8471c7c5be0bca91191f43f96263005af71d03b
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Fri Sep 2 09:18:21 2011 -0300
+
+    Removing all pyc files from repository, and adding an ignore entry for them.
+
+commit 86898029384ee445338499db70bc079079ad442d
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Fri Sep 2 09:16:36 2011 -0300
+
+    The twitter lib, for sending messages in our twitter account automatically.
+    
+    This solution is got a cron job that checks for messages that failed to
+    be sent (happens quite often with twitter api) and then uses tasks to
+    make the heavy lifting outside of the request and avoid timeouts.
+
+commit 24a6cc53a80525305ca55030e39514b0996e0901
+Merge: 993d693 2219fe0
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Fri Sep 2 06:51:04 2011 -0300
+
+    Merge branch 'master' of git.umitproject.org:aggregator
+
+commit 993d69353dbd236b0d5722afcd9c56a204fabec2
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Fri Sep 2 06:50:57 2011 -0300
+
+    Adding an index
+
+commit 2219fe02d44408e594bc91904c2f124db651fe53
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Aug 25 02:25:50 2011 +0100
+
+    Return software version based on correct agent type
+
+commit a20b27c884bf7a7bc1fdff537b4a93c4863b06c5
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Aug 25 02:25:05 2011 +0100
+
+    Added LoggedAgent table to keep information about the logged in agents. Entry is created when a user login
+
+commit ccaef1a8b911cdd2b6864db6c4e8adbff6ddc998
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 24 15:34:00 2011 +0100
+
+    Added functions to return peers and superpeers
+
+commit 4eebf0bcbf9e688ed6de1210f74490e8d9d64f80
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 24 15:33:35 2011 +0100
+
+    Fix: Some ips dont have a city name associated
+
+commit e83996d45115cb8db783abac2604f25d5b5c8bb1
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 24 12:03:50 2011 +0100
+
+    Added copyright headers
+
+commit 7db5425cc79f5edea04730bb8a0e79009e145799
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 23:00:38 2011 +0100
+
+    Added geoip to installed apps
+
+commit bdbd8fe5ab975a95dd7f7b32b96e28aae94c45aa
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 23:00:08 2011 +0100
+
+    Added login and logout handler
+    Register agent handler modified
+
+commit e3e0e4648030f9dd165350f2cbc397d5059f3f64
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 22:58:35 2011 +0100
+
+    Geo information and public key added to agent
+
+commit e6329a6b3925d24f77b8c917c695a323828045cd
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 22:58:13 2011 +0100
+
+    Added created_at field to suggetions
+
+commit ddae5a6fe713e87d4fbfae2202af3c37dbebbf0f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 22:57:33 2011 +0100
+
+    Added received_at field to reports
+
+commit b499dcd4dbfaff6d4c03cb70917e40a550de308c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 22:57:17 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit d5af96e4e798e334415be71bb8f81614a9140d4f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 23 22:57:02 2011 +0100
+
+    Added class that handles the cryptography and key generation
+
+commit 4ff997f7328c505581b2fa5fef19ffc62795bb9d
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 17 10:12:34 2011 +0100
+
+    GeoIP system added
+
+commit b680e90ad1f854f3cae287c214d8a98199af3440
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 17 10:06:55 2011 +0100
+
+    Added a release date field to software model
+
+commit b7580dde73f031a04751439aace31080efabbefb
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 17 10:06:23 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit bb954897de0d1abb86fe8ad95be445941481fe8d
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 17 10:06:03 2011 +0100
+
+    Added agents module
+
+commit f64357d8900a8461ddfbe1f1dfb214fdbeae4749
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Aug 17 10:05:30 2011 +0100
+
+    Added login and logout agents to api
+
+commit b54cd094578510d3cdc8b4b8ca036bac3a452bd3
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Aug 4 14:45:41 2011 +0100
+
+    Fixed problem in EventServiceReport
+
+commit 4f834b8d3b75bc31de3bb37b2d6df23dac76f354
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 2 22:33:44 2011 +0100
+
+    Fixed typo error
+
+commit 66270c593d5aa54737c8eff35c8ee85c4b86a22c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 2 22:33:35 2011 +0100
+
+    Some correction on api handlers
+
+commit 51bfe8df032f774c3e5418f4ccfeb0aef7e81e38
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 2 22:33:16 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit 5dc8cd06f9888d05e09cf4c3735c1e1ff8a6631a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 2 13:42:00 2011 +0100
+
+    Refactor
+
+commit fba0c2984e03d65bdef4604c6a0a7ae106f0b937
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 2 13:41:35 2011 +0100
+
+    Autogenerated protobuf messages
+
+commit 81193c3ea7247d84e6f3ca757367b5dde0fc8e39
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Aug 2 13:40:47 2011 +0100
+
+    checkAggregator API implemented
+
+commit d36982ec6468801eb76704943838680863f213ae
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Jul 13 23:33:39 2011 +0100
+
+    Added README file
+
+commit d63c2c84052d3ad16ee355594a33f56d0e8163f9
+Author: Adriano Marques <py.adriano@gmail.com>
+Date:   Wed Jul 13 13:30:06 2011 -0300
+
+    My comments
+
+commit f3a1293e67f9da1306666b1f04d145c12dfbedba
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 23:17:35 2011 +0100
+
+    Some fixes on event page - displayed event locations and blocking nodes
+
+commit 06c5e8439b4fdcc13aa6a660fb3580b4eb19e118
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 22:05:09 2011 +0100
+
+    Indexes updated
+
+commit 1b2548aabeb9cd5333f3d698c0375b526a214ba3
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 22:04:51 2011 +0100
+
+    Added website and service tests to admin interface
+
+commit f665883dd3928f48fc2a7a0651f240d18cb48f0f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:59:49 2011 +0100
+
+    Added suggestions to admin interface
+
+commit 8af2b1db97df92eb8e9fd8ad6f6301b15a0534a4
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:53:34 2011 +0100
+
+    Added agent software version to admin interface
+
+commit ecec01e883136de2fd9496f99b14c2143983f81a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:40:10 2011 +0100
+
+    Removed the use of abstract classes (not supported in gae).
+    Implemented realtimeBox and realtimeMap notification system.
+
+commit 68524318c28a3c85d5be87c6e254905abc1574a1
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:38:19 2011 +0100
+
+    Autogenerated file - indexes file updated
+
+commit 55ef0e0edfbc286ecb803e4605b6119ef1fd4fe9
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:37:49 2011 +0100
+
+    Removed some logs from code.
+    Added method to return the last node of traceroute (blocking node)
+
+commit 9328c5251ad6d28fadb67e033c1a7be198cacef2
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:36:39 2011 +0100
+
+    Removed unused method
+
+commit fbcb0b8fad3ffa1c63c7e134ad978305ef9a2806
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:32:40 2011 +0100
+
+    Changed event model to include the list of nodes that are blocking the website/service
+
+commit 53d82c2fcb4238cbd660a44e6651c0b7463fc7b6
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:30:05 2011 +0100
+
+    Added decision system
+
+commit 90c7ce45c5c4821746e21660b8c8f8512b051f93
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 21:29:38 2011 +0100
+
+    Reports sent to decision system
+
+commit 04696f69897d167513275e77155bb4f376e285e0
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 00:25:59 2011 +0100
+
+    Refactor in event model
+
+commit eaad24f18ac33e4e6cff866f8374359d1348277a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 00:25:04 2011 +0100
+
+    Added tests models.
+    API updated to return lastTestNo in every message.
+    API checktests method implemented
+
+commit 7175a8d28f27072ad8387777c4cf4486dafb46ff
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 12 00:22:44 2011 +0100
+
+    Protobuf messages generated after typo correction
+
+commit 270fd6988ab8f8af673dd0e567d371f882c879d6
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Jul 11 23:30:30 2011 +0100
+
+    Added software version control. Now api functions returns the last software version
+
+commit 6db0f3dec1763ebb60848c3b04faf65ba42b418d
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Jul 11 17:36:57 2011 +0100
+
+    Fixed some problems saving reports information
+
+commit 9a2cbe9986a31fa050d275ddf444557274c32cd7
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jul 5 17:20:23 2011 +0100
+
+    Added event page
+
+commit d7791837811c8c4cb4c8395eb04904908513f35e
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Jun 27 23:42:14 2011 +0100
+
+    Added event alert
+
+commit 93663e849f080b15ac37e16742065f72ceeb3401
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Jun 27 21:29:13 2011 +0100
+
+    Defined zoom until markers are grouped
+
+commit f736747a7ca2d4de54b14e2f99156f05c50f8448
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon Jun 27 21:28:43 2011 +0100
+
+    Changed return values just for tests purpose
+
+commit 05b71c02cdae179ac8b199cdc64171d2e5a5b495
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 24 21:53:39 2011 +0100
+
+    More information added to events. Markercluster added to map
+
+commit 61f2ff4204f83e7ccdbd4985136bd151f5a4bbc1
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 24 21:52:48 2011 +0100
+
+    Included markercluster lib to allow cluster the markers that appear in map
+
+commit 369b11ddbc0b9f1b83de5d428390947b0be0e18c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 24 21:52:10 2011 +0100
+
+    Changed default folders for css and javascript
+
+commit 22491fef94e598921b10655b3ff20ce2b320795c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 24 21:51:15 2011 +0100
+
+    Added geopy lib to use google geocoding service
+
+commit ead41f47677d11042387c8370b5cec960c09adf7
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 17 23:43:15 2011 +0100
+
+    Added google maps, and some tests with event icons
+
+commit e0fd8f867a689daf66f7bbbd57f0723cbd8f933b
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 17 17:07:59 2011 +0100
+
+    Created tests for API
+
+commit fd0d254093ac144196a2b489eb8021298eca4538
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 17 00:09:06 2011 +0100
+
+    New version response message corrected
+
+commit 00f923c83ddeb9bd6ce3b921517fc255ee377a32
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 16 23:11:01 2011 +0100
+
+    Added realtimebox
+
+commit 503ef255b9270cffe8898a008d54e7320649312f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 16 22:55:43 2011 +0100
+
+    Api urls corrections
+
+commit faa8884606920a84f9e55a9565a4dfa1c8ce464a
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 16 22:54:56 2011 +0100
+
+    Solved problems in response message creation
+
+commit 6d41a94452c00b01bf3048f096292bd5592adebb
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jun 14 23:35:46 2011 +0100
+
+    Added notification system
+
+commit 63f8d5ca923331b9ea3e1f7f262a781d6b30190e
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jun 14 23:35:31 2011 +0100
+
+    Test comet system
+
+commit 766633b3024d5731b19455a4279035add15525ae
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jun 14 15:23:38 2011 +0100
+
+    Changed proto autogenerated file to dont use the namespace google
+
+commit 0f165c5c6abbdf32016cdbdfedc1508aeb310a26
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jun 14 15:22:55 2011 +0100
+
+    Correction of the app name
+
+commit 25b5583ec9b33556ade9eebdf1978c223941b770
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue Jun 14 15:22:36 2011 +0100
+
+    Added protobuf 2.4.1
+
+commit 38da4d4a95a00d09b56e07d91c6b634dca602622
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sun Jun 12 00:12:13 2011 +0100
+
+    Added field to store html media into database
+
+commit 5a7a54c47749de58f522f1f19ec9ab44e75d1de2
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 9 01:20:02 2011 +0100
+
+    Added methods to copy WebsiteReport and ServiceReport info to models
+
+commit 9e6d25eb4027f3f6a491f8cb5a5e1bf86554f478
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 9 00:32:18 2011 +0100
+
+    Added dummy responses for webservices calls
+
+commit fb0cc9b51656c5f91b17d01d1098e6a911458f77
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Jun 4 00:57:30 2011 +0100
+
+    Created basic handler for service suggestion. Added webservice call to test the creation of new service suggestion
+
+commit 2517a6ce0a1dcd9c6ed3ecc0a38fbcad25faceb7
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Jun 4 00:45:47 2011 +0100
+
+    Solved a typo in WebsiteSuggestion model
+
+commit 80cfe723e18aed5d5936154ce5546f3bcb32d72d
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat Jun 4 00:44:52 2011 +0100
+
+    Correction on websitesuggestion handler. Added test just to send a website suggestion
+
+commit 2184869f51b25a0ef7e915c877f41c6e853e3b61
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Fri Jun 3 23:49:15 2011 +0100
+
+    Solved the problem with base64
+
+commit a058e4c05d658af225a0252c90d903083ec345ae
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 2 00:58:23 2011 +0100
+
+    Simple test to test the creation of a protobuf message, and its handling by the server
+
+commit 5c7277cbf89f90b4cb795f8f9b80aea57d578332
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 2 00:57:24 2011 +0100
+
+    Changed some fields of events model. Added method to get all active events
+
+commit f8d096dfc2d0c7816aeeaa8d36d272e4644a8675
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 2 00:56:45 2011 +0100
+
+    Correction on api urls
+
+commit 604defb07dc7b4eba71f11ac9b02cbca322ff26f
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 2 00:56:32 2011 +0100
+
+    Changed WebsiteSuggestionHandler to parse protobuf message received
+
+commit c04fbb229dfe9bb6099b3cab7ccd403dadecfdca
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Thu Jun 2 00:55:24 2011 +0100
+
+    Added django logging
+
+commit 97368a167aa12f0503594c9f92a9a10981a8c835
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Jun 1 00:24:16 2011 +0100
+
+    added new apps to installed apps
+
+commit c64b483b312c9a7e1b0a3ffcf6b0e043c68b8fb2
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Wed Jun 1 00:23:56 2011 +0100
+
+    Added events app. Event model created
+
+commit 6bbc479820c50666dd4fa959cb48171dc180d07b
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue May 31 23:51:43 2011 +0100
+
+    Protobuf messages generated
+
+commit 35998dc06d708c465d31640169f6a9b2180559b4
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue May 31 23:31:14 2011 +0100
+
+    Changed API signature
+
+commit 397fd364f2fae35bf026fbbdac8eb34861836a6c
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue May 31 23:30:31 2011 +0100
+
+    Added suggestions app
+
+commit 191c4863d1aeac402c48998483c0e16df13a0f64
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue May 31 01:00:49 2011 +0100
+
+    Generated protobuf messages
+
+commit 852dd88c23de314bbbd106b27320a8813c8296db
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue May 31 00:59:44 2011 +0100
+
+    icm-common added
+
+commit eb1d1afb8dcb98b8e806eff1fda735f4e6a16ba5
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Tue May 31 00:22:10 2011 +0100
+
+    Add the reports app.
+    Reports model created.
+
+commit 625c3473bd740d8b47f52b30be5735e88958238d
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Mon May 30 22:15:23 2011 +0100
+
+    Added api handlers and urls
+
+commit ec023b1368bddf0dcee5bbe36921511c5c233aec
+Author: Diogo Pinheiro <diogormpinheiro@gmail.com>
+Date:   Sat May 28 16:26:50 2011 +0100
+
+    base project added
+
+commit 28d699f0fe141924f914685af28a0e1b9d4705a8
+Author: Adriano Marques <adriano@rubysco.com>
+Date:   Fri May 6 22:59:26 2011 -0300
+
+    Creating the aggregator repository

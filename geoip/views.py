@@ -48,7 +48,7 @@ def save_geoip(request):
         if not location:
             location = Location()
             location.id = gip['loc_id']
-            location.name = "%s, %s" % (gip['city'], gip['country_name']) if gip['city'] != '' else gip['country_name']
+            location.fullname = "%s, %s" % (gip['city'], gip['country_name']) if gip['city'] != '' else gip['country_name']
             location.country_name = gip['country_name']
             location.country_code = gip['country_code']
             location.state_region = gip['state_region']
@@ -102,7 +102,7 @@ def ban_network(request):
                             start_number=convert_ip(form.cleaned_data['start_ip']),
                             end_number=convert_ip(form.cleaned_data['end_ip']),
                             defaults=dict(location_id = UNKNOWN_LOCATION.id,
-                                          name = UNKNOWN_LOCATION.name,
+                                          name = UNKNOWN_LOCATION.fullname,
                                           country_name = UNKNOWN_LOCATION.country_name,
                                           country_code = UNKNOWN_LOCATION.country_code,
                                           state_region = UNKNOWN_LOCATION.state_region,

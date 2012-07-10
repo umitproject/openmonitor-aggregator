@@ -9,6 +9,8 @@ var WEBSITE_EVENT_SUMMARY_TEMPLATE = " \
   <div class='row-fluid'><a class='pull-right' href='{{ event_url }}'> see details »</a></div> \
 ";
 
+var EVENT_URLS = new Array(); // array that holds unique URLs for the events
+
 function getLocationsRepresentionString(raw_locations, show_all_countries) {
 	    show_all_countries = typeof show_all_countries !== 'undefined' ? show_all_countries : false;
 
@@ -22,7 +24,7 @@ function getLocationsRepresentionString(raw_locations, show_all_countries) {
 	    		unknown_country = true;
 	    	}
 	    	else {
-		    	if (!locations.indexOf(country_name)) 
+		    	if (locations.indexOf(country_name) == -1) 
 		    		locations.push(country_name);
 	    	}
 	    }
@@ -85,7 +87,8 @@ function createEventSummaryDiv(event, show_all_countries) {
 	    return event_div;
 }
 
-function receiveEvents(token, events){
+function receiveEvents(){
+	/*
 	var channel = new goog.appengine.Channel(token);
     var handler = {
         'onopen': onMapOpened,
@@ -96,7 +99,21 @@ function receiveEvents(token, events){
     var socket = channel.open(handler);
     socket.onopen = onMapOpened;
     socket.onmessage = onMapMessage;
-    socket.onerror = onMapError;
+    socket.onerror = onMapError;*/
+
+    $.ajax({
+        url: "/events/poll",
+        dataType: "html",
+        type: "POST",
+        success: function(data){
+            updateInitialMapEvents({data: data});
+            updateInitialRealTimeEvents({data: data});
+            setTimeout('receiveEvents()', 60000); //poll again after 60 sec.
+        },
+        error: function(data){
+            setTimeout('receiveEvents()', 60000); //poll again after 60 sec.
+        }
+    });
 }
 
 function onMapOpened() {
@@ -131,10 +148,19 @@ function addEventToList(event, appear)
 
 updateInitialRealTimeEvents = function(m)
 {
-    events = JSON.parse(m.data)
-    for(var i=0; i<events.length; i++)
+
+    events = JSON.parse(m.data);
+    for(var i=(events.length-1); i>-1; i--)
     {
-        addEventToList(events[i], false)
+        var event = events[i];
+        if (EVENT_URLS.indexOf(event['url']) == -1){
+            EVENT_URLS.push(event['url']);
+            addEventToList(event, false);
+            //addEventToMap(event,false);
+        }
+        else {
+            break;
+        }
     }
 }
 

@@ -1,0 +1,35 @@
+REQUIREMENTS AND INSTALL
+==========================
+This document describes how to get a local instance of
+the aggregator running:
+
+
+REQUIREMENTS
+-------------
+Below are compatible versions of required third-party 
+libraries.
+
+For python (install from PyPI):
+
+ * pycrypto == 2.6.0
+ * celery == 3.0.0
+ * djcelery == 3.0.0
+
+For system:
+ * MySQL >= 5.1 (for GeoIP database)
+ * Cassandra == 1.1.1 (for main database)
+ * RabbitMQ >= 2.8.4 (an AMQP server for messaging)
+
+
+INSTALL
+---------
+Steps to follow:
+
+ * Create a MySQL database "openmonitor" respecting the credentials
+   in settings.py.
+ * Create a Cassandra key space named "openmonitor".
+ * Start MySQL, Cassandra servers.
+ * Do "python manage.py syncdb" and "python manage.py syncdb --database=mysql".
+ * To enable tasks, start RabbitMQ server and do "python manage.py celeryd"
+   to start messaging for tasks (OPTIONAL).
+ * Start applciation with "python manage.py runserver".

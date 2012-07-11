@@ -130,8 +130,8 @@ class LocationNamesAggregation(models.Model):
 
 class Location(models.Model):
     ip_range_ids = ListField(py_type=int)
-    fullname = models.CharField(max_length=300)
-    country_name = models.CharField(max_length=100)
+    fullname = models.CharField(max_length=300, blank=True, null=True)
+    country_name = models.CharField(max_length=100, blank=True, null=True)
     country_code = models.CharField(max_length=2)
     state_region = models.CharField(max_length=2)
     city = models.CharField(max_length=255)

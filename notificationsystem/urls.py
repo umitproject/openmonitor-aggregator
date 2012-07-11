@@ -22,8 +22,7 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
-    url('^/cron/check_notifications',
-            'notificationsystem.views.check_notifications', name='check_notifications'),
-    url('^/taks/send_notification_task/(?P<notification_id>\d+)/?$',
-            'notificationsystem.views.send_notification_task', name='send_notification_task'),
+    url('^/cron/send_notifications',
+        'notificationsystem.views.send_notifications_cron',
+        name='send_notifications_cron'),
 )

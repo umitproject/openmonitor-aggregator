@@ -236,7 +236,7 @@ class Location(models.Model):
 
 
 try:
-    UNKNOWN_LOCATION = Location.objects.get_or_create(name='Unknown',
+    UNKNOWN_LOCATION = Location.objects.get_or_create(fullname='Unknown',
                                                       country_name='Unknown',
                                                       country_code='UN',
                                                       state_region='UN',

@@ -258,12 +258,11 @@ class Agent(models.Model):
 
             # get country by geoip
             iprange = IPRange.ip_location(ip)
-            agent.country = iprange.country_code
-            agent.latitude = iprange.lat
-            agent.longitude = iprange.lon
+            agent.country = iprange.location.country_code
+            agent.latitude = iprange.location.lat
+            agent.longitude = iprange.location.lon
             agent.iprange_id = iprange.id
             agent.location_id = iprange.location_id
-            
             if agent.registered_at is None:
                 agent.registered_at = datetime.datetime.now()
 
@@ -346,15 +345,15 @@ class Agent(models.Model):
             # get country by geoip
             from geoip.models import IPRange
             iprange = IPRange.ip_location(loginProcess.ip)
-            loggedAgent.country_code = iprange.country_code
-            loggedAgent.country_name = iprange.country_name
-            loggedAgent.latitude = iprange.lat
-            loggedAgent.longitude = iprange.lon
+            loggedAgent.country_code = iprange.location.country_code
+            loggedAgent.country_name = iprange.location.country_name
+            loggedAgent.latitude = iprange.location.lat
+            loggedAgent.longitude = iprange.location.lon
             loggedAgent.location_id = iprange.location_id
             loggedAgent.location_name = iprange.location.fullname
-            loggedAgent.zipcode = iprange.zipcode
-            loggedAgent.state_region = iprange.state_region
-            loggedAgent.city = iprange.city
+            loggedAgent.zipcode = iprange.location.zipcode
+            loggedAgent.state_region = iprange.location.state_region
+            loggedAgent.city = iprange.location.city
             loggedAgent.save()
             
             
@@ -367,9 +366,9 @@ class Agent(models.Model):
             
             
             # update agent information
-            agent.lastKnownCountry = iprange.country_code
-            agent.lastKnownLatitude = iprange.lat
-            agent.lastKnownLongitude = iprange.lon
+            agent.lastKnownCountry = iprange.location.country_code
+            agent.lastKnownLatitude = iprange.location.lat
+            agent.lastKnownLongitude = iprange.location.lon
             agent.lastKnownIP = loginProcess.ip
             agent.lastKnownPort = loginProcess.port
             agent.save()

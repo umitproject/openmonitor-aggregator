@@ -70,6 +70,8 @@ def fill_fullnames():
         else:
             location.fullname = location.country_name
 
+        location.save()
+
 
 
 

@@ -59,14 +59,14 @@ class Trace(object):
         else:
             iprange = IPRange.ip_location(ip)
             self.location_id = iprange.location_id
-            self.location_name = iprange.name
-            self.country_name = iprange.country_name
-            self.country_code = iprange.country_code
-            self.state_region = iprange.state_region
-            self.city = iprange.city
-            self.zipcode = iprange.zipcode
-            self.lat = iprange.lat
-            self.lon = iprange.lon
+            self.location_name = iprange.location.name
+            self.country_name = iprange.location.country_name
+            self.country_code = iprange.location.country_code
+            self.state_region = iprange.location.state_region
+            self.city = iprange.location.city
+            self.zipcode = iprange.location.zipcode
+            self.lat = iprange.location.lat
+            self.lon = iprange.location.lon
     
     @staticmethod
     def from_dump(dump):
@@ -382,15 +382,15 @@ class WebsiteReport(UserReport):
 
             # update target location
             iprange = IPRange.ip_location(report.target)
-            report.target_country_code = iprange.country_code
-            report.target_country_name = iprange.country_name
-            report.target_lat = iprange.lat
-            report.target_lon = iprange.lon
+            report.target_country_code = iprange.location.country_code
+            report.target_country_name = iprange.location.country_name
+            report.target_lat = iprange.location.lat
+            report.target_lon = iprange.location.lon
             report.target_location_id = iprange.location_id
             report.target_location_name = iprange.location.fullname
-            report.target_zipcode = iprange.zipcode
-            report.target_state_region = iprange.state_region
-            report.target_city = iprange.city
+            report.target_zipcode = iprange.location.zipcode
+            report.target_state_region = iprange.location.state_region
+            report.target_city = iprange.location.city
 
         # get info about target ip
         loggedAgent = agent.getLoginInfo()
@@ -475,15 +475,15 @@ class ServiceReport(UserReport):
 
             # update target location
             iprange = IPRange.ip_location(report.target)
-            report.target_country_code = iprange.country_code
-            report.target_country_name = iprange.country_name
-            report.target_lat = iprange.lat
-            report.target_lon = iprange.lon
+            report.target_country_code = iprange.location.country_code
+            report.target_country_name = iprange.location.country_name
+            report.target_lat = iprange.location.lat
+            report.target_lon = iprange.location.lon
             report.target_location_id = iprange.location_id
             report.target_location_name = iprange.location.fullname
-            report.target_zipcode = iprange.zipcode
-            report.target_state_region = iprange.state_region
-            report.target_city = iprange.city
+            report.target_zipcode = iprange.location.zipcode
+            report.target_state_region = iprange.location.state_region
+            report.target_city = iprange.location.city
 
         # get info about target ip
         loggedAgent = agent.getLoginInfo()

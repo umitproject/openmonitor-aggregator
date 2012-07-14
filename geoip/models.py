@@ -140,14 +140,14 @@ class Location(models.Model):
     lon = models.DecimalField(decimal_places=20, max_digits=23)
     aggregations = ListField(py_type=int)
     nodes_count = models.IntegerField(default=0, null=True)
-    
+
     def add_aggregation(self, aggregation):
         if aggregation.id in self.aggregations:
             return
-        
+
         self.aggregations.append(aggregation.id)
         self.save()
-        
+
     def __unicode__(self):
         return "%s, %s" % (self.city, self.country_name) \
                                 if self.city != '' else self.country_code
@@ -163,10 +163,10 @@ class Location(models.Model):
         if not location:
             # TODO
             location = Location.objects.filter(name__startswith=name)
-        
+
         if location:
             return location[0]
-    
+
     @property
     def ip_ranges(self):
         key = IP_RANGES_CACHE_KEY % self.id
@@ -282,24 +282,14 @@ class IPRange(models.Model):
     location_id = models.IntegerField()
     start_number = models.IntegerField()
     end_number = models.IntegerField()
-    name = models.CharField(max_length=300, blank=True, null=True)
-    country_name = models.CharField(max_length=100, blank=True, null=True)
-    country_code = models.CharField(max_length=2, blank=True, null=True)
-    state_region = models.CharField(max_length=2, blank=True, null=True)
-    city = models.CharField(max_length=255, blank=True, null=True)
-    zipcode = models.CharField(max_length=6, blank=True, null=True)
-    lat = models.DecimalField(decimal_places=20, max_digits=23, null=True)
-    lon = models.DecimalField(decimal_places=20, max_digits=23, null=True)
     nodes_count = models.IntegerField(default=0, null=True)
     banned = models.BooleanField(default=False)
     ban_flags = models.IntegerField(default=0)
-    
+
     def __unicode__(self):
-        return "%s - %s (%s)" % (convert_int_ip(self.start_number),
-                                     convert_int_ip(self.end_number),
-                                     "%s, %s" % (self.city, self.country_code) \
-                                        if self.city != '' else self.country_code)
-    
+        return "%s - %s" % (convert_int_ip(self.start_number),
+                            convert_int_ip(self.end_number))
+
     def ban(self, flags):
         self.banned = True
         import pdb; pdb.set_trace()
@@ -308,7 +298,7 @@ class IPRange(models.Model):
         else:
             self.ban_flags |= flags
         self.save()
-        
+
         banet = BannedNetworks.objects.filter(iprange_id=self.id)
         if banet:
             banet.flags |= flags
@@ -320,42 +310,34 @@ class IPRange(models.Model):
             banet.end_number = self.end_number
             banet.nodes_count = self.nodes_count # the amount of nodes at the moment of the ban
             banet.flags = flags
-        
+
         banet.save()
-    
+
     def unban(self):
         self.banned = False
         self.ban_flags = 0
         self.save()
-        
+
         banet = BannedNetworks.objects.filter(iprange_id=self.id)
         if banet:
             banet.delete()
-    
+
     @staticmethod
     def ip_location(ip):
         if type(ip) != type(0):
             ip = convert_ip(ip)
-        
+
         iprange = IPRange.objects.filter(start_number__lte=ip).order_by('-start_number')
         if iprange:
             return iprange[0]
         iprange = IPRange.objects.filter(end_number__gte=ip).order_by('end_number')
         if iprange:
             return iprange[0]
-        
+
         return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,
                                              start_number=ip,
-                                             end_number=ip,
-                                             name=UNKNOWN_LOCATION.fullname,
-                                             country_name=UNKNOWN_LOCATION.country_name,
-                                             country_code=UNKNOWN_LOCATION.country_code,
-                                             state_region=UNKNOWN_LOCATION.state_region,
-                                             city=UNKNOWN_LOCATION.city,
-                                             zipcode=UNKNOWN_LOCATION.zipcode,
-                                             lat=UNKNOWN_LOCATION.lat,
-                                             lon=UNKNOWN_LOCATION.lon)[0]
-    
+                                             end_number=ip)[0]
+
     @property
     def location(self):
         key = LOCATION_CACHE_KEY % self.location_id
@@ -364,7 +346,7 @@ class IPRange(models.Model):
             location = Location.objects.get(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
-    
+
     @property
     def logged_agents(self):
         key = NETWORK_LIST_AGENTS_CACHE_KEY % self.id
@@ -372,7 +354,7 @@ class IPRange(models.Model):
         if not logged_agents:
             count = settings.MAX_AGENTSLIST_RESPONSE
             from agents.models import LoggedAgent
-            
+
             # TODO: Randomize results
             logged_agents = LoggedAgent.objects.filter(location_id=self.location_id)[:count]
             cache.set(key, logged_agents, CACHE_EXPIRATION)
@@ -380,18 +362,14 @@ class IPRange(models.Model):
 
     def save(self, *args, **kwargs):
         new = self.id is None
-        
+
         super(IPRange, self).save(*args, **kwargs)
-        
+
         #if new:
         Location.add_ip_range(self)
-    
+
     def dump(self):
-        return dict(city=self.city,
-                    country_name=self.country_name,
-                    country_code=self.country_code,
-                    latitude=self.lat,
-                    longitude=self.lon,
+        return dict(
                     start_ip=convert_int_ip(self.start_number),
                     end_ip=convert_int_ip(self.end_number)
                     )

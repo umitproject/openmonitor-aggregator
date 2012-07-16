@@ -127,11 +127,12 @@ class Login2Handler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request):
+        logging.info("Raw Message from Agent in Login2 : %s" % str(request))
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.LoginStep2()
         loginAgent.ParseFromString(msg)
-
+        logging.info("Message from Agent in Login2 : %s" % msg)
         # check login process
         agent = Agent.finishLogin(loginAgent.processID,
                                   loginAgent.cipheredChallenge)

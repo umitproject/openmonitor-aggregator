@@ -50,4 +50,4 @@ class LocationLookup(LookupChannel):
     return self.format_item_display(obj)
 
   def format_item_display(self, obj):
-    return obj.name
+    return obj.fullname

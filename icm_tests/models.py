@@ -190,7 +190,7 @@ class TestAggregation(models.Model):
 
     version = models.IntegerField(default=1)
     location_id = models.PositiveIntegerField(blank=True, null=True)
-    test_ids = ListField(py_type=int)
+    test_ids = ListField(py_type=str)
 
     class Meta:
         abstract = True

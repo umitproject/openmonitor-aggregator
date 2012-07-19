@@ -176,7 +176,7 @@ class ServiceTest(Test):
             return True
 
     def __unicode__(self):
-        return "%s (%s) - %s" % (self.description, self.service_name,
+        return "%s (%s) - %s:%s" % (self.description, self.service_name,
                                  self.ip, self.port)
 
 

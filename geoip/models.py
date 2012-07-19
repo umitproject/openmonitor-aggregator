@@ -159,10 +159,10 @@ class Location(models.Model):
         coordinates. If successful, we create a new entry. Otherwise, we
         consider the suggestion to be world wide.
         """
-        location = Location.objects.filter(name__startswith=name)
+        location = Location.objects.filter(fullname__startswith=name)
         if not location:
             # TODO
-            location = Location.objects.filter(name__startswith=name)
+            location = Location.objects.filter(fullname__startswith=name)
 
         if location:
             return location[0]

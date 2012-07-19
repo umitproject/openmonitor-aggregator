@@ -188,6 +188,7 @@ class Resource(object):
             result = meth(request, *args, **kwargs)
         except Exception, e:
             result = self.error_handler(e, request, meth, em_format)
+            return result
 
         try:
             emitter, ct = Emitter.get(em_format)

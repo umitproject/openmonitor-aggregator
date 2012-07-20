@@ -139,7 +139,7 @@ class Location(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
     aggregations = ListField(py_type=int)
-    nodes_count = models.IntegerField(default=0, null=True)
+    nodes_count = models.IntegerField(default=0)
 
     def add_aggregation(self, aggregation):
         if aggregation.id in self.aggregations:
@@ -282,7 +282,7 @@ class IPRange(models.Model):
     location_id = models.IntegerField()
     start_number = models.IntegerField()
     end_number = models.IntegerField()
-    nodes_count = models.IntegerField(default=0, null=True)
+    nodes_count = models.IntegerField(default=0)
     banned = models.BooleanField(default=False)
     ban_flags = models.IntegerField(default=0)
 

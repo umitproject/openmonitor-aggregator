@@ -52,7 +52,7 @@ $.ajaxSetup({
              xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
          }
      } 
-    resize();
+    //resize();
 });
 
 function resize() {

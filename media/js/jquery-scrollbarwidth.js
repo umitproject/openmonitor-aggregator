@@ -9,23 +9,20 @@
 
 // Calculate the scrollbar width dynamically!
 
-(function($,undefined,width){
-  '$:nomunge'; // Used by YUI compressor.
-  
-  $.scrollbarWidth = function() {
+var width = undefined;
+
+function scrollbarWidth(){
     var parent,
       child;
-    
+
     if ( width === undefined ) {
       parent = $('<div style="width:50px;height:50px;overflow:auto"><div/></div>').appendTo('body');
       child = parent.children();
       width = child.innerWidth() - child.height( 99 ).innerWidth();
       parent.remove();
     }
-    
+
     return width;
-  };
-  
-})(jQuery);
+};
 
 

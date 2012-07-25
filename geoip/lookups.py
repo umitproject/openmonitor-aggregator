@@ -36,7 +36,7 @@ class LocationLookup(LookupChannel):
     
     queries = []
     for word in words:
-      query = Location.objects.filter(name__icontains=word)[:20]
+      query = Location.objects.filter(fullname__icontains=word)[:20]
       queries.append(query)
     
     entities = []
@@ -50,4 +50,4 @@ class LocationLookup(LookupChannel):
     return self.format_item_display(obj)
 
   def format_item_display(self, obj):
-    return obj.name
+    return obj.fullname

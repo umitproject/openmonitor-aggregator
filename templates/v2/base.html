@@ -8,7 +8,6 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-	<script type="text/javascript" src="/_ah/channel/jsapi"></script>
     <!-- Le styles -->
     {% include_media 'main.js' %}
     {% include_media 'bootstrap.css' %}
@@ -44,6 +43,8 @@
               <li {% ifequal request.path '/' %}class="active"{% endifequal %}><a href="/">Home</a></li>
               <li {% ifequal request.path '/suggest_website' %}class="active"{% endifequal %}><a href="/suggest_website">Suggest A Website</a></li>
               <li {% ifequal request.path '/suggest_service' %}class="active"{% endifequal %}><a href="/suggest_service">Suggest A Service</a></li>
+              <li {% ifequal request.path '/about' %}class="active"{% endifequal %}><a href="/about">About</a></li>
+              <li {% ifequal request.path '/manifesto' %}class="active"{% endifequal %}><a href="/manifesto">Manifesto</a></li>
             </ul>
             <ul class="nav pull-right">
 	            {% if request.user.is_authenticated %}

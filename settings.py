@@ -159,6 +159,7 @@ MEDIA_BUNDLES = (
          {'filter': 'mediagenerator.filters.media_url.MediaURL'},
          'js/jquery.js',
          'js/jquery-ui.js',
+         'js/jquery-scrollbarwidth.js',
          'js/date.format.js',
          'js/markerclusterer.js',
          'js/common.js',

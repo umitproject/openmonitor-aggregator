@@ -222,8 +222,8 @@ class AddPeerHandler(BaseHandler):
             # Check condition - If there are two super peers for that country already - then make it a normal peer
             logging.info("Checking if the country has two super peers already")
             hasTwoSPeers = self._testSuperPeers()
-            if hasTwoSPeers :
-                received_msg.superPeer = False
+#            if hasTwoSPeers :
+#                received_msg.superPeer = False
             LoggedAgent.addPeer(received_msg.newPeer,received_msg.cagePort)
             response.response = "Success"
         except Exception,e:
@@ -252,7 +252,7 @@ class GetSuperPeerListHandler(BaseHandler):
         if received_msg.HasField('location') and  str(received_msg.location)!='':
             country_code = received_msg.location
         else:
-            country_code = "IN"
+            country_code = "UN"
 
         logging.info("Called GetSuperPeerlistHandler with country code %s" % country_code)
         superpeers = agent.getSuperPeers(country_code)
@@ -647,7 +647,7 @@ class GetLocationHandler(BaseHandler):
         try:
             # Check condition - If there are two super peers for that country already - then make it a normal peer
             logging.info("Using geoip to convert IP Address %s",received_msg.agentIP)
-            response.location="IN"
+            response.location="UN"
             
         except Exception,e:
             response.location="INVALID"

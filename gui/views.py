@@ -282,13 +282,22 @@ def serve_media(request, id):
     upload = get_object_or_404(WebsiteReport, pk=id)
     return serve_file(request, upload.file)
 
+
 @staff_member_required
 def ban_agent(request):
     
     return render_to_response('gui/ban_agent.html', locals(), context_instance=RequestContext(request))
 
+
 @staff_member_required
 def ban_network(request):
     
     return render_to_response('gui/ban_network.html', locals(), context_instance=RequestContext(request))
-    
+
+
+def manifesto(request):
+    """This is our manifesto on how should Open Monitor should be used and
+    we expect people to respect our restrictions in recognition of the time
+    we've being devoting to develop and support this powerful tool.
+    """
+    return render_to_response("gui/manifesto.html", locals(), context_instance=RequestContext(request))

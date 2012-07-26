@@ -227,7 +227,7 @@ class Report(models.Model):
 
 class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    report_id = CassandraKeyField()
+    report_id = models.PositiveIntegerField(unique=True)
     agent_id = CassandraKeyField()
     test_id = CassandraKeyField()
     time = models.DateTimeField()

@@ -254,9 +254,10 @@ class GetSuperPeerListHandler(BaseHandler):
         else:
             country_code = "UN"
 
-        logging.info("Called GetSuperPeerlistHandler with country code %s" % country_code)
+        logging.critical("Called GetSuperPeerlistHandler with country code %s" % country_code)
         superpeers = agent.getSuperPeers(country_code)
-        logging.info("list of super peers from the aggregator model is %s" % superpeers.__str__())
+        logging.critical(superpeers.__str__)
+        logging.critical("list of super peers from the aggregator model is %s" % superpeers.__str__())
         for peer in superpeers:
             knownSuperPeer = response.knownSuperPeers.add()
             knownSuperPeer.agentID = peer.agent_id

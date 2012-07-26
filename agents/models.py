@@ -92,15 +92,17 @@ class LoggedAgent(models.Model):
         return agent
 
     def _getPeers(agent_id, country_code, superPeer):
+        logging.critical("Agent ID : %s and Country code is %s and super peer flag is %s" %(agent_id,country_code,superPeer))
         selectedPeers = []
         
         # select near peers
-        nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
-                                                    Q(superPeer=superPeer),
-                                                    ~Q(agent_id=agent_id)))
-        logging.info("List populated at the model level in aggregator : %s" % nearPeers.__str__())
+#        nearPeers = list(LoggedAgent.objects.filter(Q(country_code=country_code),
+#                                                    Q(superPeer=superPeer),
+#                                                    ~Q(agent_id=agent_id)))
+        nearPeers = list(LoggedAgent.objects.filter(~Q(agent_id=agent_id)))
+        logging.critical("List populated at the model level in aggregator : %s" % nearPeers.__str__())
         selectedPeers.extend(nearPeers)
-        logging.info("List populated at the model level in aggregator : %s" % selectedPeers.__str__())
+        logging.critical("List populated at the model level in aggregator : %s" % selectedPeers.__str__())
         '''
         # if more peers are needed, get far peers
         peersIDs = []
@@ -415,9 +417,9 @@ class Agent(models.Model):
                                      self.lastKnownCountry,
                                      False, totalPeers)
 
-    def getSuperPeers(self, country_code = 'US'):
+    def getSuperPeers(self, country_code = 'UN'):
         #return Agent._getPeers(country, True, totalPeers)
-        logging.info("Called getSuperPeers function with Agent ID - %s , country code - %s " % (self.id,country_code))
+        logging.critical("Called getSuperPeers function with Agent ID - %s , country code - %s " % (self.id,country_code))
         return LoggedAgent._getPeers(self.id, country_code, True)
 
     def encodeMessage(self, message):

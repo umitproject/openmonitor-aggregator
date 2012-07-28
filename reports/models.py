@@ -229,7 +229,7 @@ class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     report_id = models.CharField(max_length=500)
     agent_id = CassandraKeyField()
-    test_id = CassandraKeyField()
+    test_id = models.PositiveIntegerField()
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)

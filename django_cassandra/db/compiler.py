@@ -32,7 +32,7 @@ from .utils import *
 from .predicate import *
 
 from uuid import uuid4
-from pycassa.cassandra.c10 import Cassandra
+from pycassa.cassandra import Cassandra
 from pycassa.cassandra.ttypes import *
 from thrift.transport.TTransport import TTransportException
 

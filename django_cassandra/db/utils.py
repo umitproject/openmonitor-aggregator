@@ -17,8 +17,8 @@ from thrift import Thrift
 from thrift.transport import TTransport
 from thrift.transport import TSocket
 from thrift.protocol import TBinaryProtocol
-from pycassa.cassandra.c10 import Cassandra
-#from cassandra.ttypes import *
+from pycassa.cassandra import Cassandra
+#from pycassa.cassandra.ttypes import *
 from django.db.utils import DatabaseError
 
 def _cmp_to_key(comparison_function):

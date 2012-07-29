@@ -23,28 +23,27 @@
 import logging
 import base64
 import time
-
-from piston.handler import BaseHandler
-from messages import messages_pb2
-from suggestions.models import WebsiteSuggestion, ServiceSuggestion
-from reports.models import WebsiteReport, ServiceReport
+import hashlib
 
 from django.test.client import Client
 from django.http import HttpResponse
 from django.conf import settings
 
+from umit.proto import messages_pb2
+
+from piston.handler import BaseHandler
+
+from suggestions.models import WebsiteSuggestion, ServiceSuggestion
+from reports.models import WebsiteReport, ServiceReport
 from events.models import Event
 from versions.models import DesktopAgentVersion, MobileAgentVersion
 from icm_tests.models import Test, WebsiteTest, ServiceTest
 from decision.decisionSystem import DecisionSystem
 from agents.models import *
 from agents.CryptoLib import *
-from api.decorators import message_handler
-
-import hashlib
-
 from geoip.models import *
 
+from api.decorators import message_handler
 
 
 class RegisterAgentHandler(BaseHandler):

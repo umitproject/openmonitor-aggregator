@@ -28,7 +28,7 @@ from dbextra.models import UserModel
 from geoip.models import Location
 from icm_tests.models import WebsiteTest, ServiceTest
 
-from messages.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
+from umit.proto.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
 def add_to_aggregation(agg_model, fields, suggestion):
     agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))

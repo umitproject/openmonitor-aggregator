@@ -26,6 +26,8 @@ import os
 import djcelery
 djcelery.setup_loader()
 
+import import_deps
+
 
 DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
                            'NAME':'openmonitor',

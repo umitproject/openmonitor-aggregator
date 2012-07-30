@@ -220,6 +220,7 @@ class GetPeerListHandler(BaseHandler):
     @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
+
         if received_msg.HasField('count'):
             totalPeers = received_msg.count
         else:
@@ -228,7 +229,7 @@ class GetPeerListHandler(BaseHandler):
         peers = agent.getPeers(totalPeers)
         for peer in peers:
             knownPeer = response.knownPeers.add()
-            knownPeer.agentID = peer.agent_id
+            knownPeer.agentID = str(peer.agent_id).rstrip('L')
             knownPeer.token = peer.token
             knownPeer.publicKey.mod = peer.publicKeyMod
             knownPeer.publicKey.exp = peer.publicKeyExp

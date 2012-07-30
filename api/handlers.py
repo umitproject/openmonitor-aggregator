@@ -89,7 +89,7 @@ class RegisterAgentHandler(BaseHandler):
             publicKeyHash = m.digest()
             
             try:
-                response.agentID = agent.id
+                response.agentID = str(agent.id).rstrip('L')
                 response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash,
                                                                     aggregatorKey)
             except Exception, e:
@@ -99,7 +99,6 @@ class RegisterAgentHandler(BaseHandler):
             response_str = response.SerializeToString()
             return response_str
         except Exception, err:
-            raise
             import pdb; pdb.set_trace()
             print err
 
@@ -113,6 +112,7 @@ class LoginHandler(BaseHandler):
     response_message = messages_pb2.LoginStep1
 
     def create(self, request):
+        import pdb; pdb.set_trace()
         if request.POST.get('crypto_v1', None):
           from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
         else:
@@ -137,7 +137,7 @@ class LoginHandler(BaseHandler):
     
             # create the response
             response = messages_pb2.LoginStep1()
-            response.processID = loginProcess.processID
+            response.processID = str(loginProcess.processID).rstrip('L')
             response.cipheredChallenge = cipheredChallenge
             response.challenge = loginProcess.challenge
     
@@ -313,7 +313,7 @@ class GetNetlistHandler(BaseHandler):
             
             for agent in net.logged_agents:
                 ag = network.nodes.add()
-                ag.agentID = agent.id
+                ag.agentID = str(agent.id).rstrip('L')
                 ag.agentIP = agent.current_ip
                 ag.agentPort = agent.port
                 ag.token = agent.token

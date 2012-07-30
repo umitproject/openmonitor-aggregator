@@ -28,7 +28,7 @@ from django.core.cache import cache
 from django.conf import settings
 
 from gui.decorators import staff_member_required
-from utils import send_mail
+#from utils import send_mail
 from notificationsystem.models import *
 from notificationsystem.tasks import send_notifications_task
 
@@ -37,16 +37,17 @@ CHECK_NOTIFICATION_KEY = "check_notification_key_%s"
 
 
 def send_event_email(event):
-    notification = EmailNotification()
-    notification.event = event
-    notification.region = event.region
-    notification.build_email_data()
-    notification.save()
+    for location in event.locations:
+        notification = EmailNotification()
+        notification.event = event
+        notification.region = location.state_region
+        notification.build_email_data()
+        notification.save()
 
-    # The following is going to put the email sending task to the background
-    # and unblock the current request. If it fails, will try again later,
-    # in a cron job that catches the msg sending failures.
-    send_notifications_task.delay(notification.id)
+        # The following is going to put the email sending task to the background
+        # and unblock the current request. If it fails, will try again later,
+        # in a cron job that catches the msg sending failures.
+        send_notifications_task.delay(notification.id)
 
 
 def subscribe_to_region(request, region):

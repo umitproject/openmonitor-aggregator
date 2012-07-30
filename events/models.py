@@ -38,6 +38,7 @@ EVENT_LIST_CACHE_KEY = "events_list"
 LOCATION_CACHE_KEY = "location_%s"
 EVENT_CACHE_KEY = 'event_%s'
 
+
 eventType = ["Censor", "Throttling", "Offline"]
 targetType = ["Website", "Service"]
 
@@ -88,15 +89,19 @@ class Event(models.Model):
     lons = ListField(py_type=decimal.Decimal)
     isps = ListField()
     
-    
+    # List of each containing report's of trace
+    latest_traces = ListField(py_type=str, max_size=100)
+
     @property
-    def location(self):
-        location = cache.get(LOCATION_CACHE_KEY % self.location_id, False)
-        if not location:
-            region = Location.objects.get(id=self.location_id)
-            cache.set(LOCATION_CACHE_KEY % self.location_id, LOCATION_CACHE_TIME)
-        
-        return location
+    def locations(self):
+        locations = []
+        for location_id in self.location_ids:
+            location = cache.get(LOCATION_CACHE_KEY % location_id, False)
+            if not location:
+                location = Location.get_location_or_unknown(id=location_id)
+                cache.set(LOCATION_CACHE_KEY % location_id, location, LOCATION_CACHE_TIME)
+            locations.append(location)
+        return locations
 
     @staticmethod
     def get_active_events(limit=20):
@@ -173,6 +178,10 @@ class Event(models.Model):
         
         return event
 
+    def get_latest_traces_as_json(self):
+        #TODO(orc.avs): Cache the result
+        return json.dumps([trace for trace in self.latest_traces])
+
     def save(self, *args, **kwargs):
         new = self.id is None
 
@@ -195,7 +204,7 @@ class EventLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_detection_utc = models.DateTimeField(auto_now=True)
     location_country_code = models.CharField(max_length=2)
-    events = ListField(py_type=int)
+    events = ListField(py_type=str)
     count = models.IntegerField(default=1)
 
     @staticmethod

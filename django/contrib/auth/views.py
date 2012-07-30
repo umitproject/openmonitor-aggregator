@@ -3,10 +3,10 @@ import urlparse
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, QueryDict
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.utils.http import urlsafe_base64_decode
+from django.template.response import TemplateResponse
+from django.utils.http import base36_to_int
 from django.utils.translation import ugettext as _
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 
@@ -19,6 +19,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 
 
+@sensitive_post_parameters()
 @csrf_protect
 @never_cache
 def login(request, template_name='registration/login.html',
@@ -39,7 +40,7 @@ def login(request, template_name='registration/login.html',
             if not redirect_to:
                 redirect_to = settings.LOGIN_REDIRECT_URL
 
-            # Security check -- don't allow redirection to a different
+            # Heavier security check -- don't allow redirection to a different
             # host.
             elif netloc and netloc != request.get_host():
                 redirect_to = settings.LOGIN_REDIRECT_URL
@@ -64,9 +65,10 @@ def login(request, template_name='registration/login.html',
         'site': current_site,
         'site_name': current_site.name,
     }
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)
 
 def logout(request, next_page=None,
            template_name='registration/logged_out.html',
@@ -90,9 +92,10 @@ def logout(request, next_page=None,
             'site_name': current_site.name,
             'title': _('Logged out')
         }
-        context.update(extra_context or {})
-        return render_to_response(template_name, context,
-                                  context_instance=RequestContext(request, current_app=current_app))
+        if extra_context is not None:
+            context.update(extra_context)
+        return TemplateResponse(request, template_name, context,
+                                current_app=current_app)
     else:
         # Redirect to this page until the session has been cleared.
         return HttpResponseRedirect(next_page or request.path)
@@ -132,6 +135,7 @@ def redirect_to_login(next, login_url=None,
 def password_reset(request, is_admin_site=False,
                    template_name='registration/password_reset_form.html',
                    email_template_name='registration/password_reset_email.html',
+                   subject_template_name='registration/password_reset_subject.txt',
                    password_reset_form=PasswordResetForm,
                    token_generator=default_token_generator,
                    post_reset_redirect=None,
@@ -148,6 +152,7 @@ def password_reset(request, is_admin_site=False,
                 'token_generator': token_generator,
                 'from_email': from_email,
                 'email_template_name': email_template_name,
+                'subject_template_name': subject_template_name,
                 'request': request,
             }
             if is_admin_site:
@@ -159,21 +164,24 @@ def password_reset(request, is_admin_site=False,
     context = {
         'form': form,
     }
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)
 
 def password_reset_done(request,
                         template_name='registration/password_reset_done.html',
                         current_app=None, extra_context=None):
     context = {}
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)
 
 # Doesn't need csrf_protect since no-one can guess the URL
+@sensitive_post_parameters()
 @never_cache
-def password_reset_confirm(request, uidb64=None, token=None,
+def password_reset_confirm(request, uidb36=None, token=None,
                            template_name='registration/password_reset_confirm.html',
                            token_generator=default_token_generator,
                            set_password_form=SetPasswordForm,
@@ -183,13 +191,13 @@ def password_reset_confirm(request, uidb64=None, token=None,
     View that checks the hash in a password reset link and presents a
     form for entering a new password.
     """
-    assert uidb64 is not None and token is not None # checked by URLconf
+    assert uidb36 is not None and token is not None # checked by URLconf
     if post_reset_redirect is None:
         post_reset_redirect = reverse('django.contrib.auth.views.password_reset_complete')
     try:
-        uid = urlsafe_base64_decode(str(uidb64))
-        user = User.objects.get(id=uid)
-    except (TypeError, ValueError, User.DoesNotExist):
+        uid_int = base36_to_int(uidb36)
+        user = User.objects.get(id=uid_int)
+    except (ValueError, User.DoesNotExist):
         user = None
 
     if user is not None and token_generator.check_token(user, token):
@@ -208,9 +216,10 @@ def password_reset_confirm(request, uidb64=None, token=None,
         'form': form,
         'validlink': validlink,
     }
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)
 
 def password_reset_complete(request,
                             template_name='registration/password_reset_complete.html',
@@ -218,10 +227,12 @@ def password_reset_complete(request,
     context = {
         'login_url': settings.LOGIN_URL
     }
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)
 
+@sensitive_post_parameters()
 @csrf_protect
 @login_required
 def password_change(request,
@@ -241,14 +252,17 @@ def password_change(request,
     context = {
         'form': form,
     }
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)
 
+@login_required
 def password_change_done(request,
                          template_name='registration/password_change_done.html',
                          current_app=None, extra_context=None):
     context = {}
-    context.update(extra_context or {})
-    return render_to_response(template_name, context,
-                              context_instance=RequestContext(request, current_app=current_app))
+    if extra_context is not None:
+        context.update(extra_context)
+    return TemplateResponse(request, template_name, context,
+                            current_app=current_app)

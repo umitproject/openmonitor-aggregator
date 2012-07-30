@@ -47,12 +47,29 @@ from api.decorators import message_handler
 
 
 class RegisterAgentHandler(BaseHandler):
-    allowed_methods = ('POST',)
+    """Registers a new agent.
 
-    @message_handler(messages_pb2.RegisterAgent,
-                     messages_pb2.RegisterAgentResponse)
+    The new agent is associated with the requester's user account.
+    To register a new agent, requester should have already created
+    and activated a user account through '/accounts/register' URL
+    and email activation.
+    """
+
+    allowed_methods = ('POST',)
+    url = 'registeragent/'
+
+    request_message = messages_pb2.RegisterAgent
+    response_message = messages_pb2.RegisterAgentResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, register_obj, aes_key, agent,
                software_version, test_version, response):
+
+        if request.POST.get('crypto_v1', None):
+            from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+            from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
+
         try:
             # get agent ip
             agent_ip = request.META['REMOTE_ADDR']
@@ -82,14 +99,24 @@ class RegisterAgentHandler(BaseHandler):
             response_str = response.SerializeToString()
             return response_str
         except Exception, err:
+            raise
             import pdb; pdb.set_trace()
             print err
 
 
 class LoginHandler(BaseHandler):
+
     allowed_methods = ('POST',)
+    url = 'loginagent/'
+
+    request_message = messages_pb2.Login
+    response_message = messages_pb2.LoginStep1
 
     def create(self, request):
+        if request.POST.get('crypto_v1', None):
+          from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+          from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.Login()
@@ -102,7 +129,7 @@ class LoginHandler(BaseHandler):
         agentIp = request.META['REMOTE_ADDR']
 
         # initiate login process
-        loginProcess = agent.initLogin(agentIp, loginAgent.port)
+        loginProcess = agent.initLogin(agentIp, loginAgent.port, crypto_v1=request.POST.get('crypto_v1', False))
         
         if loginProcess:
             # initiate crypto to cipher challenge
@@ -122,7 +149,12 @@ class LoginHandler(BaseHandler):
 
 
 class Login2Handler(BaseHandler):
+
     allowed_methods = ('POST',)
+    url = 'loginagent2/'
+
+    request_message = messages_pb2.LoginStep2
+    response_message = messages_pb2.LoginResponse
 
     def create(self, request):
         msg = base64.b64decode(request.POST['msg'])
@@ -132,7 +164,8 @@ class Login2Handler(BaseHandler):
 
         # check login process
         agent = Agent.finishLogin(loginAgent.processID,
-                                  loginAgent.cipheredChallenge)
+                                  loginAgent.cipheredChallenge,
+                                  crypto_v1=request.POST.get('crypto_v1',False))
 
         if agent is not None:
             # get software version information
@@ -154,28 +187,37 @@ class Login2Handler(BaseHandler):
             return response_str
         else:
             logging.error('Error in login')
+            raise Exception('challenge not verified')
 
 
 class LogoutHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.Logout,
-                     messages_pb2.LogoutResponse)
+    allowed_methods = ('POST',)
+    url = 'logoutagent/'
+
+    request_message = messages_pb2.LoginStep2
+    response_message = messages_pb2.LogoutResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, logout_agent, aes_key, agent,
                software_version, test_version, response):
         agent.logout()
-        
+
         response.status = "logged out"
         response_str = response.SerializeToString()
-        
+
         return response_str
 
 
 class GetPeerListHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList,
-                     messages_pb2.GetPeerListResponse)
+    allowed_methods = ('POST',)
+    url = 'getpeerlist/'
+
+    request_message = messages_pb2.GetPeerList
+    response_message = messages_pb2.GetPeerListResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         if received_msg.HasField('count'):
@@ -209,10 +251,14 @@ class GetPeerListHandler(BaseHandler):
 
 
 class GetSuperPeerListHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetSuperPeerList,
-                     messages_pb2.GetSuperPeerListResponse)
+    allowed_methods = ('POST',)
+    url = 'getsuperpeerlist/'
+
+    request_message = messages_pb2.GetSuperPeerList
+    response_message = messages_pb2.GetSuperPeerListResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         if received_msg.HasField('count'):
@@ -243,10 +289,14 @@ class GetSuperPeerListHandler(BaseHandler):
         return response_str
 
 class GetNetlistHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetPeerList,
-                     messages_pb2.GetNetlistResponse)
+    allowed_methods = ('POST',)
+    url = 'get_netlist/'
+
+    request_message = messages_pb2.GetPeerList
+    response_message = messages_pb2.GetNetlistResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         count = received_msg.count if received_msg.count < settings.MAX_NETLIST_RESPONSE else settings.MAX_NETLIST_RESPONSE
@@ -281,10 +331,14 @@ class GetNetlistHandler(BaseHandler):
 
 
 class GetBanlistHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetBanlist,
-                     messages_pb2.GetBanlistResponse)
+    allowed_methods = ('POST',)
+    url = 'get_banlist/'
+
+    request_message = messages_pb2.GetPeerList
+    response_message = messages_pb2.GetBanlistResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         banned_agents = BannedAgents.banned_agent_ids()
@@ -302,10 +356,14 @@ class GetBanlistHandler(BaseHandler):
 
 
 class GetBannetsHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetBannets,
-                     messages_pb2.GetBannetsResponse)
+    allowed_methods = ('POST',)
+    url = 'get_bannets/'
+
+    request_message = messages_pb2.GetBannets
+    response_message = messages_pb2.GetBannetsResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         banets = BannedNetworks.objects.all()
@@ -326,10 +384,14 @@ class GetBannetsHandler(BaseHandler):
 
 
 class GetEventsHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.GetEvents,
-                     messages_pb2.GetEventsResponse)
+    allowed_methods = ('POST',)
+    url = 'getevents/'
+
+    request_message = messages_pb2.GetEvents
+    response_message = messages_pb2.GetEventsResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         regions = received_msg.locations
@@ -353,17 +415,18 @@ class GetEventsHandler(BaseHandler):
 
 
 class SendWebsiteReportHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.SendWebsiteReport,
-                     messages_pb2.SendReportResponse)
+    allowed_methods = ('POST',)
+    url = 'sendwebsitereport/'
+
+    request_message = messages_pb2.SendWebsiteReport
+    response_message = messages_pb2.SendReportResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_website_report, aes_key, agent,
                software_version, test_version, response):
         # add website report
-        webSiteReport = WebsiteReport.create(received_website_report, agent)
-
-        # send report to decision system
-        DecisionSystem.newReport(webSiteReport)
+        WebsiteReport.create(received_website_report, agent)
 
         # send back response
         response_str = response.SerializeToString()
@@ -372,10 +435,14 @@ class SendWebsiteReportHandler(BaseHandler):
 
 
 class SendServiceReportHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.SendServiceReport,
-                     messages_pb2.SendReportResponse)
+    allowed_methods = ('POST',)
+    url = 'sendservicereport/'
+
+    request_message = messages_pb2.SendServiceReport
+    response_message = messages_pb2.SendReportResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_service_report, aes_key, agent,
                software_version, test_version, response):
         # add service report
@@ -391,10 +458,14 @@ class SendServiceReportHandler(BaseHandler):
 
 
 class CheckNewVersionHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.NewVersion,
-                     messages_pb2.NewVersionResponse)
+    allowed_methods = ('POST',)
+    url = 'checkversion/'
+
+    request_message = messages_pb2.NewVersion
+    response_message = messages_pb2.NewVersionResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
         response.versionNo = software_version.version
@@ -408,27 +479,33 @@ class CheckNewVersionHandler(BaseHandler):
 
 
 class CheckNewTestHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.NewTests,
-                     messages_pb2.NewTestsResponse)
+    allowed_methods = ('POST',)
+    url = 'checktests/'
+
+    request_message = messages_pb2.NewTests
+    response_message = messages_pb2.NewTestsResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
-      
-        newTests = Test.get_updated_tests(agent, received_msg.currentTestVersionNo)
+        
+        
+        newTests = Test.get_updated_tests(agent, str(received_msg.currentTestVersionNo))
+        logging.critical("---test----:%s"%newTests)
         response.testVersionNo = test_version
 
         for newTest in newTests:
             test = response.tests.add()
-            test.testID = test_version
+            test.testID = str(newTest.id)
             # TODO: get execution time
             test.executeAtTimeUTC = 4000
-
+            
             if isinstance(newTest, WebsiteTest):
-                test.testType = "WEB"
+                test.testType = 1
                 test.website.url = newTest.website_url
             elif isinstance(newTest, ServiceTest):
-                test.testType = "SERVICE"
+                test.testType = 2
                 test.service.name = newTest.service_name
                 test.service.port = newTest.port
                 test.service.ip = newTest.ip
@@ -439,10 +516,14 @@ class CheckNewTestHandler(BaseHandler):
 
 
 class WebsiteSuggestionHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.WebsiteSuggestion,
-                     messages_pb2.TestSuggestionResponse)
+    allowed_methods = ('POST',)
+    url = 'websitesuggestion/'
+
+    request_message = messages_pb2.WebsiteSuggestion
+    response_message = messages_pb2.TestSuggestionResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_website_suggestion, aes_key, agent,
                software_version, test_version, response):
         # create the suggestion
@@ -455,10 +536,14 @@ class WebsiteSuggestionHandler(BaseHandler):
 
 
 class ServiceSuggestionHandler(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.ServiceSuggestion,
-                     messages_pb2.TestSuggestionResponse)
+    allowed_methods = ('POST',)
+    url = 'servicesuggestion/'
+
+    request_message = messages_pb2.ServiceSuggestion
+    response_message = messages_pb2.TestSuggestionResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_service_suggestion, aes_key, agent,
                software_version, test_version, response):
         # create the suggestion
@@ -472,10 +557,14 @@ class ServiceSuggestionHandler(BaseHandler):
 
 
 class CheckAggregator(BaseHandler):
-    allowed_methods = ('POST',)
 
-    @message_handler(messages_pb2.CheckAggregator,
-                     messages_pb2.CheckAggregatorResponse)
+    allowed_methods = ('POST',)
+    url = ''
+
+    request_message = messages_pb2.CheckAggregator
+    response_message = messages_pb2.CheckAggregatorResponse
+
+    @message_handler(request_message, response_message)
     def create(self, request, received_check_aggregator, aes_key, agent,
                software_version, test_version, response):
 

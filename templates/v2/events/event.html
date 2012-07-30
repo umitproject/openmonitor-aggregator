@@ -1,23 +1,125 @@
 {% extends "base.html" %}
+{% load media %}
+
+{% block title %} Event Details {% endblock %}
 
 {% block extra_head %}
-    <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    {% include_media 'bootstrap.js' %}
+	<script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAWajWEMOvdMUzDSviTnY9_BQCULP4XOMyhPd8d_NrQQEO8sT8XBSloh91HGZYV6pQ4yQ1gkhp8E4bJw"></script>
+
+    <style>
+	  #map_canvas_locations img {
+	    max-width: none;
+	  }
+	  #map_canvas_traceroute img {
+	    max-width: none;
+	  }
+    </style>
 {% endblock %}
 
 {% block left %} {% endblock %}
 {% block content %}
 
-	<script type="text/javascript">
-		$(document).ready(function() {
-			initializeMapSystem('{{ event_json|safe }}');
-		    $('#eventTabs a').click(function (e) {
-		        e.preventDefault();
-		        $(this).tab('show');
-		     });
-		});
+    <div id="map_loading_html" style="display:none">
+        <!-- Use this hidden div when a tab is deactivated -->
+        {% include "_map_loading.html" %}
+    </div>
 
-	</script>
+    <script type="text/javascript">
+        /* Bootstrap and template related code for event page.
+         *
+         * Core functions those create map and place/draw are in:
+         *   - js/map.js
+         *   - js/event.js
+         */
+
+        TARGET_IMAGE_SRC = "{% media_url 'images/redflag.png' %}";
+        FLAG_IMAGE_SRC = "{% media_url 'images/pin.gif' %}"
+
+        var MAP_LOADING_HTML = $('#map_loading_html').html();
+
+        var LOCATIONS_MAP_ID = "map_canvas_locations";
+        var TRACEROUTE_MAP_ID = "map_canvas_traceroute";
+
+        var LOCATIONS_TAB_ID = "event_locations";
+        var TRACEROUTE_TAB_ID = "event_traceroute";
+
+        var FETCHED_TRACEROUTE_DATA = null;
+        var FETCH_TRACEROUTE_URL = '/ajax{{ event.url}}/traces';
+
+
+        // <- Start of Map initers ----------
+        function initLocationsMap(){
+		    initializeLocationsSystem('{{ event_json|safe }}', LOCATIONS_MAP_ID);
+		}
+
+        function initTracerouteMap(){
+            if (FETCHED_TRACEROUTE_DATA) { // If data is already fetched
+                initializeTracerouteSystem(FETCHED_TRACEROUTE_DATA,
+                                           TRACEROUTE_MAP_ID);
+            }
+            else {
+                $.getJSON(FETCH_TRACEROUTE_URL, function(data) {
+                    FETCHED_TRACEROUTE_DATA = data;
+                    initTracerouteMap();
+                });
+            }
+        }
+        // -------- End of Map initers ->
+
+        function runCallbackOnLoad(callback) {
+            /* Runs given callback after Maps module is loaded.
+             *
+             * If we call this function multiple times, Google Loader
+             * won't bother reloading maps module each time.
+             */
+            google.load("maps", "3", {"other_params":"sensor=false",
+                                      "callback" : callback});
+        }
+
+        // Initially create locations map
+        runCallbackOnLoad(initLocationsMap);
+
+        // Callback when a tab is shown
+        function tabShown(e) {
+
+            if (e.relatedTarget) {
+                /* If we have a previous tab,
+                 * delete the previous tab's map and place
+                 * loading indicator into the tab content
+                 */
+                var arr = String(e.relatedTarget).split('#');
+                var previous_id = arr[arr.length-1];
+
+                if (previous_id == LOCATIONS_TAB_ID)
+                    $(LOCATIONS_MAP_ID).html(MAP_LOADING_HTML);
+
+                else if (previous_id == TRACEROUTE_TAB_ID)
+                    $(TRACEROUTE_MAP_ID).html(MAP_LOADING_HTML);
+            }
+
+            var arr = String(e.target).split('#');
+            var id = arr[arr.length-1];
+
+            /* Create appropriate map for the tab
+             * by calling appropriate function.
+             */
+            if (id == LOCATIONS_TAB_ID)
+                runCallbackOnLoad(initLocationsMap);
+
+            else if (id == TRACEROUTE_TAB_ID) 
+                runCallbackOnLoad(initTracerouteMap);
+        }
+
+        $(document).ready(function() {
+            $('#eventTabs a').click(function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+            $('#eventTabs a').on('shown', tabShown);
+        });
+
+    </script>
 
 
 	<h2>Event Details</h2>
@@ -97,17 +199,24 @@
 	    </tbody>
     </table>
 
-
-	<ul class="nav nav-tabs" id="eventTabs">
-		<li class='active'><a href="#event_locations">Event Locations</a></li>
-		<li ><a href="#traceroute">Trace Routes</a></li>
-	</ul>
-	<div class="tab-content">
-		<div class="tab-pane active" id="event_locations">
-			<div id="map_status" style="display: none;"></div>
-			<div id="map_canvas" style="width:100%; height:600px;"></div>
-		</div>
-		<div class="tab-pane" id="traceroute">Draw routes here</div>
-	</div>
+    <div class="row-fluid">
+        <ul class="nav nav-tabs" id="eventTabs">
+            <li class='active'><a href="#event_locations">Event Locations</a></li>
+            <li ><a href="#event_traceroute">Trace Routes</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="event_locations">
+                <div id="map_status" style="display: none;"></div>
+                <div id="map_canvas_locations" style="width:100%; height:600px;">
+                     {% include "_map_loading.html" %}
+                </div>
+            </div>
+            <div class="tab-pane" id="event_traceroute">
+                <div id="map_canvas_traceroute" style="width:100%; height:600px">
+                    {% include "_map_loading.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}

@@ -30,10 +30,10 @@ import codecs
 from os.path import join, dirname, exists
 
 CUR_DIR = dirname(__file__)
-GEO_FILE_ZIP = "GeoLiteCity_20110906.zip"
-GEO_EXTRACT_DIR = "GeoLiteCity_20110906"
-GEO_BLOCK_CSV = "GeoLiteCity_20110906/GeoLiteCity-Blocks.csv"
-GEO_LOCATION_CSV = "GeoLiteCity_20110906/GeoLiteCity-Location.csv"
+GEO_FILE_ZIP = "GeoLiteCity_20120807.zip"
+GEO_EXTRACT_DIR = "GeoLiteCity_20120807"
+GEO_BLOCK_CSV = "%s/GeoLiteCity-Blocks.csv" % GEO_EXTRACT_DIR
+GEO_LOCATION_CSV = "%s/GeoLiteCity-Location.csv" % GEO_EXTRACT_DIR
 GEO_LITE = "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity_CSV/" + GEO_FILE_ZIP 
 
 

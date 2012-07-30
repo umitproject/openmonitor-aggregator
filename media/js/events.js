@@ -89,3 +89,62 @@ $(document).ready(function () {
 		});
 	}
 });
+
+function initializeLocationsSystem(initial_events, map_id) {
+    initializeMap(map_id);
+    updateInitialMapEvents({data: initial_events});
+    $('#'+map_id).resize(resize_map);
+}
+
+function initializeTracerouteSystem(fetched_traces, map_id) {
+
+    initializeMap(map_id);
+    $('#'+map_id).resize(resize_map);
+
+    points = new Array();
+    fetched_traces = $.parseJSON(fetched_traces[0]);
+
+    var bounds = new google.maps.LatLngBounds();
+    for (i=0; i<fetched_traces.length; i++) {
+         trace = fetched_traces[i];
+         if (trace.country_code == 'UN')
+            continue;
+         pos = new google.maps.LatLng(trace.lat, trace.lon);
+         points.push(new google.maps.LatLng(trace.lat, trace.lon));
+
+         if(i>0)
+         {
+            if(trace.is_final==1)
+                icon = TARGET_IMAGE_SRC;
+            else
+                icon = FLAG_IMAGE_SRC;
+
+            var marker = new google.maps.Marker({
+                position: pos,
+                icon: icon
+            });
+
+            marker.setMap(map);
+         }
+
+        bounds.extend(pos);
+
+    }
+
+    /* create poly lines */
+    var polyOptions = {
+        strokeOpacity: 1.0,
+        strokeWeight: 1,
+        path: points,
+    }
+
+    if (trace.is_final)
+        polyOptions['strokeColor'] = 'green';
+    else
+        polyOptions['strokeColor'] = 'red';
+
+    var path = new google.maps.Polyline(polyOptions);
+
+    path.setMap(map);
+    map.fitBounds(bounds);
+}

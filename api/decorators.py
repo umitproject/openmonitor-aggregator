@@ -40,6 +40,10 @@ class message_handler(object):
     
     def __call__(self, method):
         def new_method(handler, request, *args, **kwargs):
+            if request.POST.get('crypto_v1', None):
+                from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+            else:
+                from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
             aes_key = None
             agent = None
             

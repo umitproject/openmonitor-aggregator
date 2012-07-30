@@ -29,13 +29,17 @@ admin.autodiscover()
 
 handler500 = 'djangotoolbox.errorviews.server_error'
 
+CASSANDRA_KEY_PATTERN = r'[0-9a-f-]+'
+
 urlpatterns = patterns('',
     url(r'', include('gui.urls')),
     url(r'', include('geoip.urls')),
     url(r'^events/poll$', 'gui.views.poll_active_events'),
     url(r'^map/$', 'gui.views.map'),
     url(r'^realtimebox/$', 'gui.views.realtimebox'),
-    url(r'^events/(?P<event_id>\d+)/$', 'gui.views.event'),
+    url(r'^events/(?P<event_id>%s)/$' % CASSANDRA_KEY_PATTERN, 'gui.views.event'),
+    url(r'^ajax/events/(?P<event_id>%s)/traces$' % CASSANDRA_KEY_PATTERN,
+        'gui.views.ajax_event_traces'),
     url(r'^twitter/', include('twitter.urls')),
     url(r'^accounts/', include('registration.urls')),
     url(r'^notification/', include('notificationsystem.urls')),

@@ -5,13 +5,10 @@
 {% block left %} {% endblock %}
 
 {% block content %}
-	<div id='msg'></div>
-	<div id='error'></div>
-	<br/>
-	<p><b>Please, read our <a href="/manifesto">Manifesto</a> before suggesting a service.</b></p>
-	<br/>
 	<form method="POST" action="/suggest_service/" id='service_suggest_form'>
-		{{ form.as_p }}
+        {% include '_form.html' %}
 		<input type="submit" value="Suggest" name="suggest" id="service_suggest_button"/>
+        {% csrf_token %}
 	</form>
+	<p><b>Please, read our <a href="/manifesto">Manifesto</a> before suggesting a service.</b></p>
 {% endblock %}

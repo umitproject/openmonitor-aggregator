@@ -31,7 +31,6 @@ from django.contrib.auth import authenticate
 from django.core.cache import cache
 
 from dbextra.fields import ListField
-from dbextra.fields import CassandraKeyField
 
 from agents.CryptoLib import *
 from geoip.models import *
@@ -46,7 +45,7 @@ BAN_FLAGS = dict(
 
 class LoginProcess(models.Model):
     processID     = models.AutoField(primary_key=True)
-    agent_id       = CassandraKeyField()
+    agent_id       = models.IntegerField(null=True, blank=True, default=None)
     loginTime     = models.DateTimeField(auto_now_add=True)
     ip            = models.CharField(max_length=255)
     port          = models.PositiveIntegerField()
@@ -54,7 +53,7 @@ class LoginProcess(models.Model):
 
 
 class LoggedAgent(models.Model):
-    agent_id = CassandraKeyField()
+    agent_id = models.IntegerField(null=True, blank=True, default=None)
     country_code = models.CharField(max_length=2)
     country_name = models.CharField(max_length=100)
     location_id = models.IntegerField()
@@ -77,7 +76,7 @@ class LoggedAgent(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
 
@@ -292,8 +291,13 @@ class Agent(models.Model):
         self.superPeer = False
         self.save()
 
-    def initLogin(self, ip, port):
+    def initLogin(self, ip, port, crypto_v1):
         from geoip.models import IPRange
+
+        if crypto_v1:
+            from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+            from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
 
         # get new challenge
         if self.banned:
@@ -319,7 +323,7 @@ class Agent(models.Model):
         return loginProcess
     
     @staticmethod
-    def finishLogin(loginProcessID, cipheredChallenge):
+    def finishLogin(loginProcessID, cipheredChallenge, crypto_v1=False):
         from geoip.models import IPRange
         # get login process
         loginProcess = LoginProcess.objects.get(processID=loginProcessID)
@@ -328,7 +332,7 @@ class Agent(models.Model):
         agent = Agent.get_agent(loginProcess.agent_id)
 
         # check challenge
-        if agent.checkChallenge(str(loginProcess.challenge), cipheredChallenge):
+        if agent.checkChallenge(str(loginProcess.challenge), cipheredChallenge,crypto_v1=crypto_v1):
             # delete already logged agent info
             LoggedAgent.objects.filter(agent_id=agent.id).delete()
 
@@ -380,6 +384,7 @@ class Agent(models.Model):
 
         else:
             logging.error('Challenge not ok')
+            raise Exception('Challenge not ok')
             return None
 
     def logout(self):
@@ -423,18 +428,25 @@ class Agent(models.Model):
         message = crypt.decodeAES(encodedMessage, self.AESKey)
         return message
 
-    def checkChallenge(self, originalChallenge, cipheredChallenge):
+    def checkChallenge(self, originalChallenge, cipheredChallenge, crypto_v1=0):
+        if crypto_v1:
+            from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+            from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
         # get cryptolib instance
         crypt = CryptoLib()
         return crypt.verifySignatureRSA(originalChallenge,
                                         cipheredChallenge,
-                                        self.public_key)
+                                        self.public_key(crypto_v1))
 
     def getLoginInfo(self):
         return LoggedAgent.getLoggedAgent(self.id)
 
-    @property
-    def public_key(self):
+    def public_key(self, crypto_v1=False):
+        if crypto_v1:
+            from agents.CryptoLib_v1 import RSAKey
+        else:
+            from agents.CryptoLib import RSAKey
         key = PUBLIC_KEY_AGENT_CACHE_KEY % self.id
         pkey = cache.get(key, False)
         if not pkey:
@@ -456,7 +468,7 @@ class Agent(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(pk=self.location_id)
+            location = Location.get_location_or_unknown(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
     
@@ -484,7 +496,7 @@ class BannedNetworks(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
     

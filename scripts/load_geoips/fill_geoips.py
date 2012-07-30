@@ -25,7 +25,10 @@
 
 import csv
 import sys
-sys.path.insert(0, "/home/orcun/projects/openmonitor/aggregator/")
+from os.path import dirname, abspath
+
+AGG_DIR =  dirname(dirname(dirname(abspath(__file__))))
+sys.path.insert(0, AGG_DIR)
 
 from django.core.management import setup_environ
 import settings
@@ -64,6 +67,9 @@ def fill_fullnames():
         if (counter % 1000 == 0):
             print "Filled %s objects." % counter
         counter += 1
+
+        if location.country_code == 'UN':
+            continue
 
         if location.city:
             location.fullname = "%s, %s" % (location.city,location.country_name)

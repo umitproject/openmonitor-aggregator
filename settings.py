@@ -21,6 +21,9 @@
 ##
 
 import os
+from os.path import dirname
+from os.path import abspath
+from os.path import join
 
 
 import djcelery
@@ -29,26 +32,25 @@ djcelery.setup_loader()
 import import_deps
 
 
-DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
+AGG_DIR =  dirname(abspath(__file__))
+
+DATABASES = {'default': {'ENGINE': 'django.db.backends.mysql',
                            'NAME':'openmonitor',
-                           'USER':'',
+                           'USER':'root',
                            'PASSWORD':'',
                            'HOST':'localhost',
-                           'PORT':'9160',
-                           'SUPPORTS_TRANSACTIONS':False,
-                           'CASSANDRA_REPLICATION_FACTOR':2,
-                           'CASSANDRA_ENABLE_CASCADING_DELETES':True,
+                           'PORT':3306,
                            'TEST_NAME':'openmonitor_test'},
-             "mysql": {'ENGINE': 'mysql',
-                       'NAME':'openmonitor',
-                       'USER':'root',
-                       'PASSWORD':'root',
-                       'HOST':'localhost',
-                       'PORT':3306,
-                       'TEST_NAME':'openmonitor_test'}
+             #"mysql": {'ENGINE': 'mysql',
+             #          'NAME':'openmonitor',
+             #          'USER':'root',
+             #          'PASSWORD':'root',
+             #          'HOST':'localhost',
+             #          'PORT':3306,
+             #          'TEST_NAME':'openmonitor_test'}
              }
 
-DATABASE_ROUTERS = ['gui.dbrouters.GeoIPRouter']
+#DATABASE_ROUTERS = ['gui.dbrouters.GeoIPRouter']
 
 #AUTOLOAD_SITECONF = 'indexes'
 
@@ -80,12 +82,14 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
-    'djangotoolbox',
+    'django.contrib.messages',
+    #'django.contrib.sites',
     'autoload',
     'mediagenerator',
     #'djangologging',
+    #'protobuf',
     'piston',
-    'django.contrib.messages',
+    #'messages',
     'agents',
     'geoip',
     'api',
@@ -116,6 +120,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'djangologging.middleware.LoggingMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -123,16 +128,19 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.core.context_processors.media',
     'django.core.context_processors.csrf',
+    'gui.context_processors.basic',
 )
+
+FIXTURE_DIRS = (AGG_DIR,)
 
 # This test runner captures stdout and associates tracebacks with their
 # corresponding output. Helps a lot with print-debugging.
-TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
+#TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 #TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 #Remove comment in the following line for v2 design
-TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates', 'v2'),)
+TEMPLATE_DIRS = (join(AGG_DIR, 'templates', 'v2'),)
 
 ROOT_URLCONF = 'urls'
 
@@ -141,16 +149,20 @@ ROOT_MEDIA_FILTERS = {
     'css': 'mediagenerator.filters.yuicompressor.YUICompressor',
 }
 
-YUICOMPRESSOR_PATH = os.path.join(os.path.dirname(__file__), 'yuicompressor-2.4.7.jar')
+YUICOMPRESSOR_PATH = join(AGG_DIR, 'yuicompressor-2.4.7.jar')
 
 MEDIA_BUNDLES = (
      ('main.css',
-        'css/main.css',
-        'css/jquery-ui.css',
-        'css/realtimebox.css', ),
+         'css/jquery-ui.css',
+         ),
+     ('main-old.css',
+         'css/main.css',
+         'css/jquery-ui.css',
+         ),
      ('main.js',
          {'filter': 'mediagenerator.filters.media_url.MediaURL'},
-         'js/jquery.js',
+         #'js/jquery.js',
+         'bs/assets/js/jquery.js', #Use bootstrap's jQuery
          'js/jquery-ui.js',
          'js/jquery-scrollbarwidth.js',
          'js/date.format.js',
@@ -158,7 +170,6 @@ MEDIA_BUNDLES = (
          'js/common.js',
          'js/realtimebox.js',
          'js/map.js',
-         'js/suggestion.js',
          'js/events.js',),
      ('bootstrap.css',
          'bs/assets/css/bootstrap-responsive.css',
@@ -166,7 +177,6 @@ MEDIA_BUNDLES = (
           ),
      ('bootstrap.js',
          {'filter': 'mediagenerator.filters.media_url.MediaURL'},
-          'bs/assets/js/jquery.js', #We already include bootstrap
           'bs/assets/js/bootstrap-transition.js',
           'bs/assets/js/bootstrap-alert.js',
           'bs/assets/js/bootstrap-modal.js',
@@ -190,7 +200,7 @@ NOTIFICATION_SENDER = "notification@openmonitor.org"
 NOTIFICATION_TO = "notification@openmonitor.org"
 NOTIFICATION_REPLY_TO = "notification@openmonitor.org"
 
-GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'media'),)
+GLOBAL_MEDIA_DIRS = (join(AGG_DIR, 'media'),)
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 LOGGING_OUTPUT_ENABLED = True
@@ -220,7 +230,9 @@ SERVER_EMAIL = 'notification@openmonitor.org'
 
 USE_I18N = True
 
-SITENAME = "OpenMonitor"
+#Don't need to use folowing in development
+#On deployment, Make sure you uncomment it and set to appropriate site key
+#SITE_ID = u'' # Empty by default because Nonrel IDs are not integer
 
 ##################
 # RESPONSE COUNTS

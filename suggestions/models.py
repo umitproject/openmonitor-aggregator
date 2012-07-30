@@ -31,13 +31,12 @@ from icm_tests.models import WebsiteTest, ServiceTest
 from umit.proto.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
 def add_to_aggregation(agg_model, fields, suggestion):
-    agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))
-    if agg:
-        agg = agg[0]
+    try:
+        agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))[0]
         if suggestion.id in agg.suggestions:
             return agg
         agg.count += 1
-    else:
+    except IndexError:
         agg = agg_model()
         for f in fields:
             setattr(agg, f, getattr(suggestion, f))
@@ -70,7 +69,7 @@ class WebsiteSuggestion(UserModel):
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
     
     @staticmethod
     def create(websiteSuggestionMsg, user):
@@ -167,7 +166,7 @@ class WebsiteLocationAggregation(models.Model,
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
     
     @staticmethod
     def add_suggestion(suggestion):
@@ -190,7 +189,7 @@ class WebsiteAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def add_suggestion(suggestion):
@@ -213,7 +212,7 @@ class ServiceSuggestion(UserModel):
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def create(serviceSuggestionMsg, user):

@@ -31,7 +31,6 @@ from django.core.files import File
 from icm_utils.json import ICMJSONEncoder
 
 from dbextra.fields import ListField
-from dbextra.fields import CassandraKeyField
 from dbextra.decorators import cache_model_method
 from geoip.models import Location, IPRange
 
@@ -40,11 +39,12 @@ REPORT_PERIOD = datetime.timedelta(days=1)
 class Trace(object):
     def __init__(self, hop, ip, timings, location_id=None, location_name=None,
                  country_name=None, country_code=None, state_region=None,
-                 city=None, zipcode=None, lat=None, lon=None):
+                 city=None, zipcode=None, lat=None, lon=None, is_final=0):
         
         self.hop = hop
         self.ip = ip
         self.timings = timings
+        self.is_final = is_final
         
         if location_id is not None:
             self.location_id = location_id
@@ -59,14 +59,14 @@ class Trace(object):
         else:
             iprange = IPRange.ip_location(ip)
             self.location_id = iprange.location_id
-            self.location_name = iprange.location.name
+            self.location_name = iprange.location.fullname
             self.country_name = iprange.location.country_name
             self.country_code = iprange.location.country_code
             self.state_region = iprange.location.state_region
             self.city = iprange.location.city
             self.zipcode = iprange.location.zipcode
-            self.lat = iprange.location.lat
-            self.lon = iprange.location.lon
+            self.lat = decimal.Decimal(iprange.location.lat)
+            self.lon = decimal.Decimal(iprange.location.lon)
     
     @staticmethod
     def from_dump(dump):
@@ -78,24 +78,28 @@ class Trace(object):
     @cache_model_method('trace_', 300, 'location_id')
     @property
     def location(self):
-        return Location.objects.get(id=self.location_id)
+        return Location.get_location_or_unknown(self.location_id)
     
     def __unicode__(self):
         return self.toJson()
 
     def toJson(self):
-        return json.dumps(dict(hop=self.hop,
-                               ip=self.ip,
-                               timings=self.timings,
-                               location_id=self.location_id,
-                               location_name=self.location_name,
-                               country_name=self.country_name,
-                               country_code=self.country_code,
-                               state_region=self.state_region,
-                               city=self.city,
-                               zipcode=self.zipcode,
-                               lat=self.lat,
-                               lon=self.lon), cls=ICMJSONEncoder)
+        return json.dumps(self.get_dict(), cls=ICMJSONEncoder)
+
+    def get_dict(self):
+        return dict(hop=self.hop,
+                   ip=self.ip,
+                   timings=self.timings,
+                   location_id=self.location_id,
+                   location_name=self.location_name,
+                   country_name=self.country_name,
+                   country_code=self.country_code,
+                   state_region=self.state_region,
+                   city=self.city,
+                   zipcode=self.zipcode,
+                   is_final=self.is_final,
+                   lat=str(decimal.Decimal(self.lat)),
+                   lon=str(decimal.Decimal(self.lon)))
 
 def py_convert_trace(trace):
     return Trace.from_dump(trace)
@@ -113,7 +117,7 @@ def db_convert_trace(traces):
 class Report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    test_id = models.IntegerField()
+    test_id = models.IntegerField(null=True, blank=True, default=None)
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)
@@ -161,6 +165,9 @@ class Report(models.Model):
     count = models.IntegerField(default=1)
     
     user_reports_ids = ListField(py_type=str)
+
+    def __unicode__(self):
+        return "(%s) %s" % (self.updated_at, self.target)
     
     @cache_model_method('report_', 300, 'id')
     @property
@@ -171,10 +178,12 @@ class Report(models.Model):
     @property
     def location(self):
         """The location of the reporting node"""
-        return Location.objects.get(id=self.location_id)
+        return Location.get_location_or_unknown(self.location_id)
     
     @staticmethod
     def create_or_count(user_report):
+        from decision.decisionSystem import DecisionSystem
+
         report = Report.objects.filter(
                         test_id=user_report.test_id,
                         agent_location_id=user_report.agent_location_id,
@@ -193,7 +202,7 @@ class Report(models.Model):
             report.hops = user_report.hops
             report.packet_size = user_report.packet_size
             trace = user_report.trace
-            report.trace.append(trace)
+            report.trace = user_report.trace
             report.agent_ip = user_report.agent_ip
             report.agent_location_id = user_report.agent_location_id
             report.agent_location_name = user_report.agent_location_name
@@ -215,11 +224,15 @@ class Report(models.Model):
             report.target_lon = user_report.target_lon
             report.count = 1
             report.user_reports_ids.append(user_report.id)
+            DecisionSystem.newReport(user_report)
         else:
             report = report[0]
             report.count += 1
             report.user_reports_ids.append(user_report.id)
-            report.response_time = (report.response_time + user_report.response_time)/2
+            if report.response_time and user_report.response_time:
+                report.response_time = (report.response_time + user_report.response_time)/2
+            elif not report.response_time and user_report.response_time:
+                report.response_time = user_report.response_time
 
         report.save()
         return Report
@@ -227,15 +240,15 @@ class Report(models.Model):
 
 class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    report_id = CassandraKeyField()
-    agent_id = CassandraKeyField()
-    test_id = CassandraKeyField()
+    #report_id = CassandraKeyField()
+    agent_id = models.IntegerField(null=True, blank=True, default=None)
+    test_id = models.IntegerField(null=True, blank=True, default=None)
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)
     bandwidth = models.FloatField(null=True)
     nodes = ListField()
-    user_id = CassandraKeyField()
+    user_id = models.IntegerField(null=True, blank=True, default=None)
     
     #############
     # Traceroute
@@ -281,7 +294,7 @@ class UserReport(models.Model):
     @property
     def location(self):
         """The location of the reporting node"""
-        return Location.objects.get(id=self.location_id)
+        return Location.get_location_or_unknown(self.location_id)
 
     @property
     def user(self):
@@ -291,8 +304,8 @@ class UserReport(models.Model):
     def get_blocked_node(self):
         return self.trace_set.order_by('-hop')[0:1].get()
     
-    def add_trace(self, hop, ip, timing):
-        self.trace.append(Trace(hop, ip, timing))
+    def add_trace(self, hop, ip, timing, **kwargs):
+        self.trace.append(Trace(hop, ip, timing, **kwargs))
     
     def save(self, *args, **kwargs):
         new = self.id is None
@@ -309,6 +322,9 @@ class WebsiteReport(UserReport):
     redirect_link = models.URLField(max_length=255, blank=True)
     html_response = models.TextField(blank=True)
     media_ids = ListField(py_type=str)
+
+    def __unicode__(self):
+        return "(%s) %s - %s" % (self.created_at, self.url, self.status_code)
     
     @cache_model_method('website_report_', 300, 'id')
     @property
@@ -355,8 +371,8 @@ class WebsiteReport(UserReport):
         report.user_id = agent.user.id
 
         # read ICMReport
-        logging.critical("STATUS CODE: %s" % icm_report.reportID)
-        report.report_id = icm_report.reportID
+        logging.critical("STATUS CODE: %s" % website_report_detail.statusCode)
+        #report.report_id = icm_report.reportID
         report.agent_id = icm_report.agentID
         report.test_id = icm_report.testID
         report.time = datetime.datetime.utcfromtimestamp(icm_report.timeUTC)
@@ -377,7 +393,8 @@ class WebsiteReport(UserReport):
                 report.trace.append(
                         Trace(hop=rcvTrace.hop,
                               ip=rcvTrace.ip,
-                              timings=[t for t in rcvTrace.packetsTiming])
+                              timings=[t for t in rcvTrace.packetsTiming],
+                              is_final=(report.target==rcvTrace.ip and 1 or 0))
                 )
 
             # update target location
@@ -411,7 +428,7 @@ class WebsiteReport(UserReport):
 
 
 class WebsiteReportMedia(models.Model):
-    report_id = CassandraKeyField()
+    report_id = models.IntegerField(null=True, blank=True, default=None)
     file = models.FileField(upload_to='wsrdata/')
     
     @cache_model_method('website_report_media_', 300, 'report_id')
@@ -447,7 +464,7 @@ class ServiceReport(UserReport):
 
         # read ICMReport
         try:
-            report.report_id = icm_report.reportID
+            #report.report_id = icm_report.reportID
             report.agent_id = icm_report.agentID
             report.test_id = icm_report.testID
             report.time = datetime.datetime.utcfromtimestamp(icm_report.timeUTC)
@@ -470,7 +487,8 @@ class ServiceReport(UserReport):
                 report.trace.append(
                         Trace(hop=rcvTrace.hop,
                               ip=rcvTrace.ip,
-                              timings=[t for t in rcvTrace.packetsTiming])
+                              timings=[t for t in rcvTrace.packetsTiming],
+                              is_final=(report.target==rcvTrace.ip and 1 or 0))
                 )
 
             # update target location

@@ -130,16 +130,18 @@ class LocationNamesAggregation(models.Model):
 
 class Location(models.Model):
     ip_range_ids = ListField(py_type=int)
-    fullname = models.CharField(max_length=300, blank=True, null=True)
+    fullname = models.CharField(max_length=300, blank=True, null=True,
+                                db_index=True)
     country_name = models.CharField(max_length=100, blank=True, null=True)
-    country_code = models.CharField(max_length=2)
+    country_code = models.CharField(max_length=2,
+                                    db_index=True)
     state_region = models.CharField(max_length=2)
-    city = models.CharField(max_length=255)
+    city = models.CharField(max_length=255, db_index=True)
     zipcode = models.CharField(max_length=6)
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
     aggregations = ListField(py_type=int)
-    nodes_count = models.IntegerField(default=0)
+    nodes_count = models.PositiveIntegerField(default=0)
 
     def add_aggregation(self, aggregation):
         if aggregation.id in self.aggregations:
@@ -151,21 +153,6 @@ class Location(models.Model):
     def __unicode__(self):
         return "%s, %s" % (self.city, self.country_name) \
                                 if self.city != '' else self.country_code
-
-    @staticmethod
-    def retrieve_location(name):
-        """If location is empty we consider this suggestion to be world wide.
-        If location doesn't exist in our datastore, we try to get its
-        coordinates. If successful, we create a new entry. Otherwise, we
-        consider the suggestion to be world wide.
-        """
-        location = Location.objects.filter(fullname__startswith=name)
-        if not location:
-            # TODO
-            location = Location.objects.filter(fullname__startswith=name)
-
-        if location:
-            return location[0]
 
     @property
     def ip_ranges(self):
@@ -217,7 +204,7 @@ class Location(models.Model):
         location = cache.get(CLOSEST_LOCATION_KEY % (lat, lon), None)
         if location is None:
             aggs = LocationAggregation.objects.filter(lat=int(lat), lon=int(lon))[:1]
-            region = Location.objects.get(pk=aggs.locations[0])
+            region = Location.get_location_or_unknown(aggs.locations[0])
             cache.set(CLOSEST_LOCATION_KEY % (lat, lon), region)
         return region
     
@@ -228,11 +215,18 @@ class Location(models.Model):
             aggs = LocationAggregation.objects.filter(lat=int(lat), lon=int(lon))
             locations = []
             for agg in aggs:
-                locations += [Location.objects.get(pk=id) for id in agg.locations]
+                locations += [Location.get_location_or_unknown(id) for id in agg.locations]
             
             cache.set(CLOSEST_LOCATIONS_KEY % (lat, lon), locations)
         
         return locations
+
+    @staticmethod
+    def get_location_or_unknown(id=0):
+        try:
+            return Location.objects.get(id=id)
+        except Location.DoesNotExist:
+            return UNKNOWN_LOCATION
 
 
 try:
@@ -252,11 +246,11 @@ class BannedNetworks(models.Model):
     IPRange model. This is in order for making retrieval of ban list faster
     and cheaper.
     """
-    location_id = models.IntegerField()
-    iprange_id = models.IntegerField()
-    start_number = models.IntegerField()
-    end_number = models.IntegerField()
-    nodes_count = models.IntegerField()
+    location_id = models.PositiveIntegerField()
+    iprange_id = models.PositiveIntegerField()
+    start_number = models.PositiveIntegerField()
+    end_number = models.PositiveIntegerField()
+    nodes_count = models.PositiveIntegerField()
     flags = models.IntegerField()
     
     @property
@@ -264,7 +258,7 @@ class BannedNetworks(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
     
@@ -279,10 +273,10 @@ class BannedNetworks(models.Model):
 
 
 class IPRange(models.Model):
-    location_id = models.IntegerField()
-    start_number = models.IntegerField()
-    end_number = models.IntegerField()
-    nodes_count = models.IntegerField(default=0)
+    location_id = models.PositiveIntegerField()
+    start_number = models.PositiveIntegerField(db_index=True) #need to index for MySQL
+    end_number = models.PositiveIntegerField()
+    nodes_count = models.PositiveIntegerField(default=0)
     banned = models.BooleanField(default=False)
     ban_flags = models.IntegerField(default=0)
 
@@ -327,23 +321,29 @@ class IPRange(models.Model):
         if type(ip) != type(0):
             ip = convert_ip(ip)
 
-        iprange = IPRange.objects.filter(start_number__lte=ip).order_by('-start_number')
-        if iprange:
-            return iprange[0]
-        iprange = IPRange.objects.filter(end_number__gte=ip).order_by('end_number')
-        if iprange:
-            return iprange[0]
+        try:
+            iprange = IPRange.objects.filter(
+                start_number__lte=ip).order_by('-start_number')[0]
 
-        return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,
-                                             start_number=ip,
-                                             end_number=ip)[0]
+            if iprange.end_number < ip:
+                return IPRange.objects.get_or_create(
+                            location_id=UNKNOWN_LOCATION.id,
+                            start_number=ip,
+                            end_number=ip)[0]
+            else:
+                return iprange
+
+        except IndexError:
+            return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,
+                                                 start_number=ip,
+                                                 end_number=ip)[0]
 
     @property
     def location(self):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
 

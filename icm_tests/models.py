@@ -43,7 +43,7 @@ class Test(models.Model):
         if not self.location_id:
             return None
         else:
-            return Location.objects.get(pk=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def create_from_suggestion(suggestion):
@@ -72,8 +72,8 @@ class Test(models.Model):
     @staticmethod
     def get_updated_tests(agent, test_version):
         current_test_version = Test.get_test_version(agent)
-        if current_test_version > test_version:
-            return Test.get_tests_for_version(agent, current_test_version)
+        if int(current_test_version) > int(test_version):
+            return Test.get_tests_for_version(agent, str(current_test_version))
         else:
             return []
       
@@ -119,7 +119,7 @@ class Test(models.Model):
 
 
 class WebsiteTest(Test):
-    website_url = models.URLField()
+    website_url = models.URLField(max_length=255, verify_exists=False)
 
     @staticmethod
     def create_from_suggestion(suggestion):
@@ -200,7 +200,7 @@ class TestAggregation(models.Model):
         if not self.location_id:
             return None
         else:
-            return Location.objects.get(pk=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def _update_aggregation_for_model(Model, test, filter_kwargs=None):

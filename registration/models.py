@@ -8,6 +8,7 @@ from django.db import models
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
+from django.contrib.sites.models import get_current_site
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -58,7 +59,7 @@ class RegistrationManager(models.Manager):
                 return user
         return False
     
-    def create_inactive_user(self, username, password, email,
+    def create_inactive_user(self, request, username, password, email,
                              send_email=True, profile_callback=None):
         """
         Create a new, inactive ``User``, generates a
@@ -92,14 +93,14 @@ class RegistrationManager(models.Manager):
             from django.core.mail import send_mail
             
             subject = render_to_string('registration/activation_email_subject.txt',
-                                       { 'site': settings.SITENAME })
+                                       { 'site': get_current_site(request)})
             # Email subject *must not* contain newlines
             subject = ''.join(subject.splitlines())
             
             message = render_to_string('registration/activation_email.txt',
                                        { 'activation_key': registration_profile.activation_key,
                                          'expiration_days': settings.ACCOUNT_ACTIVATION_DAYS,
-                                         'site': settings.SITENAME })
+                                         'site': get_current_site(request)})
             
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [new_user.email])
         return new_user

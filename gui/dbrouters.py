@@ -46,13 +46,11 @@ class GeoIPRouter(object):
 
     def allow_syncdb(self, db, model):
         "Explicitly put all models on all databases."
-        print "SyncDB on database %s and model %s" % (db, model) 
         if db == 'mysql' and model._meta.app_label == 'geoip':
             # This will prevent syncdb from creating sentry tables on crowdspring databases.
-            print "Sync IT!"
+            print "SyncDB on database %s and model %s" % (db, model) 
             return True
         elif db == 'mysql' and model._meta.app_label != 'geoip':
-            print "Don't sync!"
             return False
         
         return True

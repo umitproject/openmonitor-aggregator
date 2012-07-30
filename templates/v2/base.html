@@ -3,12 +3,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{% block title %}Umit Project - OpenMonitor{% endblock %}</title>
+    <title>
+        {% block title %}{% endblock %} | {% firstof site.name "Aggregator" %}
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+    {% block extra_meta %}  {% endblock %}
 
     <!-- Le styles -->
+    {% include_media 'main.css' %}
     {% include_media 'main.js' %}
     {% include_media 'bootstrap.css' %}
     <style>
@@ -72,23 +76,100 @@
     </div>
 
     <div class="container-fluid">
-		<div class="row-fluid">
-			<div class="span3">
+       <div id='content' class="row-fluid"> 
+           <div id='left-bar' class="span3 " style='height:100%;padding-right:10px'>
 				{% block left %}
 					{% include "notificationsystem/realtimebox.html" %}
 				{% endblock %}
 			</div>
-			<div class="span9">
-				{% block content %}
-				{% endblock %}
+			<div class="span9" style='height:100%'>
+
+                <div id='messages' class="row-fluid">
+                    {% include "_messages.html" %}
+                </div>
+
+               {% block content %} {% endblock %}
+
 			</div>
 		</div>
+
+        <div id='footer' class="row-fluid" style='background-color:white'>
+            <div id='footer-starter' class='span12'><hr/></div>
+            <div class='span12' style='padding-right:40px'>
+                {% include "_footer.html" %}
+            </div>
+            <div id='footer-ender' class='span12'></div>
+        </div>
+
     </div> <!-- /container -->
 
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     {% include_media 'bootstrap.js' %}
+
+    <script type='text/javascript'>
+        /* Resize content div's height wrt available space.
+         *
+         * This code is embeded into body because
+         * resize should occur before the page is showen
+         * on screen.
+         */
+
+        function getPosition(who){
+            var T= 0,L= 0;
+            while(who){
+                L += who.offsetLeft;
+                T += who.offsetTop;
+                who = who.offsetParent;
+            }
+            return [L,T];
+        }
+
+        function get_size() {
+            var winW = 0;
+            var winH = 500;
+            if (document.body && document.body.offsetWidth) {
+                winW = document.body.offsetWidth;
+                winH = document.body.offsetHeight;
+            }
+            if (document.compatMode=='CSS1Compat' &&
+                document.documentElement &&
+                document.documentElement.offsetWidth ) {
+                winW = document.documentElement.offsetWidth;
+                winH = document.documentElement.offsetHeight;
+            }
+            if (window.innerWidth && window.innerHeight) {
+                winW = window.innerWidth;
+                winH = window.innerHeight;
+            }
+            return [winW, winH];
+        }
+
+        function resize_content() {
+            // we shouldn't use jQuery to calculate fast on first load
+            var is_event_detail_page = document.getElementById('eventTabs');
+            if (is_event_detail_page) {
+                return;
+            }
+            var win_size = get_size();
+            var content_div = document.getElementById('content');
+            var content_height = win_size[1] - getPosition(content_div)[0]
+
+            var footer_starter_div = document.getElementById('footer-starter');
+            var footer_ender_div = document.getElementById('footer-ender');
+
+            var footer_height = getPosition(footer_ender_div)[1] - getPosition(footer_starter_div)[1];
+            content_height = content_height - footer_height - 50;
+            if (content_height < 150)
+                content_height  = 150;
+            content_div.style.height = content_height+'px';
+            resize_map();
+        }
+
+        resize_content();
+        $(window).resize(resize_content);
+    </script>
 
   </body>
 </html>

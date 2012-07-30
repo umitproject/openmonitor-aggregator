@@ -68,7 +68,7 @@ class RegistrationForm(forms.Form):
                 raise forms.ValidationError(_(u'You must type the same password each time'))
         return self.cleaned_data
     
-    def save(self, profile_callback=None):
+    def save(self, request, profile_callback=None):
         """
         Create the new ``User`` and ``RegistrationProfile``, and
         returns the ``User``.
@@ -80,7 +80,8 @@ class RegistrationForm(forms.Form):
         supplied.
         
         """
-        new_user = RegistrationProfile.objects.create_inactive_user(username=self.cleaned_data['username'],
+        new_user = RegistrationProfile.objects.create_inactive_user(request,
+                                                                    username=self.cleaned_data['username'],
                                                                     password=self.cleaned_data['password1'],
                                                                     email=self.cleaned_data['email'],
                                                                     profile_callback=profile_callback)

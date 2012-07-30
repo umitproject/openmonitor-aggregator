@@ -5,7 +5,7 @@
 
 {% block content %}
 <h2>Register new account</h2>
-<form method="post" action=".">
+<form method="post" action="{% url registration_register %}">
   {% include "_form.html" %}
 
   <input type="submit" value="{% trans 'Submit' %}" />

@@ -28,13 +28,15 @@ import decimal
 import simplejson as json
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404
 from django.template import RequestContext
+from django.contrib import messages
+from django.core.urlresolvers import reverse
 
 from gui.forms import SuggestServiceForm, SuggestWebsiteForm, WebsiteEventForm, ServiceEventForm
-from gui.decorators import cant_repeat_form, staff_member_required
+from gui.decorators import staff_member_required
 from geoip.models import Location
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
 from events.models import Event, TargetType, EventType
@@ -85,7 +87,7 @@ def event(request, event_id):
     
     #blockingNodes = json.dumps(eventDict['blockingNodes'])
     
-    event_json = json.dumps([event])
+    event_json = json.dumps([event], use_decimal=True)
     countries = {}
     for location in event['locations']:
       country_name = location['location_country_name']
@@ -106,65 +108,81 @@ def event(request, event_id):
                                'event_json': event_json},
                               context_instance=RequestContext(request))
 
+def ajax_event_traces(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    event_traces = event.get_latest_traces_as_json()
+    return HttpResponse(event_traces)
+
 
 def about(request):
     user = request.user
     return render_to_response('gui/about.html', locals(), context_instance=RequestContext(request))
 
 
-@cant_repeat_form(SuggestServiceForm, ['service_name', 'host_name', 'port', 'location'])
-def suggest_service(request, form, valid, *args, **kwargs):
-    if (form is not None) and valid:
-        service_name = form.cleaned_data['service_name']
-        host_name = form.cleaned_data['host_name']
-        port = form.cleaned_data['port']
-        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
-        
-        suggestion = ServiceSuggestion()
-        suggestion.service_name = service_name
-        suggestion.host_name = host_name
-        suggestion.port = port
-        suggestion.location = location
-        suggestion.user = request.user
-        suggestion.save()
-        
-        return HttpResponse(json.dumps(dict(status='OK',
-                   msg='Website suggestion added successfully! Make sure you \
-subscribe to receive the site status once it is tested.',
-                   errors=None)))
-    elif (form is not None) and (not valid):
-        return HttpResponse(json.dumps(dict(status='FAILED',
-                   msg='Failed to add your suggestion. Please, make sure you \
-provided all terms.',
-                   errors=form.errors)))
-    
-    form = SuggestServiceForm()
+def suggest_service(request):
+    if request.POST:
+        form = SuggestServiceForm(request.POST)
+        form.init_repeat_check(request, SuggestServiceForm,
+                               ['service_name', 'host_name',
+                                'port', 'location'])
+        if form.is_valid():
+            data = form.cleaned_data
+            host_name = data['host_name']
+            service_name = data['service_name']
+            port = data['port']
+            location = data['location']
+
+            location_id = location and location.id or None
+
+            if request.user.is_authenticated:
+                user_id = request.user.id
+            else:
+                user_id = None
+
+            ServiceSuggestion(host_name=host_name,
+                              service_name=service_name,
+                              port=port,
+                              user_id=user_id,
+                              location_id=location_id).save()
+
+            if request.user.is_authenticated():
+                messages.add_message(request, messages.SUCCESS,
+                                     "Suggestion added successfully.")
+            return HttpResponseRedirect(reverse('suggest_service'))
+    else:
+        form = SuggestServiceForm()
+
     return render_to_response('gui/suggest_service.html', locals(), context_instance=RequestContext(request))
 
 
-@cant_repeat_form(SuggestWebsiteForm, ['website', 'location'])
-def suggest_website(request, form, valid, *args, **kwargs):
-    if (form is not None) and valid:
-        website = form.cleaned_data['website']
-        location = Location.retrieve_location(form.cleaned_data['location'].split(', ')[0])
-        
-        suggestion = WebsiteSuggestion()
-        suggestion.website_url = website
-        suggestion.location_id = location.id
-        #suggestion.user = request.user
-        suggestion.save()
-        
-        return HttpResponse(json.dumps(dict(status='OK',
-                   msg='Website suggestion added successfully! Make sure you \
-subscribe to receive the site status once it is tested.',
-                   errors=None)))
-    elif (form is not None) and (not valid):
-        return HttpResponse(json.dumps(dict(status='FAILED',
-                msg='Failed to add your suggestion. Please, make sure you \
-provided at least a valid website.',
-                errors=form.errors)))
-    
-    form = SuggestWebsiteForm()
+def suggest_website(request):
+    if request.POST:
+        form = SuggestWebsiteForm(request.POST)
+        form.init_repeat_check(request, SuggestWebsiteForm,
+                              ['website', 'location'])
+        if form.is_valid():
+            data = form.cleaned_data
+            website_url = data['website']
+            location = data['location']
+
+            location_id = location and location.id or None
+
+            if request.user.is_authenticated:
+                user_id = request.user.id
+            else:
+                user_id = None
+
+            WebsiteSuggestion(website_url=website_url,
+                              location_id=location_id,
+                              user_id=user_id).save()
+
+            if request.user.is_authenticated():
+                messages.add_message(request, messages.SUCCESS,
+                                     "Suggestion added successfully.")
+            return HttpResponseRedirect(reverse('suggest_website'))
+    else:
+        form = SuggestWebsiteForm()
+
     return render_to_response('gui/suggest_website.html', locals(), context_instance=RequestContext(request))
 
 

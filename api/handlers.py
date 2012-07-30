@@ -99,8 +99,9 @@ class RegisterAgentHandler(BaseHandler):
             response_str = response.SerializeToString()
             return response_str
         except Exception, err:
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             print err
+            raise
 
 
 class LoginHandler(BaseHandler):
@@ -112,7 +113,6 @@ class LoginHandler(BaseHandler):
     response_message = messages_pb2.LoginStep1
 
     def create(self, request):
-        import pdb; pdb.set_trace()
         if request.POST.get('crypto_v1', None):
           from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
         else:

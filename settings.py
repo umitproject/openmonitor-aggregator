@@ -85,7 +85,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     #'django.contrib.sites',
     'autoload',
-    'mediagenerator',
     #'djangologging',
     #'protobuf',
     'piston',
@@ -105,6 +104,7 @@ INSTALLED_APPS = (
     'filetransfers',
     'ajax_select',
     'djcelery',
+    'mediagenerator',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -189,7 +189,6 @@ MEDIA_BUNDLES = (
           'bs/assets/js/bootstrap-collapse.js',
           'bs/assets/js/bootstrap-carousel.js',
           'bs/assets/js/bootstrap-typeahead.js',),
-                 
 )
 
 MEDIA_DEV_MODE = DEBUG

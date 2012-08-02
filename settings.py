@@ -42,7 +42,7 @@ DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
              "mysql": {'ENGINE': 'mysql',
                        'NAME':'openmonitor',
                        'USER':'root',
-                       'PASSWORD':'root',
+                       'PASSWORD':'',
                        'HOST':'localhost',
                        'PORT':3306,
                        'TEST_NAME':'openmonitor_test'}

@@ -1,4 +1,5 @@
 *.pyc
+*.pyo
 geoip/GeoLiteCity*
 .settings
 .settings/*

@@ -414,21 +414,23 @@ class CheckNewTestHandler(BaseHandler):
                      messages_pb2.NewTestsResponse)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
-      
-        newTests = Test.get_updated_tests(agent, received_msg.currentTestVersionNo)
+        
+        
+        newTests = Test.get_updated_tests(agent, str(received_msg.currentTestVersionNo))
+        logging.critical("---test----:%s"%newTests)
         response.testVersionNo = test_version
 
         for newTest in newTests:
             test = response.tests.add()
-            test.testID = test_version
+            test.testID = str(test_version)
             # TODO: get execution time
             test.executeAtTimeUTC = 4000
-
+            
             if isinstance(newTest, WebsiteTest):
-                test.testType = "WEB"
+                test.testType = 1
                 test.website.url = newTest.website_url
             elif isinstance(newTest, ServiceTest):
-                test.testType = "SERVICE"
+                test.testType = 2
                 test.service.name = newTest.service_name
                 test.service.port = newTest.port
                 test.service.ip = newTest.ip

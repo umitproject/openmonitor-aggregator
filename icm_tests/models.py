@@ -72,8 +72,8 @@ class Test(models.Model):
     @staticmethod
     def get_updated_tests(agent, test_version):
         current_test_version = Test.get_test_version(agent)
-        if current_test_version > test_version:
-            return Test.get_tests_for_version(agent, current_test_version)
+        if int(current_test_version) > int(test_version):
+            return Test.get_tests_for_version(agent, str(current_test_version))
         else:
             return []
       

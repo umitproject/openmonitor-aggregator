@@ -227,7 +227,7 @@ class Report(models.Model):
 
 class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    report_id = CassandraKeyField()
+    #report_id = CassandraKeyField()
     agent_id = CassandraKeyField()
     test_id = CassandraKeyField()
     time = models.DateTimeField()
@@ -355,8 +355,8 @@ class WebsiteReport(UserReport):
         report.user_id = agent.user.id
 
         # read ICMReport
-        logging.critical("STATUS CODE: %s" % icm_report.reportID)
-        report.report_id = icm_report.reportID
+        logging.critical("STATUS CODE: %s" % website_report_detail.statusCode)
+        #report.report_id = icm_report.reportID
         report.agent_id = icm_report.agentID
         report.test_id = icm_report.testID
         report.time = datetime.datetime.utcfromtimestamp(icm_report.timeUTC)
@@ -447,7 +447,7 @@ class ServiceReport(UserReport):
 
         # read ICMReport
         try:
-            report.report_id = icm_report.reportID
+            #report.report_id = icm_report.reportID
             report.agent_id = icm_report.agentID
             report.test_id = icm_report.testID
             report.time = datetime.datetime.utcfromtimestamp(icm_report.timeUTC)

@@ -1,0 +1,8 @@
+Dependencies
+=============
+Either copy required packages here or use symbolic links use for quick integration of changes (when in development).
+
+Required packages.
+===================
+ * umit-common
+ * icm-common

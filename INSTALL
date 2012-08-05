@@ -14,6 +14,7 @@ For python (install from PyPI):
  * pycrypto == 2.6.0
  * celery == 3.0.0
  * djcelery == 3.0.0
+ * pycassa == 1.7.0
 
 For system:
  * MySQL >= 5.1 (for GeoIP database)

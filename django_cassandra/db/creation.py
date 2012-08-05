@@ -15,7 +15,7 @@
 from django.db.backends.creation import TEST_DATABASE_PREFIX
 from django.db.utils import DatabaseError
 from djangotoolbox.db.creation import NonrelDatabaseCreation
-from pycassa.cassandra.c10 import Cassandra
+from pycassa.cassandra import Cassandra
 from pycassa.cassandra.ttypes import *
 from django.core.management import call_command
 from .utils import get_next_timestamp
@@ -90,15 +90,7 @@ class DatabaseCreation(NonrelDatabaseCreation):
         
         column_family_def = CfDef(**cfdef_settings)
         
-        # Adriano Marques 2012-06-13
-        # I just added the try/except to ignore if column family already exists
-        # that was breaking out test suites, and it doesn't seem to be harmful
-        # to just ignore this error.
-        try:
-            db_connection.get_client().system_add_column_family(column_family_def)
-        except InvalidRequestException, err:
-            if err.why.count("already existing column family"):
-                pass
+        db_connection.get_client().system_add_column_family(column_family_def)
         
         return [], {}
 

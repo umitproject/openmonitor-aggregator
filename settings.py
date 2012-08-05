@@ -30,6 +30,8 @@ PROJECT_DIR = os.path.dirname(__file__)
 import djcelery
 djcelery.setup_loader()
 
+import import_deps
+
 
 DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
                            'NAME':'openmonitor',
@@ -90,9 +92,9 @@ INSTALLED_APPS = (
     'autoload',
     'mediagenerator',
     #'djangologging',
-    'protobuf',
+    #'protobuf',
     'piston',
-    'messages',
+    #'messages',
     'agents',
     'geoip',
     'api',

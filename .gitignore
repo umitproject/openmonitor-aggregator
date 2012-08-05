@@ -20,3 +20,6 @@ _generated_media_names.py
 *~
 *.orig
 *.swp
+deps/*
+!deps/README
+!deps/__init__.py

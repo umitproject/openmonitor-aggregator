@@ -48,6 +48,6 @@ ACTIVE_HANDLERS = (
 
 
 urlpatterns = patterns('',
-    *[url(r'^%s$' % Handler.url, Resource(Handler)) \
+    *[url(r'^%s/?$' % Handler.url, Resource(Handler)) \
       for Handler in ACTIVE_HANDLERS]
 )

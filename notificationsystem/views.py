@@ -28,7 +28,7 @@ from django.core.cache import cache
 from django.conf import settings
 
 from gui.decorators import staff_member_required
-from utils import send_mail
+#from utils import send_mail
 from notificationsystem.models import *
 from notificationsystem.tasks import send_notifications_task
 

@@ -195,7 +195,7 @@ class EventLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_detection_utc = models.DateTimeField(auto_now=True)
     location_country_code = models.CharField(max_length=2)
-    events = ListField(py_type=int)
+    events = ListField(py_type=str)
     count = models.IntegerField(default=1)
 
     @staticmethod

@@ -85,7 +85,7 @@ def event(request, event_id):
     
     #blockingNodes = json.dumps(eventDict['blockingNodes'])
     
-    event_json = json.dumps([event])
+    event_json = json.dumps([event], use_decimal=True)
     countries = {}
     for location in event['locations']:
       country_name = location['location_country_name']

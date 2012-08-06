@@ -323,7 +323,7 @@ class GetBanlistHandler(BaseHandler):
     url = 'get_banlist/'
 
     request_message = messages_pb2.GetPeerList
-    response_message = messages_pb2.GetNetlistResponse
+    response_message = messages_pb2.GetBanlistResponse
 
     @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,

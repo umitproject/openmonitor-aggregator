@@ -119,7 +119,7 @@ class Test(models.Model):
 
 
 class WebsiteTest(Test):
-    website_url = models.URLField()
+    website_url = models.URLField(max_length=255, verify_exists=False)
 
     @staticmethod
     def create_from_suggestion(suggestion):

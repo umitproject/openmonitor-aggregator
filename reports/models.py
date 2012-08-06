@@ -59,7 +59,7 @@ class Trace(object):
         else:
             iprange = IPRange.ip_location(ip)
             self.location_id = iprange.location_id
-            self.location_name = iprange.location.name
+            self.location_name = iprange.location.fullname
             self.country_name = iprange.location.country_name
             self.country_code = iprange.location.country_code
             self.state_region = iprange.location.state_region

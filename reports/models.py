@@ -314,7 +314,7 @@ class WebsiteReport(UserReport):
     media_ids = ListField(py_type=str)
 
     def __unicode__(self):
-        return "(%s) %s - %s" % (self.updated_at, self.url, self.status_code)
+        return "(%s) %s - %s" % (self.created_at, self.url, self.status_code)
     
     @cache_model_method('website_report_', 300, 'id')
     @property

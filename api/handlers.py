@@ -56,7 +56,7 @@ class RegisterAgentHandler(BaseHandler):
     """
 
     allowed_methods = ('POST',)
-    url = 'registeragent'
+    url = 'registeragent/'
 
     request_message = messages_pb2.RegisterAgent
     response_message = messages_pb2.RegisterAgentResponse

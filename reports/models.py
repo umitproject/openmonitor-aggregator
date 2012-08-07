@@ -161,6 +161,9 @@ class Report(models.Model):
     count = models.IntegerField(default=1)
     
     user_reports_ids = ListField(py_type=str)
+
+    def __unicode__(self):
+        return "(%s) %s" % (self.updated_at, self.target)
     
     @cache_model_method('report_', 300, 'id')
     @property
@@ -309,6 +312,9 @@ class WebsiteReport(UserReport):
     redirect_link = models.URLField(max_length=255, blank=True)
     html_response = models.TextField(blank=True)
     media_ids = ListField(py_type=str)
+
+    def __unicode__(self):
+        return "(%s) %s - %s" % (self.updated_at, self.url, self.status_code)
     
     @cache_model_method('website_report_', 300, 'id')
     @property

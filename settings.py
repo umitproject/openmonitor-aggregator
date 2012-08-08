@@ -80,6 +80,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'djangotoolbox',
     'autoload',
     'mediagenerator',
@@ -221,7 +222,7 @@ SERVER_EMAIL = 'notification@openmonitor.org'
 
 USE_I18N = True
 
-SITENAME = "OpenMonitor"
+SITE_ID = u'' # Empty by default because Nonrel IDs are not integer
 
 ##################
 # RESPONSE COUNTS

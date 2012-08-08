@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<form method="post" action=".">
+<form method="post" action="{% url auth_login %}">
   {% include '_form.html' %}
 
   <input type="submit" value="{% trans 'Log in' %}" />

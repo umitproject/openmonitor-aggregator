@@ -23,10 +23,13 @@
 from django.db import models
 from django.core.cache import cache
 
+from dbextra.fields import CassandraKeyField
+
+
 USER_KEY = "user_%s"
 
 class UserModel(models.Model):
-    user_id = models.IntegerField(null=True, default=None)
+    user_id = CassandraKeyField()
     
     class Meta:
         abstract = True

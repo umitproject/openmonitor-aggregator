@@ -64,6 +64,12 @@ class RegisterAgentHandler(BaseHandler):
     @message_handler(request_message, response_message)
     def create(self, request, register_obj, aes_key, agent,
                software_version, test_version, response):
+
+        if request.POST.get('crypto_v1', None):
+            from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+            from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
+
         try:
             # get agent ip
             agent_ip = request.META['REMOTE_ADDR']
@@ -93,6 +99,7 @@ class RegisterAgentHandler(BaseHandler):
             response_str = response.SerializeToString()
             return response_str
         except Exception, err:
+            raise
             import pdb; pdb.set_trace()
             print err
 
@@ -106,6 +113,10 @@ class LoginHandler(BaseHandler):
     response_message = messages_pb2.LoginStep1
 
     def create(self, request):
+        if request.POST.get('crypto_v1', None):
+          from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+          from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
         msg = base64.b64decode(request.POST['msg'])
 
         loginAgent = messages_pb2.Login()
@@ -118,7 +129,7 @@ class LoginHandler(BaseHandler):
         agentIp = request.META['REMOTE_ADDR']
 
         # initiate login process
-        loginProcess = agent.initLogin(agentIp, loginAgent.port)
+        loginProcess = agent.initLogin(agentIp, loginAgent.port, crypto_v1=request.POST.get('crypto_v1', False))
         
         if loginProcess:
             # initiate crypto to cipher challenge
@@ -153,7 +164,8 @@ class Login2Handler(BaseHandler):
 
         # check login process
         agent = Agent.finishLogin(loginAgent.processID,
-                                  loginAgent.cipheredChallenge)
+                                  loginAgent.cipheredChallenge,
+                                  crypto_v1=request.POST.get('crypto_v1',False))
 
         if agent is not None:
             # get software version information
@@ -175,6 +187,7 @@ class Login2Handler(BaseHandler):
             return response_str
         else:
             logging.error('Error in login')
+            raise Exception('challenge not verified')
 
 
 class LogoutHandler(BaseHandler):

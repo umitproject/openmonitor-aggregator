@@ -292,8 +292,13 @@ class Agent(models.Model):
         self.superPeer = False
         self.save()
 
-    def initLogin(self, ip, port):
+    def initLogin(self, ip, port, crypto_v1):
         from geoip.models import IPRange
+
+        if crypto_v1:
+            from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+            from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
 
         # get new challenge
         if self.banned:
@@ -319,7 +324,7 @@ class Agent(models.Model):
         return loginProcess
     
     @staticmethod
-    def finishLogin(loginProcessID, cipheredChallenge):
+    def finishLogin(loginProcessID, cipheredChallenge, crypto_v1=False):
         from geoip.models import IPRange
         # get login process
         loginProcess = LoginProcess.objects.get(processID=loginProcessID)
@@ -328,7 +333,7 @@ class Agent(models.Model):
         agent = Agent.get_agent(loginProcess.agent_id)
 
         # check challenge
-        if agent.checkChallenge(str(loginProcess.challenge), cipheredChallenge):
+        if agent.checkChallenge(str(loginProcess.challenge), cipheredChallenge,crypto_v1=crypto_v1):
             # delete already logged agent info
             LoggedAgent.objects.filter(agent_id=agent.id).delete()
 
@@ -380,6 +385,7 @@ class Agent(models.Model):
 
         else:
             logging.error('Challenge not ok')
+            raise Exception('Challenge not ok')
             return None
 
     def logout(self):
@@ -423,18 +429,25 @@ class Agent(models.Model):
         message = crypt.decodeAES(encodedMessage, self.AESKey)
         return message
 
-    def checkChallenge(self, originalChallenge, cipheredChallenge):
+    def checkChallenge(self, originalChallenge, cipheredChallenge, crypto_v1=0):
+        if crypto_v1:
+            from agents.CryptoLib_v1 import crypto, CryptoLib, aggregatorKey, aes_decrypt
+        else:
+            from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
         # get cryptolib instance
         crypt = CryptoLib()
         return crypt.verifySignatureRSA(originalChallenge,
                                         cipheredChallenge,
-                                        self.public_key)
+                                        self.public_key(crypto_v1))
 
     def getLoginInfo(self):
         return LoggedAgent.getLoggedAgent(self.id)
 
-    @property
-    def public_key(self):
+    def public_key(self, crypto_v1=False):
+        if crypto_v1:
+            from agents.CryptoLib_v1 import RSAKey
+        else:
+            from agents.CryptoLib import RSAKey
         key = PUBLIC_KEY_AGENT_CACHE_KEY % self.id
         pkey = cache.get(key, False)
         if not pkey:

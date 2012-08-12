@@ -280,8 +280,8 @@ class BannedNetworks(models.Model):
 
 class IPRange(models.Model):
     location_id = models.IntegerField()
-    start_number = models.IntegerField(db_index=True) #need to index for MySQL
-    end_number = models.IntegerField()
+    start_number = models.PositiveIntegerField(db_index=True) #need to index for MySQL
+    end_number = models.PositiveIntegerField()
     nodes_count = models.IntegerField(default=0)
     banned = models.BooleanField(default=False)
     ban_flags = models.IntegerField(default=0)

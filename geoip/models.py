@@ -327,16 +327,14 @@ class IPRange(models.Model):
         if type(ip) != type(0):
             ip = convert_ip(ip)
 
-        iprange = IPRange.objects.filter(start_number__lte=ip).order_by('-start_number')
-        if iprange:
-            return iprange[0]
-        iprange = IPRange.objects.filter(end_number__gte=ip).order_by('end_number')
-        if iprange:
-            return iprange[0]
+        try:
+            return IPRange.objects.filter(
+                start_number__lte=ip).order_by('-start_number')[0]
 
-        return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,
-                                             start_number=ip,
-                                             end_number=ip)[0]
+        except IndexError:
+            return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,
+                                                 start_number=ip,
+                                                 end_number=ip)[0]
 
     @property
     def location(self):

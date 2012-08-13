@@ -139,7 +139,7 @@ class Location(models.Model):
     lat = models.DecimalField(decimal_places=20, max_digits=23)
     lon = models.DecimalField(decimal_places=20, max_digits=23)
     aggregations = ListField(py_type=int)
-    nodes_count = models.IntegerField(default=0)
+    nodes_count = models.PositiveIntegerField(default=0)
 
     def add_aggregation(self, aggregation):
         if aggregation.id in self.aggregations:
@@ -252,11 +252,11 @@ class BannedNetworks(models.Model):
     IPRange model. This is in order for making retrieval of ban list faster
     and cheaper.
     """
-    location_id = models.IntegerField()
-    iprange_id = models.IntegerField()
-    start_number = models.IntegerField()
-    end_number = models.IntegerField()
-    nodes_count = models.IntegerField()
+    location_id = models.PositiveIntegerField()
+    iprange_id = models.PositiveIntegerField()
+    start_number = models.PositiveIntegerField()
+    end_number = models.PositiveIntegerField()
+    nodes_count = models.PositiveIntegerField()
     flags = models.IntegerField()
     
     @property
@@ -279,10 +279,10 @@ class BannedNetworks(models.Model):
 
 
 class IPRange(models.Model):
-    location_id = models.IntegerField()
+    location_id = models.PositiveIntegerField()
     start_number = models.PositiveIntegerField(db_index=True) #need to index for MySQL
     end_number = models.PositiveIntegerField()
-    nodes_count = models.IntegerField(default=0)
+    nodes_count = models.PositiveIntegerField(default=0)
     banned = models.BooleanField(default=False)
     ban_flags = models.IntegerField(default=0)
 

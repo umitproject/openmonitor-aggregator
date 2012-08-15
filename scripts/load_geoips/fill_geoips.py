@@ -68,6 +68,9 @@ def fill_fullnames():
             print "Filled %s objects." % counter
         counter += 1
 
+        if location.country_code == 'UN':
+            continue
+
         if location.city:
             location.fullname = "%s, %s" % (location.city,location.country_name)
         else:

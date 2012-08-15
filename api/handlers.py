@@ -500,7 +500,7 @@ class CheckNewTestHandler(BaseHandler):
 
         for newTest in newTests:
             test = response.tests.add()
-            test.testID = str(test_version)
+            test.testID = str(test.id)
             # TODO: get execution time
             test.executeAtTimeUTC = 4000
             

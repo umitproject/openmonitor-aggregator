@@ -25,7 +25,10 @@
 
 import csv
 import sys
-sys.path.insert(0, "/home/orcun/projects/openmonitor/aggregator/")
+from os.path import dirname, abspath
+
+AGG_DIR =  dirname(dirname(dirname(abspath(__file__))))
+sys.path.insert(0, AGG_DIR)
 
 from django.core.management import setup_environ
 import settings

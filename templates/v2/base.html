@@ -28,7 +28,7 @@
     {% block extra_head %}  {% endblock %}
   </head>
 
-  <body>
+  <body onload='resize_content()'>
 
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
@@ -73,8 +73,8 @@
     </div>
 
     <div class="container-fluid">
-		<div class="row-fluid">
-			<div class="span3">
+       <div id='content' class="row-fluid" style='height:600px'>
+           <div id='left-bar' class="span3 " style='overflow:auto; padding-right:10px'>
 				{% block left %}
 					{% include "notificationsystem/realtimebox.html" %}
 				{% endblock %}

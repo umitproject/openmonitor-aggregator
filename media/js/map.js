@@ -119,7 +119,16 @@ function updateInitialMapEvents(m)
     }
 }
 
+function resize_map(width, height) {
+    try {
+        google.maps.event.trigger(map, "resize");
+    }
+    catch(err) {
+    }
+}
+
 function initializeMapSystem(initial_events) {
     initializeMap();
     updateInitialMapEvents({data: initial_events});
+    $('#map_canvas').resize(resize_map);
 }

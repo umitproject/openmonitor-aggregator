@@ -154,21 +154,6 @@ class Location(models.Model):
         return "%s, %s" % (self.city, self.country_name) \
                                 if self.city != '' else self.country_code
 
-    @staticmethod
-    def retrieve_location(name):
-        """If location is empty we consider this suggestion to be world wide.
-        If location doesn't exist in our datastore, we try to get its
-        coordinates. If successful, we create a new entry. Otherwise, we
-        consider the suggestion to be world wide.
-        """
-        location = Location.objects.filter(fullname__startswith=name)
-        if not location:
-            # TODO
-            location = Location.objects.filter(fullname__startswith=name)
-
-        if location:
-            return location[0]
-
     @property
     def ip_ranges(self):
         key = IP_RANGES_CACHE_KEY % self.id

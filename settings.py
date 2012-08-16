@@ -165,7 +165,6 @@ MEDIA_BUNDLES = (
          'js/common.js',
          'js/realtimebox.js',
          'js/map.js',
-         'js/suggestion.js',
          'js/events.js',),
      ('bootstrap.css',
          'bs/assets/css/bootstrap-responsive.css',

@@ -149,9 +149,12 @@ YUICOMPRESSOR_PATH = os.path.join(os.path.dirname(__file__), 'yuicompressor-2.4.
 
 MEDIA_BUNDLES = (
      ('main.css',
-        'css/main.css',
-        'css/jquery-ui.css',
-        'css/realtimebox.css', ),
+         'css/jquery-ui.css',
+         ),
+     ('main-old.css',
+         'css/main.css',
+         'css/jquery-ui.css',
+         ),
      ('main.js',
          {'filter': 'mediagenerator.filters.media_url.MediaURL'},
          'js/jquery.js',

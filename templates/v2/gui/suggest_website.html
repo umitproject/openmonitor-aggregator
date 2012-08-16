@@ -5,13 +5,9 @@
 {% block left %} {% endblock %}
 
 {% block content %}
-	<div id='msg'></div>
-	<div id='error'></div>
-	<br/>
-	<p><b>Please, read our <a href="/manifesto">Manifesto</a> before suggesting a website.</b></p>
-	<br/>
 	<form method="POST" action="/suggest_website/" id='website_suggest_form'>
-		{{ form.as_p }}
+		{% include '_form.html' %}
 		<input type="submit" value="Suggest" name="suggest" id="website_suggest_button"/>
 	</form>
+	<p><b>Please, read our <a href="/manifesto">Manifesto</a> before suggesting a website.</b></p>
 {% endblock %}

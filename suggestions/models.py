@@ -31,13 +31,12 @@ from icm_tests.models import WebsiteTest, ServiceTest
 from umit.proto.messages_pb2 import WebsiteSuggestion, ServiceSuggestion
 
 def add_to_aggregation(agg_model, fields, suggestion):
-    agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))
-    if agg:
-        agg = agg[0]
+    try:
+        agg = agg_model.objects.filter(**dict([(f, getattr(suggestion, f)) for f in fields]))[0]
         if suggestion.id in agg.suggestions:
             return agg
         agg.count += 1
-    else:
+    except IndexError:
         agg = agg_model()
         for f in fields:
             setattr(agg, f, getattr(suggestion, f))

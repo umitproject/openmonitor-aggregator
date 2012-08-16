@@ -80,8 +80,13 @@
 				{% endblock %}
 			</div>
 			<div class="span9">
-				{% block content %}
-				{% endblock %}
+
+                <div id='messages' class="row-fluid">
+                    {% include "_messages.html" %}
+                </div>
+
+               {% block content %} {% endblock %}
+
 			</div>
 		</div>
     </div> <!-- /container -->

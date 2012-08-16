@@ -16,7 +16,7 @@
         {{ field }}
         <p class="help-block">{{ field.help_text }}</p>
         {% for error in field.errors %}
-          <span class="help-inline">{{ error }}</span>
+          <span class="help-inline"><b>{{ error }}</b></span>
         {% endfor %}
       </div>
     </div>
@@ -24,7 +24,7 @@
 </fieldset>
 
 <style>
-   .help-block {
+   p.help-block {
         font-size:12px;
         font-style:italic;
         color:#666666;

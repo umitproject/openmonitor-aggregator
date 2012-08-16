@@ -34,15 +34,34 @@ EVENT_TYPE = (
     ('offline', 'Offline'),
 )
 
+LOCATION_HELP_TEXT = ("Where do you think it is being blocked? "
+                      "Leave empty if you want a world-wide check.")
+
+WEBSITE_HELP_TEXT = ("The website you think we should check.")
+
+SERVICE_NAME_HELP_TEXT = ("Service name. Eg: ssh, ftp, pop3, imap...")
+
+HOST_NAME_HELP_TEXT = ("Address through which we can reach this service, "
+                       "without the protocol part. Eg: ftp.test.com instead "
+                       "ftp://ftp.test.com")
+
+PORT_HELP_TEXT = ("Port number through which the service should be accessed.")
+
+
 class SuggestWebsiteForm(forms.Form):
-    website = forms.CharField(max_length=300, required=True)
-    location = make_ajax_field(WebsiteSuggestion, 'location_id', 'location', label='Location')
+    website = forms.CharField(max_length=300, required=True,
+                              help_text=WEBSITE_HELP_TEXT)
+    location = make_ajax_field(WebsiteSuggestion, 'location_id', 'location',
+                               label='Location', help_text=LOCATION_HELP_TEXT)
 
 class SuggestServiceForm(forms.Form):
-    host_name = forms.CharField(max_length=300, required=True)
-    service_name = forms.CharField(max_length=20, required=True)
-    port = forms.IntegerField(required=True)
-    location = forms.CharField(max_length=300, required=False)
+    host_name = forms.CharField(max_length=300, required=True,
+                                help_text=HOST_NAME_HELP_TEXT)
+    service_name = forms.CharField(max_length=20, required=True,
+                                   help_text=SERVICE_NAME_HELP_TEXT)
+    port = forms.IntegerField(required=True, help_text=PORT_HELP_TEXT)
+    location = forms.CharField(max_length=300, required=False,
+                               help_text=LOCATION_HELP_TEXT)
 
 class WebsiteEventForm(forms.Form):
     website = forms.CharField(max_length=300, required=True)

@@ -24,30 +24,39 @@
 from ajax_select import LookupChannel
 
 from geoip.models import Location
+from django.db.models import Q
 
 
 class LocationLookup(LookupChannel):
 
   model = Location
-  
-  def get_query(self,q,request):
-    words = q.replace(',',' ').replace('-', ' ').split()
-    query = Location.objects.all()
-    
-    queries = []
+
+  def get_query(self, q, request):
+    words = q.replace(',', ' ').split()
+
+    if not words:
+        return []
+
+    query = None
     for word in words:
-      query = Location.objects.filter(fullname__icontains=word)[:20]
-      queries.append(query)
-    
-    entities = []
-    for query in queries:
-      for entity in query:
-        entities.append(entity)
-    
-    return entities
-  
+        if not query:
+            query = Q(city__istartswith=word)
+        else:
+            query = query | Q(city__istartswith=word)
+
+    for word in words:
+        query = query | Q(country_name__istartswith=word)
+
+    return Location.objects.filter(query).distinct()[:20]
+
+
   def format_match(self,obj):
     return self.format_item_display(obj)
 
+
   def format_item_display(self, obj):
+    return obj.fullname
+
+
+  def get_result(self, obj):
     return obj.fullname

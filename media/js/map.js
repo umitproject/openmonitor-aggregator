@@ -20,6 +20,10 @@ function initializeMap()
 
     var mcOptions = {gridSize: 50, maxZoom: 14};
     mapCluster = new MarkerClusterer(map, [], mcOptions);
+
+    google.maps.event.addListenerOnce(map, 'idle', function(){
+       resize_map();
+    });
 }
 
 function placeNewEvent(type, event, latitude, longitude, alertEvent)

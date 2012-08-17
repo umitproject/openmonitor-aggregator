@@ -22,8 +22,6 @@
 
 <script type="text/javascript">
 	$(document).ready(function() {
-		  initializeMapSystem('{{ initial_events|safe }}');
 		  initializeRealTime('{{ initial_events|safe }}');
-		  setTimeout('receiveEvents()', 50000);
 	});
 </script>

@@ -73,21 +73,11 @@ function resize_content() {
     var footer_ender_div = document.getElementById('footer-ender');
     
     var footer_height = getPosition(footer_ender_div)[1] - getPosition(footer_starter_div)[1];
-    content_height = content_height - footer_height - 70;
+    content_height = content_height - footer_height - 50;
+    if (content_height < 150)
+        content_height  = 150;
     content_div.style.height = content_height+'px';
 
-    var map_div = document.getElementById('map_canvas');
-    if (map_div) {
-        map_div.style.height = content_height+'px';
-    }
-
-    var realtimebox_div = document.getElementById('left-bar');
-    if (realtimebox_div) {
-        realtimebox_div.style.height = content_height+'px';
-        events_box_div = document.getElementById('events-box');
-        if (events_box_div)
-            events_box_div.style.display = '';
-    }
 }
 
 

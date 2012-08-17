@@ -1,0 +1,14 @@
+{% load media %}
+<div id="map-loading-wrapper">
+    <div id="map-loading-cell">
+        <div class="content">
+            <center><img src="{% media_url 'images/loading-indicator.gif' %}" />
+Loading map<center
+        </div>
+    </div>
+</div>
+
+<style>
+#map-loading-wrapper {display:table;width:100%; height:100%}
+#map-loading-cell {display:table-cell; vertical-align:middle;}
+</style>

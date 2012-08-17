@@ -159,7 +159,10 @@
             content_div.style.height = content_height+'px';
         }
 
-        resize_content();
+        var is_event_detail_page = document.getElementById('eventTabs');
+        if (!is_event_detail_page) {
+            resize_content();
+        }
     </script>
 
   </body>

@@ -74,12 +74,12 @@
 
     <div class="container-fluid">
        <div id='content' class="row-fluid" style='height:600px'>
-           <div id='left-bar' class="span3 " style='overflow:auto; padding-right:10px'>
+           <div id='left-bar' class="span3 " style='height:100%;padding-right:10px'>
 				{% block left %}
 					{% include "notificationsystem/realtimebox.html" %}
 				{% endblock %}
 			</div>
-			<div class="span9">
+			<div class="span9" style='height:100%'>
 
                 <div id='messages' class="row-fluid">
                     {% include "_messages.html" %}

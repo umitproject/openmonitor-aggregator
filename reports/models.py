@@ -113,7 +113,7 @@ def db_convert_trace(traces):
 class Report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    test_id = models.IntegerField()
+    test_id = CassandraKeyField()
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)
@@ -232,7 +232,7 @@ class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     #report_id = CassandraKeyField()
     agent_id = CassandraKeyField()
-    test_id = models.PositiveIntegerField()
+    test_id = CassandraKeyField()
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)

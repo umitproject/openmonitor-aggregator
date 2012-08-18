@@ -222,7 +222,10 @@ class Report(models.Model):
             report = report[0]
             report.count += 1
             report.user_reports_ids.append(user_report.id)
-            report.response_time = (report.response_time + user_report.response_time)/2
+            if report.response_time and user_report.response_time:
+                report.response_time = (report.response_time + user_report.response_time)/2
+            elif not report.response_time and user_report.response_time:
+                report.response_time = user_report.response_time
 
         report.save()
         return Report

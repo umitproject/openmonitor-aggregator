@@ -38,8 +38,15 @@ from geoip.models import IPRange
 
 
 def main():
-    # We assume 'Unknown' location is already created
-    unknown_location = Location.objects.get(country_code='UN')
+    unknown_location = Location.objects.get_or_create(
+        fullname='Unknown',
+        country_name='Unknown',
+        country_code='UN',
+        state_region='UN',
+        city='Unknown',
+        zipcode='',
+        lat=decimal.Decimal('0.0'),
+        lon=decimal.Decimal('0.0'))[0]
 
     # Update IP ranges whose location_id=0 (means a reserved or non-used IP)
     IPRange.objects.filter(location_id=0).update(location_id=unknown_location.id)

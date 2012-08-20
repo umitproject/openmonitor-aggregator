@@ -78,7 +78,7 @@ class Trace(object):
     @cache_model_method('trace_', 300, 'location_id')
     @property
     def location(self):
-        return Location.objects.get(id=self.location_id)
+        return Location.get_location_or_unknown(self.location_id)
     
     def __unicode__(self):
         return self.toJson()
@@ -174,7 +174,7 @@ class Report(models.Model):
     @property
     def location(self):
         """The location of the reporting node"""
-        return Location.objects.get(id=self.location_id)
+        return Location.get_location_or_unknown(self.location_id)
     
     @staticmethod
     def create_or_count(user_report):
@@ -287,7 +287,7 @@ class UserReport(models.Model):
     @property
     def location(self):
         """The location of the reporting node"""
-        return Location.objects.get(id=self.location_id)
+        return Location.get_location_or_unknown(self.location_id)
 
     @property
     def user(self):

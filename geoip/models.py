@@ -204,7 +204,7 @@ class Location(models.Model):
         location = cache.get(CLOSEST_LOCATION_KEY % (lat, lon), None)
         if location is None:
             aggs = LocationAggregation.objects.filter(lat=int(lat), lon=int(lon))[:1]
-            region = Location.objects.get(pk=aggs.locations[0])
+            region = Location.get_location_or_unknown(aggs.locations[0])
             cache.set(CLOSEST_LOCATION_KEY % (lat, lon), region)
         return region
     
@@ -215,11 +215,18 @@ class Location(models.Model):
             aggs = LocationAggregation.objects.filter(lat=int(lat), lon=int(lon))
             locations = []
             for agg in aggs:
-                locations += [Location.objects.get(pk=id) for id in agg.locations]
+                locations += [Location.get_location_or_unknown(id) for id in agg.locations]
             
             cache.set(CLOSEST_LOCATIONS_KEY % (lat, lon), locations)
         
         return locations
+
+    @staticmethod
+    def get_location_or_unknown(id=0):
+        try:
+            return Location.objects.get(id=id)
+        except Location.DoesNotExist:
+            return UNKNOWN_LOCATION
 
 
 try:
@@ -251,7 +258,7 @@ class BannedNetworks(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
     
@@ -328,7 +335,7 @@ class IPRange(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
 

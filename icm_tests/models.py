@@ -43,7 +43,7 @@ class Test(models.Model):
         if not self.location_id:
             return None
         else:
-            return Location.objects.get(pk=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def create_from_suggestion(suggestion):
@@ -200,7 +200,7 @@ class TestAggregation(models.Model):
         if not self.location_id:
             return None
         else:
-            return Location.objects.get(pk=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def _update_aggregation_for_model(Model, test, filter_kwargs=None):

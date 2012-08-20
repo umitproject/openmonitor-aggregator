@@ -69,7 +69,7 @@ class WebsiteSuggestion(UserModel):
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
     
     @staticmethod
     def create(websiteSuggestionMsg, user):
@@ -166,7 +166,7 @@ class WebsiteLocationAggregation(models.Model,
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
     
     @staticmethod
     def add_suggestion(suggestion):
@@ -189,7 +189,7 @@ class WebsiteAggregation(UserModel, BaseWebsiteSuggestionAggregation):
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def add_suggestion(suggestion):
@@ -212,7 +212,7 @@ class ServiceSuggestion(UserModel):
     @property
     def location(self):
         if self.location_id is not None:
-            return Location.objects.get(id=self.location_id)
+            return Location.get_location_or_unknown(id=self.location_id)
 
     @staticmethod
     def create(serviceSuggestionMsg, user):

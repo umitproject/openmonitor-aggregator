@@ -77,7 +77,7 @@ class LoggedAgent(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
 
@@ -469,7 +469,7 @@ class Agent(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(pk=self.location_id)
+            location = Location.get_location_or_unknown(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
     
@@ -497,7 +497,7 @@ class BannedNetworks(models.Model):
         key = LOCATION_CACHE_KEY % self.location_id
         location = cache.get(key, False)
         if not location:
-            location = Location.objects.get(id=self.location_id)
+            location = Location.get_location_or_unknown(id=self.location_id)
             cache.set(key, location, CACHE_EXPIRATION)
         return location
     

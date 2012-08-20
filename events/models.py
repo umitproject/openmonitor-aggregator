@@ -38,6 +38,7 @@ EVENT_LIST_CACHE_KEY = "events_list"
 LOCATION_CACHE_KEY = "location_%s"
 EVENT_CACHE_KEY = 'event_%s'
 
+
 eventType = ["Censor", "Throttling", "Offline"]
 targetType = ["Website", "Service"]
 

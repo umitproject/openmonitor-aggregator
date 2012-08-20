@@ -91,13 +91,15 @@ class Event(models.Model):
     
     
     @property
-    def location(self):
-        location = cache.get(LOCATION_CACHE_KEY % self.location_id, False)
-        if not location:
-            region = Location.objects.get(id=self.location_id)
-            cache.set(LOCATION_CACHE_KEY % self.location_id, LOCATION_CACHE_TIME)
-        
-        return location
+    def locations(self):
+        locations = []
+        for location_id in self.location_ids:
+            location = cache.get(LOCATION_CACHE_KEY % location_id, False)
+            if not location:
+                location = Location.get_location_or_unknown(id=location_id)
+                cache.set(LOCATION_CACHE_KEY % location_id, location, LOCATION_CACHE_TIME)
+            locations.append(location)
+        return locations
 
     @staticmethod
     def get_active_events(limit=20):

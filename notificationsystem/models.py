@@ -19,6 +19,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import datetime
+import itertools
+
 from django.db import models
 from django.template.loader import render_to_string
 
@@ -45,7 +48,8 @@ class EmailNotification(models.Model):
         return [e for e in self.emails.split(',') if e]
     
     def build_email_data(self):
-        self.subject = "%s is back!" % target_name
+        self.subject = "%s is back!" % self.event.target
+        context = {}
         self.body = render_to_string('notificationsystem/notification_body.txt', context)
         self.html = render_to_string('notificationsystem/notification_body.html', context)
     

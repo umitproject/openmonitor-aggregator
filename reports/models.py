@@ -65,8 +65,8 @@ class Trace(object):
             self.state_region = iprange.location.state_region
             self.city = iprange.location.city
             self.zipcode = iprange.location.zipcode
-            self.lat = iprange.location.lat
-            self.lon = iprange.location.lon
+            self.lat = decimal.Decimal(iprange.location.lat)
+            self.lon = decimal.Decimal(iprange.location.lon)
     
     @staticmethod
     def from_dump(dump):

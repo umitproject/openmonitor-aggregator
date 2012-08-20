@@ -29,7 +29,7 @@ import urllib
 
 from django.http import HttpResponse
 from django.utils import simplejson as json
-from celery.task import task
+from celery import task
 
 import oauth2 as oauth
 from twitter.models import TwitterAccount

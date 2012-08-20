@@ -20,10 +20,19 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-"""Module containing shortcut functions to easily send tweets.
+"""Module containing notifications tasks.
 """
 
+import datetime
 
+from django.conf import settings
+
+from celery import task
+
+from notificationsystem.models import EmailNotification
+
+
+@task
 def send_notifications_task(notification_id=None):
     """Task that sends out notifications.
     """

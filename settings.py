@@ -21,6 +21,9 @@
 ##
 
 import os
+from os.path import dirname
+from os.path import abspath
+from os.path import join
 
 
 import djcelery
@@ -28,6 +31,8 @@ djcelery.setup_loader()
 
 import import_deps
 
+
+AGG_DIR =  dirname(abspath(__file__))
 
 DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
                            'NAME':'openmonitor',
@@ -136,7 +141,7 @@ TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 #TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 #Remove comment in the following line for v2 design
-TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates', 'v2'),)
+TEMPLATE_DIRS = (join(AGG_DIR, 'templates', 'v2'),)
 
 ROOT_URLCONF = 'urls'
 
@@ -145,7 +150,7 @@ ROOT_MEDIA_FILTERS = {
     'css': 'mediagenerator.filters.yuicompressor.YUICompressor',
 }
 
-YUICOMPRESSOR_PATH = os.path.join(os.path.dirname(__file__), 'yuicompressor-2.4.7.jar')
+YUICOMPRESSOR_PATH = join(AGG_DIR, 'yuicompressor-2.4.7.jar')
 
 MEDIA_BUNDLES = (
      ('main.css',
@@ -196,7 +201,7 @@ NOTIFICATION_SENDER = "notification@openmonitor.org"
 NOTIFICATION_TO = "notification@openmonitor.org"
 NOTIFICATION_REPLY_TO = "notification@openmonitor.org"
 
-GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'media'),)
+GLOBAL_MEDIA_DIRS = (join(AGG_DIR, 'media'),)
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 LOGGING_OUTPUT_ENABLED = True

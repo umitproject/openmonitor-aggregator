@@ -426,10 +426,7 @@ class SendWebsiteReportHandler(BaseHandler):
     def create(self, request, received_website_report, aes_key, agent,
                software_version, test_version, response):
         # add website report
-        webSiteReport = WebsiteReport.create(received_website_report, agent)
-
-        # send report to decision system
-        DecisionSystem.newReport(webSiteReport)
+        WebsiteReport.create(received_website_report, agent)
 
         # send back response
         response_str = response.SerializeToString()

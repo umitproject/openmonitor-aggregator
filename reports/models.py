@@ -178,6 +178,8 @@ class Report(models.Model):
     
     @staticmethod
     def create_or_count(user_report):
+        from decision.decisionSystem import DecisionSystem
+
         report = Report.objects.filter(
                         test_id=user_report.test_id,
                         agent_location_id=user_report.agent_location_id,
@@ -218,6 +220,7 @@ class Report(models.Model):
             report.target_lon = user_report.target_lon
             report.count = 1
             report.user_reports_ids.append(user_report.id)
+            DecisionSystem.newReport(user_report)
         else:
             report = report[0]
             report.count += 1

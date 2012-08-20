@@ -20,6 +20,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from django.utils import simplejson as json
+
 from events.models import *
 from reports.models import *
 from notificationsystem.system import NotificationSystem
@@ -64,6 +66,11 @@ class DecisionSystem:
             # TODO: ISP!
             event.isps.append('')
             #isps = ListField()
+
+            if len(report.trace):
+                trace = [t.get_dict() for t in report.trace]
+                trace_json = json.dumps(trace)
+                event.latest_traces.append(trace_json)
 #
 #            # get blocked node from trace
 #            if report.trace:

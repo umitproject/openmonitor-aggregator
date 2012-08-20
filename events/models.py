@@ -89,7 +89,9 @@ class Event(models.Model):
     lons = ListField(py_type=decimal.Decimal)
     isps = ListField()
     
-    
+    # List of each containing report's of trace
+    latest_traces = ListField(py_type=str, max_size=100)
+
     @property
     def locations(self):
         locations = []

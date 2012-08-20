@@ -84,18 +84,21 @@ class Trace(object):
         return self.toJson()
 
     def toJson(self):
-        return json.dumps(dict(hop=self.hop,
-                               ip=self.ip,
-                               timings=self.timings,
-                               location_id=self.location_id,
-                               location_name=self.location_name,
-                               country_name=self.country_name,
-                               country_code=self.country_code,
-                               state_region=self.state_region,
-                               city=self.city,
-                               zipcode=self.zipcode,
-                               lat=self.lat,
-                               lon=self.lon), cls=ICMJSONEncoder)
+        return json.dumps(self.get_dict(), cls=ICMJSONEncoder)
+
+    def get_dict(self):
+        return dict(hop=self.hop,
+                   ip=self.ip,
+                   timings=self.timings,
+                   location_id=self.location_id,
+                   location_name=self.location_name,
+                   country_name=self.country_name,
+                   country_code=self.country_code,
+                   state_region=self.state_region,
+                   city=self.city,
+                   zipcode=self.zipcode,
+                   lat='%d' % decimal.Decimal(self.lat),
+                   lon='%d' % decimal.Decimal(self.lon))
 
 def py_convert_trace(trace):
     return Trace.from_dump(trace)
@@ -198,7 +201,7 @@ class Report(models.Model):
             report.hops = user_report.hops
             report.packet_size = user_report.packet_size
             trace = user_report.trace
-            report.trace.append(trace)
+            report.trace = user_report.trace
             report.agent_ip = user_report.agent_ip
             report.agent_location_id = user_report.agent_location_id
             report.agent_location_name = user_report.agent_location_name

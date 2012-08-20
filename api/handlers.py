@@ -196,7 +196,7 @@ class LogoutHandler(BaseHandler):
     url = 'logoutagent/'
 
     request_message = messages_pb2.LoginStep2
-    response_message = messages_pb2.LoginResponse
+    response_message = messages_pb2.LogoutResponse
 
     @message_handler(request_message, response_message)
     def create(self, request, logout_agent, aes_key, agent,

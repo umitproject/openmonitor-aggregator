@@ -97,8 +97,8 @@ class Trace(object):
                    state_region=self.state_region,
                    city=self.city,
                    zipcode=self.zipcode,
-                   lat='%d' % decimal.Decimal(self.lat),
-                   lon='%d' % decimal.Decimal(self.lon))
+                   lat=str(decimal.Decimal(self.lat)),
+                   lon=str(decimal.Decimal(self.lon)))
 
 def py_convert_trace(trace):
     return Trace.from_dump(trace)

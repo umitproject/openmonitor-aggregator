@@ -8,15 +8,19 @@ var newEventTime = 2000
 
 var MAP_EVENT_URLS = new Array();
 
-function initializeMap()
+function initializeMap(map_id)
 {
+    if (map_id==null) {
+        map_id = "map_canvas" // Default parameter
+    }
+
     var latlng = new google.maps.LatLng(0, 0);
     var myOptions = {
         zoom: 3,
         center: latlng,
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
-    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    map = new google.maps.Map(document.getElementById(map_id), myOptions);
 
     var mcOptions = {gridSize: 50, maxZoom: 14};
     mapCluster = new MarkerClusterer(map, [], mcOptions);
@@ -131,8 +135,8 @@ function resize_map(width, height) {
     }
 }
 
-function initializeMapSystem(initial_events) {
-    initializeMap();
+function initializeMapSystem(initial_events, map_id) {
+    initializeMap(map_id);
     updateInitialMapEvents({data: initial_events});
-    $('#map_canvas').resize(resize_map);
+    $('#'+map_id).resize(resize_map);
 }

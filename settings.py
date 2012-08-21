@@ -164,7 +164,8 @@ MEDIA_BUNDLES = (
          ),
      ('main.js',
          {'filter': 'mediagenerator.filters.media_url.MediaURL'},
-         'js/jquery.js',
+         #'js/jquery.js',
+         'bs/assets/js/jquery.js', #Use bootstrap's jQuery
          'js/jquery-ui.js',
          'js/jquery-scrollbarwidth.js',
          'js/date.format.js',
@@ -179,7 +180,6 @@ MEDIA_BUNDLES = (
           ),
      ('bootstrap.js',
          {'filter': 'mediagenerator.filters.media_url.MediaURL'},
-          'bs/assets/js/jquery.js', #We already include bootstrap
           'bs/assets/js/bootstrap-transition.js',
           'bs/assets/js/bootstrap-alert.js',
           'bs/assets/js/bootstrap-modal.js',

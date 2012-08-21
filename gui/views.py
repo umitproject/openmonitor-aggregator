@@ -108,6 +108,11 @@ def event(request, event_id):
                                'event_json': event_json},
                               context_instance=RequestContext(request))
 
+def ajax_event_traces(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    event_traces = event.get_latest_traces_as_json()
+    return HttpResponse(event_traces)
+
 
 def about(request):
     user = request.user

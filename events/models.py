@@ -178,6 +178,10 @@ class Event(models.Model):
         
         return event
 
+    def get_latest_traces_as_json(self):
+        #TODO(orc.avs): Cache the result
+        return json.dumps([trace for trace in self.latest_traces])
+
     def save(self, *args, **kwargs):
         new = self.id is None
 

@@ -3,10 +3,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{% block title %}Umit Project - OpenMonitor{% endblock %}</title>
+    <title>
+        {% block title %}{% endblock %} | {% firstof site.name "Aggregator" %}
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+    {% block extra_meta %}  {% endblock %}
 
     <!-- Le styles -->
     {% include_media 'main.css' %}
@@ -73,7 +76,7 @@
     </div>
 
     <div class="container-fluid">
-       <div id='content' class="row-fluid" style='height:600px'>
+       <div id='content' class="row-fluid"> 
            <div id='left-bar' class="span3 " style='height:100%;padding-right:10px'>
 				{% block left %}
 					{% include "notificationsystem/realtimebox.html" %}

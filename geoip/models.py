@@ -322,8 +322,16 @@ class IPRange(models.Model):
             ip = convert_ip(ip)
 
         try:
-            return IPRange.objects.filter(
+            iprange = IPRange.objects.filter(
                 start_number__lte=ip).order_by('-start_number')[0]
+
+            if iprange.end_number < ip:
+                return IPRange.objects.get_or_create(
+                            location_id=UNKNOWN_LOCATION.id,
+                            start_number=ip,
+                            end_number=ip)[0]
+            else:
+                return iprange
 
         except IndexError:
             return IPRange.objects.get_or_create(location_id=UNKNOWN_LOCATION.id,

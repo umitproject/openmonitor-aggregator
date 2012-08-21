@@ -145,6 +145,10 @@
 
         function resize_content() {
             // we shouldn't use jQuery to calculate fast on first load
+            var is_event_detail_page = document.getElementById('eventTabs');
+            if (is_event_detail_page) {
+                return;
+            }
             var win_size = get_size();
             var content_div = document.getElementById('content');
             var content_height = win_size[1] - getPosition(content_div)[0]
@@ -159,10 +163,8 @@
             content_div.style.height = content_height+'px';
         }
 
-        var is_event_detail_page = document.getElementById('eventTabs');
-        if (!is_event_detail_page) {
-            resize_content();
-        }
+        $(window).resize(resize_content);
+        resize_content();
     </script>
 
   </body>

@@ -24,62 +24,11 @@ function getFullLocationNameString(location) {
 	}
 }
 
-function getPosition(who){
-    var T= 0,L= 0;
-    while(who){
-        L += who.offsetLeft;
-        T += who.offsetTop;
-        who = who.offsetParent;
-    }
-    return [L,T];
-}
-
-
-function get_size() {
-    var winW = 0;
-    var winH = 500;
-    if (document.body && document.body.offsetWidth) {
-        winW = document.body.offsetWidth;
-        winH = document.body.offsetHeight;
-    }
-    if (document.compatMode=='CSS1Compat' &&
-        document.documentElement &&
-        document.documentElement.offsetWidth ) {
-        winW = document.documentElement.offsetWidth;
-        winH = document.documentElement.offsetHeight;
-    }
-    if (window.innerWidth && window.innerHeight) {
-        winW = window.innerWidth;
-        winH = window.innerHeight;
-    }
-    return [winW, winH];
-}
-
-
 function formatDate(dateStr)
 {
     date = new Date(dateStr);
     return date.format("dd/mm/yyyy HH:MM:ss");
 }
-
-
-function resize_content() {
-    // we shouldn't use jQuery to calculate fast on first load
-    var win_size = get_size();
-    var content_div = document.getElementById('content');
-    var content_height = win_size[1] - getPosition(content_div)[0]
-
-    var footer_starter_div = document.getElementById('footer-starter');
-    var footer_ender_div = document.getElementById('footer-ender');
-    
-    var footer_height = getPosition(footer_ender_div)[1] - getPosition(footer_starter_div)[1];
-    content_height = content_height - footer_height - 50;
-    if (content_height < 150)
-        content_height  = 150;
-    content_div.style.height = content_height+'px';
-
-}
-
 
 $.ajaxSetup({
      beforeSend: function(xhr, settings) {
@@ -104,7 +53,3 @@ $.ajaxSetup({
          }
      }
 });
-
-(function (){
-    $(window).resize(resize_content);
-})()

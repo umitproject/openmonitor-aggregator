@@ -41,6 +41,7 @@
         function mapsLoaded () {
 		    initializeMapSystem('{{ initial_events|safe }}');
 		    setTimeout('receiveEvents()', 50000);
+            resize_map();
         }
         google.load("maps", "3", {"other_params":"sensor=false","callback" : mapsLoaded});
     </script>

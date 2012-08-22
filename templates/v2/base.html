@@ -164,10 +164,11 @@
             if (content_height < 150)
                 content_height  = 150;
             content_div.style.height = content_height+'px';
+            resize_map();
         }
 
-        $(window).resize(resize_content);
         resize_content();
+        $(window).resize(resize_content);
     </script>
 
   </body>

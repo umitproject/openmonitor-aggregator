@@ -101,9 +101,6 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
     initializeMap(map_id);
     $('#'+map_id).resize(resize_map);
 
-    bounds = new google.maps.LatLngBounds();
-    map.fitBounds(bounds);
-
     /* create poly lines */
     var polyOptions = {
         strokeColor: 'green',
@@ -120,6 +117,8 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
 
     points = new Array();
     fetched_traces = $.parseJSON(fetched_traces[0]);
+
+    var bounds = new google.maps.LatLngBounds();
     for (i=0; i<fetched_traces.length; i++) {
          trace = fetched_traces[i];
          if (trace.country_code == 'UN')
@@ -142,7 +141,8 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
             marker.setMap(map);
          }
 
-         bounds.extend(pos);
+        bounds.extend(pos);
+
     }
 
     var path = new google.maps.Polyline({
@@ -151,6 +151,7 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
          strokeOpacity: 1.0,
          strokeWeight: 2
     });
-    path.setMap(map);
 
+    path.setMap(map);
+    map.fitBounds(bounds);
 }

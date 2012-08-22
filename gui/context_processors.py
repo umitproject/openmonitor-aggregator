@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## Author: Adriano Monteiro Marques <adriano@umitproject.org>
+## Author: Orcun Avsar <orc.avs[at]gmail.com>
 ##
 ## Copyright (C) 2011 S2S Network Consultoria e Tecnologia da Informacao LTDA
 ##
@@ -18,3 +19,14 @@
 ## You should have received a copy of the GNU Affero General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
+
+"""Module containing context processors for frontend.
+"""
+
+from django.contrib.sites.models import Site
+
+
+def basic(request):
+    return {
+        'site': Site.objects.get_current()
+    }

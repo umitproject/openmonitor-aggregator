@@ -40,11 +40,12 @@ REPORT_PERIOD = datetime.timedelta(days=1)
 class Trace(object):
     def __init__(self, hop, ip, timings, location_id=None, location_name=None,
                  country_name=None, country_code=None, state_region=None,
-                 city=None, zipcode=None, lat=None, lon=None):
+                 city=None, zipcode=None, lat=None, lon=None, is_final=0):
         
         self.hop = hop
         self.ip = ip
         self.timings = timings
+        self.is_final = is_final
         
         if location_id is not None:
             self.location_id = location_id
@@ -97,6 +98,7 @@ class Trace(object):
                    state_region=self.state_region,
                    city=self.city,
                    zipcode=self.zipcode,
+                   is_final=self.is_final,
                    lat=str(decimal.Decimal(self.lat)),
                    lon=str(decimal.Decimal(self.lon)))
 
@@ -303,8 +305,8 @@ class UserReport(models.Model):
     def get_blocked_node(self):
         return self.trace_set.order_by('-hop')[0:1].get()
     
-    def add_trace(self, hop, ip, timing):
-        self.trace.append(Trace(hop, ip, timing))
+    def add_trace(self, hop, ip, timing, **kwargs):
+        self.trace.append(Trace(hop, ip, timing, **kwargs))
     
     def save(self, *args, **kwargs):
         new = self.id is None
@@ -392,7 +394,8 @@ class WebsiteReport(UserReport):
                 report.trace.append(
                         Trace(hop=rcvTrace.hop,
                               ip=rcvTrace.ip,
-                              timings=[t for t in rcvTrace.packetsTiming])
+                              timings=[t for t in rcvTrace.packetsTiming],
+                              is_final=(report.target==rcvTrace.ip and 1 or 0))
                 )
 
             # update target location
@@ -485,7 +488,8 @@ class ServiceReport(UserReport):
                 report.trace.append(
                         Trace(hop=rcvTrace.hop,
                               ip=rcvTrace.ip,
-                              timings=[t for t in rcvTrace.packetsTiming])
+                              timings=[t for t in rcvTrace.packetsTiming],
+                              is_final=(report.target==rcvTrace.ip and 1 or 0))
                 )
 
             # update target location

@@ -101,20 +101,6 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
     initializeMap(map_id);
     $('#'+map_id).resize(resize_map);
 
-    /* create poly lines */
-    var polyOptions = {
-        strokeColor: 'green',
-        strokeOpacity: 1.0,
-        strokeWeight: 2
-    }
-    green_poly = new google.maps.Polyline(polyOptions);
-
-    polyOptions['strokeColor'] = 'red';
-    red_poly = new google.maps.Polyline(polyOptions);
-
-    green_poly.setMap(map);
-    red_poly.setMap(map);
-
     points = new Array();
     fetched_traces = $.parseJSON(fetched_traces[0]);
 
@@ -128,7 +114,7 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
 
          if(i>0)
          {
-            if(i==fetched_traces.length-1)
+            if(trace.is_final==1)
                 icon = TARGET_IMAGE_SRC;
             else
                 icon = FLAG_IMAGE_SRC;
@@ -145,12 +131,19 @@ function initializeTracerouteSystem(fetched_traces, map_id) {
 
     }
 
-    var path = new google.maps.Polyline({
-         path: points,
-         strokeColor: "#FF0000",
-         strokeOpacity: 1.0,
-         strokeWeight: 2
-    });
+    /* create poly lines */
+    var polyOptions = {
+        strokeOpacity: 1.0,
+        strokeWeight: 1,
+        path: points,
+    }
+
+    if (trace.is_final)
+        polyOptions['strokeColor'] = 'green';
+    else
+        polyOptions['strokeColor'] = 'red';
+
+    var path = new google.maps.Polyline(polyOptions);
 
     path.setMap(map);
     map.fitBounds(bounds);

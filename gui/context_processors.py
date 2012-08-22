@@ -24,9 +24,13 @@
 """
 
 from django.contrib.sites.models import Site
+from django.conf import settings
 
 
 def basic(request):
-    return {
-        'site': Site.objects.get_current()
-    }
+    context = {}
+
+    if hasattr(settings, 'SITE_ID') and settings.SITE_ID:
+        context['site'] = Site.objects.get_current()
+
+    return context

@@ -24,6 +24,7 @@
 """
 
 import sys
+import decimal
 from os.path import dirname, abspath
 
 AGG_DIR =  dirname(dirname(dirname(abspath(__file__))))

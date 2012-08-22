@@ -27,12 +27,12 @@ import datetime
 
 from django.conf import settings
 
-from celery import task
+from celery.task import task
 
 from notificationsystem.models import EmailNotification
 
 
-@task
+@task()
 def send_notifications_task(notification_id=None):
     """Task that sends out notifications.
     """

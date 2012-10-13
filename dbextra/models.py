@@ -23,20 +23,18 @@
 from django.db import models
 from django.core.cache import cache
 
-from dbextra.fields import CassandraKeyField
-
 
 USER_KEY = "user_%s"
 
 class UserModel(models.Model):
-    user_id = CassandraKeyField()
+    user_id = models.IntegerField(null=True, blank=True, default=None)
     
     class Meta:
         abstract = True
     
     def get_user(self):
         user = cache.get(USER_KEY % self.user_id, False)
-        if not user:
+        if not user and self.user_id is not None:
             user = models.User.objects.get(id=self.user_id)
             cache.set(USER_KEY % self.user_id, user)
         return user

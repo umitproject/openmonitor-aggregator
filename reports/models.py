@@ -31,7 +31,6 @@ from django.core.files import File
 from icm_utils.json import ICMJSONEncoder
 
 from dbextra.fields import ListField
-from dbextra.fields import CassandraKeyField
 from dbextra.decorators import cache_model_method
 from geoip.models import Location, IPRange
 
@@ -118,7 +117,7 @@ def db_convert_trace(traces):
 class Report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    test_id = CassandraKeyField()
+    test_id = models.IntegerField(null=True, blank=True, default=None)
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)
@@ -242,14 +241,14 @@ class Report(models.Model):
 class UserReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     #report_id = CassandraKeyField()
-    agent_id = CassandraKeyField()
-    test_id = CassandraKeyField()
+    agent_id = models.IntegerField(null=True, blank=True, default=None)
+    test_id = models.IntegerField(null=True, blank=True, default=None)
     time = models.DateTimeField()
     time_zone = models.SmallIntegerField()
     response_time = models.PositiveIntegerField(null=True)
     bandwidth = models.FloatField(null=True)
     nodes = ListField()
-    user_id = CassandraKeyField()
+    user_id = models.IntegerField(null=True, blank=True, default=None)
     
     #############
     # Traceroute
@@ -429,7 +428,7 @@ class WebsiteReport(UserReport):
 
 
 class WebsiteReportMedia(models.Model):
-    report_id = CassandraKeyField()
+    report_id = models.IntegerField(null=True, blank=True, default=None)
     file = models.FileField(upload_to='wsrdata/')
     
     @cache_model_method('website_report_media_', 300, 'report_id')

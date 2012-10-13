@@ -34,26 +34,23 @@ import import_deps
 
 AGG_DIR =  dirname(abspath(__file__))
 
-DATABASES = {'default': {'ENGINE': 'django_cassandra.db',
+DATABASES = {'default': {'ENGINE': 'django.db.backends.mysql',
                            'NAME':'openmonitor',
-                           'USER':'',
+                           'USER':'root',
                            'PASSWORD':'',
                            'HOST':'localhost',
-                           'PORT':'9160',
-                           'SUPPORTS_TRANSACTIONS':False,
-                           'CASSANDRA_REPLICATION_FACTOR':2,
-                           'CASSANDRA_ENABLE_CASCADING_DELETES':True,
+                           'PORT':3306,
                            'TEST_NAME':'openmonitor_test'},
-             "mysql": {'ENGINE': 'mysql',
-                       'NAME':'openmonitor',
-                       'USER':'root',
-                       'PASSWORD':'root',
-                       'HOST':'localhost',
-                       'PORT':3306,
-                       'TEST_NAME':'openmonitor_test'}
+             #"mysql": {'ENGINE': 'mysql',
+             #          'NAME':'openmonitor',
+             #          'USER':'root',
+             #          'PASSWORD':'root',
+             #          'HOST':'localhost',
+             #          'PORT':3306,
+             #          'TEST_NAME':'openmonitor_test'}
              }
 
-DATABASE_ROUTERS = ['gui.dbrouters.GeoIPRouter']
+#DATABASE_ROUTERS = ['gui.dbrouters.GeoIPRouter']
 
 #AUTOLOAD_SITECONF = 'indexes'
 
@@ -87,7 +84,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     #'django.contrib.sites',
-    'djangotoolbox',
     'autoload',
     'mediagenerator',
     #'djangologging',
@@ -139,7 +135,7 @@ FIXTURE_DIRS = (AGG_DIR,)
 
 # This test runner captures stdout and associates tracebacks with their
 # corresponding output. Helps a lot with print-debugging.
-TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
+#TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 #TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)

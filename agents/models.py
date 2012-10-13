@@ -31,7 +31,6 @@ from django.contrib.auth import authenticate
 from django.core.cache import cache
 
 from dbextra.fields import ListField
-from dbextra.fields import CassandraKeyField
 
 from agents.CryptoLib import *
 from geoip.models import *
@@ -46,7 +45,7 @@ BAN_FLAGS = dict(
 
 class LoginProcess(models.Model):
     processID     = models.AutoField(primary_key=True)
-    agent_id       = CassandraKeyField()
+    agent_id       = models.IntegerField(null=True, blank=True, default=None)
     loginTime     = models.DateTimeField(auto_now_add=True)
     ip            = models.CharField(max_length=255)
     port          = models.PositiveIntegerField()
@@ -54,7 +53,7 @@ class LoginProcess(models.Model):
 
 
 class LoggedAgent(models.Model):
-    agent_id = CassandraKeyField()
+    agent_id = models.IntegerField(null=True, blank=True, default=None)
     country_code = models.CharField(max_length=2)
     country_name = models.CharField(max_length=100)
     location_id = models.IntegerField()

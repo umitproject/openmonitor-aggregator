@@ -84,8 +84,7 @@ class FileUploadHandler(object):
         """
         pass
 
-    def new_file(self, field_name, file_name, content_type, content_length,
-            charset=None, content_type_extra=None):
+    def new_file(self, field_name, file_name, content_type, content_length, charset=None):
         """
         Signal that a new file has been started.
 
@@ -97,9 +96,6 @@ class FileUploadHandler(object):
         self.content_type = content_type
         self.content_length = content_length
         self.charset = charset
-        if content_type_extra is None:
-            content_type_extra = {}
-        self.content_type_extra = content_type_extra
 
     def receive_data_chunk(self, raw_data, start):
         """

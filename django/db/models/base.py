@@ -1,27 +1,29 @@
-import types
+import copy
 import sys
+from functools import update_wrapper
 from itertools import izip
 
 import django.db.models.manager     # Imported to register signal handler.
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, FieldError, ValidationError, NON_FIELD_ERRORS
+from django.conf import settings
+from django.core.exceptions import (ObjectDoesNotExist,
+    MultipleObjectsReturned, FieldError, ValidationError, NON_FIELD_ERRORS)
 from django.core import validators
 from django.db.models.fields import AutoField, FieldDoesNotExist
-from django.db.models.fields.related import (OneToOneRel, ManyToOneRel,
+from django.db.models.fields.related import (ManyToOneRel,
     OneToOneField, add_lazy_relation)
+from django.db import (connections, router, transaction, DatabaseError,
+    DEFAULT_DB_ALIAS)
 from django.db.models.query import Q
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.deletion import Collector
 from django.db.models.options import Options
-from django.db import (connections, router, transaction, DatabaseError,
-    DEFAULT_DB_ALIAS)
 from django.db.models import signals
 from django.db.models.loading import register_models, get_model
 from django.utils.translation import ugettext_lazy as _
-import django.utils.copycompat as copy
-from django.utils.functional import curry, update_wrapper
+from django.utils.functional import curry
 from django.utils.encoding import smart_str, force_unicode
 from django.utils.text import get_text_list, capfirst
-from django.conf import settings
+
 
 class ModelBase(type):
     """
@@ -87,7 +89,8 @@ class ModelBase(type):
                 new_class._base_manager = new_class._base_manager._copy_to_model(new_class)
 
         # Bail out early if we have already created this class.
-        m = get_model(new_class._meta.app_label, name, False)
+        m = get_model(new_class._meta.app_label, name,
+                      seed_cache=False, only_installed=False)
         if m is not None:
             return m
 
@@ -119,9 +122,10 @@ class ModelBase(type):
             if (new_class._meta.local_fields or
                     new_class._meta.local_many_to_many):
                 raise FieldError("Proxy model '%s' contains model fields." % name)
-            while base._meta.proxy:
-                base = base._meta.proxy_for_model
             new_class._meta.setup_proxy(base)
+            new_class._meta.concrete_model = base._meta.concrete_model
+        else:
+            new_class._meta.concrete_model = new_class
 
         # Do the appropriate setup for any model parents.
         o2o_map = dict([(f.rel.to, f) for f in new_class._meta.local_fields
@@ -146,9 +150,7 @@ class ModelBase(type):
                                         (field.name, name, base.__name__))
             if not base._meta.abstract:
                 # Concrete classes...
-                while base._meta.proxy:
-                    # Skip over a proxy class to the "real" base it proxies.
-                    base = base._meta.proxy_for_model
+                base = base._meta.concrete_model
                 if base in o2o_map:
                     field = o2o_map[base]
                 elif not is_proxy:
@@ -200,7 +202,8 @@ class ModelBase(type):
         # the first time this model tries to register with the framework. There
         # should only be one class for each model, so we always return the
         # registered version.
-        return get_model(new_class._meta.app_label, name, False)
+        return get_model(new_class._meta.app_label, name,
+                         seed_cache=False, only_installed=False)
 
     def copy_managers(cls, base_managers):
         # This is in-place sorting of an Options attribute, but that's fine.
@@ -273,7 +276,6 @@ class Model(object):
     _deferred = False
 
     def __init__(self, *args, **kwargs):
-        self._entity_exists = kwargs.pop('__entity_exists', False)
         signals.pre_init.send(sender=self.__class__, args=args, kwargs=kwargs)
 
         # Set up the storage for instance state
@@ -363,7 +365,6 @@ class Model(object):
                     pass
             if kwargs:
                 raise TypeError("'%s' is an invalid keyword argument for this function" % kwargs.keys()[0])
-        self._original_pk = self.pk if self._meta.pk is not None else None
         super(Model, self).__init__()
         signals.post_init.send(sender=self.__class__, instance=self)
 
@@ -390,7 +391,7 @@ class Model(object):
 
     def __reduce__(self):
         """
-        Provide pickling support. Normally, this just dispatches to Python's
+        Provides pickling support. Normally, this just dispatches to Python's
         standard handling. However, for models with deferred field loading, we
         need to do things manually, as they're dynamically created classes and
         only module-level classes can be pickled by the default path.
@@ -472,8 +473,6 @@ class Model(object):
         ('raw', 'cls', and 'origin').
         """
         using = using or router.db_for_write(self.__class__, instance=self)
-        entity_exists = bool(self._entity_exists and self._original_pk == self.pk)
-        connection = connections[using]
         assert not (force_insert and force_update)
         if cls is None:
             cls = self.__class__
@@ -519,28 +518,17 @@ class Model(object):
             pk_set = pk_val is not None
             record_exists = True
             manager = cls._base_manager
-            # TODO/NONREL: Some backends could emulate force_insert/_update
-            # with an optimistic transaction, but since it's costly we should
-            # only do it when the user explicitly wants it.
-            # By adding support for an optimistic locking transaction
-            # in Django (SQL: SELECT ... FOR UPDATE) we could even make that
-            # part fully reusable on all backends (the current .exists()
-            # check below isn't really safe if you have lots of concurrent
-            # requests. BTW, and neither is QuerySet.get_or_create).
-            try_update = connection.features.distinguishes_insert_from_update
-            if not try_update:
-                record_exists = False
-
-            if try_update and pk_set:
+            if pk_set:
                 # Determine whether a record with the primary key already exists.
                 if (force_update or (not force_insert and
                         manager.using(using).filter(pk=pk_val).exists())):
                     # It does already exist, so do an UPDATE.
                     if force_update or non_pks:
                         values = [(f, None, (raw and getattr(self, f.attname) or f.pre_save(self, False))) for f in non_pks]
-                        rows = manager.using(using).filter(pk=pk_val)._update(values)
-                        if force_update and not rows:
-                            raise DatabaseError("Forced update did not affect any rows.")
+                        if values:
+                            rows = manager.using(using).filter(pk=pk_val)._update(values)
+                            if force_update and not rows:
+                                raise DatabaseError("Forced update did not affect any rows.")
                 else:
                     record_exists = False
             if not pk_set or not record_exists:
@@ -551,29 +539,16 @@ class Model(object):
                     order_value = manager.using(using).filter(**{field.name: getattr(self, field.attname)}).count()
                     self._order = order_value
 
-                if connection.features.distinguishes_insert_from_update:
-                    add = True
-                else:
-                    add = not entity_exists
-
+                fields = meta.local_fields
                 if not pk_set:
                     if force_update:
                         raise ValueError("Cannot force an update in save() with no primary key.")
-                    values = [(f, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, add), connection=connection))
-                        for f in meta.local_fields if not isinstance(f, AutoField)]
-                else:
-                    values = [(f, f.get_db_prep_save(raw and getattr(self, f.attname) or f.pre_save(self, add), connection=connection))
-                        for f in meta.local_fields]
+                    fields = [f for f in fields if not isinstance(f, AutoField)]
 
                 record_exists = False
 
                 update_pk = bool(meta.has_auto_field and not pk_set)
-                if values:
-                    # Create a new record.
-                    result = manager._insert(values, return_id=update_pk, using=using)
-                else:
-                    # Create a new record with defaults for everything.
-                    result = manager._insert([(meta.pk, connection.ops.pk_default_value())], return_id=update_pk, raw_values=True, using=using)
+                result = manager._insert([self], fields=fields, return_id=update_pk, using=using, raw=raw)
 
                 if update_pk:
                     setattr(self, meta.pk.attname, result)
@@ -584,17 +559,11 @@ class Model(object):
         # Once saved, this is no longer a to-be-added instance.
         self._state.adding = False
 
-        self._entity_exists = True
-        self._original_pk = self.pk
-
         # Signal that the save is complete
         if origin and not meta.auto_created:
-            if connection.features.distinguishes_insert_from_update:
-                created = not record_exists
-            else:
-                created = not entity_exists
             signals.post_save.send(sender=origin, instance=self,
-                created=created, raw=raw, using=using)
+                created=(not record_exists), raw=raw, using=using)
+
 
     save_base.alters_data = True
 
@@ -605,9 +574,6 @@ class Model(object):
         collector = Collector(using=using)
         collector.collect([self])
         collector.delete()
-
-        self._entity_exists = False
-        self._original_pk = None
 
     delete.alters_data = True
 
@@ -808,9 +774,10 @@ class Model(object):
         # A unique field
         if len(unique_check) == 1:
             field_name = unique_check[0]
-            field_label = capfirst(opts.get_field(field_name).verbose_name)
+            field = opts.get_field(field_name)
+            field_label = capfirst(field.verbose_name)
             # Insert the error into the error dict, very sneaky
-            return _(u"%(model_name)s with this %(field_label)s already exists.") %  {
+            return field.error_messages['unique'] %  {
                 'model_name': unicode(model_name),
                 'field_label': unicode(field_label)
             }
@@ -940,10 +907,5 @@ def model_unpickle(model, attrs, factory):
     return cls.__new__(cls)
 model_unpickle.__safe_for_unpickle__ = True
 
-if sys.version_info < (2, 5):
-    # Prior to Python 2.5, Exception was an old-style class
-    def subclass_exception(name, parents, unused):
-        return types.ClassType(name, parents, {})
-else:
-    def subclass_exception(name, parents, module):
-        return type(name, parents, {'__module__': module})
+def subclass_exception(name, parents, module):
+    return type(name, parents, {'__module__': module})

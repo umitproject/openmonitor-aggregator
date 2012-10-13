@@ -19,6 +19,7 @@ class City(models.Model):
 # This is an inherited model from City
 class PennsylvaniaCity(City):
     county = models.CharField(max_length=30)
+    founded = models.DateTimeField(null=True)
     objects = models.GeoManager() # TODO: This should be implicitly inherited.
 
 class State(models.Model):
@@ -32,6 +33,10 @@ class Track(models.Model):
     line = models.LineStringField()
     objects = models.GeoManager()
     def __unicode__(self): return self.name
+
+class Truth(models.Model):
+    val = models.BooleanField()
+    objects = models.GeoManager()
 
 if not spatialite:
     class Feature(models.Model):

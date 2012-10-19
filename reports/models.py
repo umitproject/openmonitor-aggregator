@@ -356,7 +356,7 @@ class WebsiteReport(UserReport):
             print "Redirect link: '%s'" % report.redirect_link
         if website_report_detail.HasField('htmlResponse'):
             report.html_response = website_report_detail.htmlResponse
-            print "Html response: '%s'" % report.hml_response
+            print "Html response: '%s'" % report.html_response
         
         if website_report_detail.HasField('htmlMedia'):
             html_media = tarfile.open(mode='r:gz',

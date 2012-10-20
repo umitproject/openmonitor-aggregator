@@ -91,7 +91,7 @@ class Test(models.Model):
                 _tests = [WebsiteTest.objects.get(id=test_id)
                           for test_id in agg.test_ids]
                 tests.extend(_tests)
-            except Model.DoesNotExist:
+            except ObjectDoesNotExist:
                 pass
               
         for Model in SERVICE_TESTS_AGGREGATION_MODELS.values():
@@ -100,7 +100,7 @@ class Test(models.Model):
                 _tests = [ServiceTest.objects.get(id=test_id)
                           for test_id in agg.test_ids]
                 tests.extend(_tests)
-            except Model.DoesNotExist:
+            except ObjectDoesNotExist:
                 pass
               
         return tests

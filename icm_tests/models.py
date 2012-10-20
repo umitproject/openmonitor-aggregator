@@ -23,6 +23,7 @@
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist
 
 from dbextra.fields import ListField
 from geoip.models import Location
@@ -75,7 +76,7 @@ class Test(models.Model):
         if int(current_test_version) > int(test_version):
             try:
                 return Test.get_tests_for_version(agent, str(current_test_version))
-            except Test.DoesNotExist, err:
+            except ObjectDoesNotExist, err:
                 return Test.get_tests_for_version(agent, '0')
         else:
             return []

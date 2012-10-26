@@ -75,6 +75,7 @@ class Event(models.Model):
     first_detection_utc = models.DateTimeField()
     last_detection_utc = models.DateTimeField()
     target = models.TextField()
+    status_code = models.IntegerField(null=True, blank=True)
     active = models.BooleanField(default=True) # indicate if the event is still happening
     
     ############################################################################

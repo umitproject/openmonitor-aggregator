@@ -23,6 +23,7 @@
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist
 
 from dbextra.fields import ListField
 from geoip.models import Location
@@ -73,7 +74,10 @@ class Test(models.Model):
     def get_updated_tests(agent, test_version):
         current_test_version = Test.get_test_version(agent)
         if int(current_test_version) > int(test_version):
-            return Test.get_tests_for_version(agent, str(current_test_version))
+            try:
+                return Test.get_tests_for_version(agent, str(current_test_version))
+            except ObjectDoesNotExist, err:
+                return Test.get_tests_for_version(agent, '0')
         else:
             return []
       
@@ -87,7 +91,7 @@ class Test(models.Model):
                 _tests = [WebsiteTest.objects.get(id=test_id)
                           for test_id in agg.test_ids]
                 tests.extend(_tests)
-            except Model.DoesNotExist:
+            except ObjectDoesNotExist:
                 pass
               
         for Model in SERVICE_TESTS_AGGREGATION_MODELS.values():
@@ -96,7 +100,7 @@ class Test(models.Model):
                 _tests = [ServiceTest.objects.get(id=test_id)
                           for test_id in agg.test_ids]
                 tests.extend(_tests)
-            except Model.DoesNotExist:
+            except ObjectDoesNotExist:
                 pass
               
         return tests

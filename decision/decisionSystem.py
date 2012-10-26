@@ -47,7 +47,11 @@ class DecisionSystem:
         else:
             raise TypeError, 'report not supported'
 
-        event.active = True
+        event.status_code = report.status_code
+        if event.status_code not in [200, 301, 302]:
+            event.active = True
+        else:
+            event.active = False
 
         # TODO: get correct event type
         event.event_type = EventType.Offline

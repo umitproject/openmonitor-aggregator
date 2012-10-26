@@ -342,16 +342,21 @@ class WebsiteReport(UserReport):
         # read WebsiteReportDetail
         report.url = website_report_detail.websiteURL
         report.status_code = website_report_detail.statusCode
+        print "Report status code: '%s'" % report.status_code
 
         if website_report_detail.HasField('responseTime'):
             report.response_time = website_report_detail.responseTime
+            print "Response time: '%s'" % report.response_time
         if website_report_detail.HasField('bandwidth'):
             report.bandwidth = website_report_detail.bandwidth
+            print "Bandwidth: '%s'" % report.bandwidth
 
         if website_report_detail.HasField('redirectLink'):
             report.redirect_link = website_report_detail.redirectLink
+            print "Redirect link: '%s'" % report.redirect_link
         if website_report_detail.HasField('htmlResponse'):
             report.html_response = website_report_detail.htmlResponse
+            print "Html response: '%s'" % report.html_response
         
         if website_report_detail.HasField('htmlMedia'):
             html_media = tarfile.open(mode='r:gz',
@@ -363,18 +368,22 @@ class WebsiteReport(UserReport):
                 media_obj.save()
                 
                 report.media_ids.append(media_obj.id)
+                print "Adding media id: %s" % media_obj.id
                 
                 ##################################################################
                 # TODO: Need to adapt the html code to link to these media files #
                 ##################################################################
 
         report.user_id = agent.user.id
+        print "User id: '%s'" % agent.user.id
 
         # read ICMReport
         logging.critical("STATUS CODE: %s" % website_report_detail.statusCode)
         #report.report_id = icm_report.reportID
         report.agent_id = icm_report.agentID
-        report.test_id = icm_report.testID
+        print "Agent id: '%s'" % report.agent_id
+        report.test_id = icm_report.testID if icm_report.testID else None
+        print "Test id: '%s'" % report.test_id
         report.time = datetime.datetime.utcfromtimestamp(icm_report.timeUTC)
         report.time_zone = icm_report.timeZone
 
@@ -400,10 +409,12 @@ class WebsiteReport(UserReport):
             # update target location
             iprange = IPRange.ip_location(report.target)
             report.target_country_code = iprange.location.country_code
+            print "Target country code: '%s'" % report.target_country_code
             report.target_country_name = iprange.location.country_name
             report.target_lat = iprange.location.lat
             report.target_lon = iprange.location.lon
             report.target_location_id = iprange.location_id
+            print "Target location id: '%s'" % iprange.location_id
             report.target_location_name = iprange.location.fullname
             report.target_zipcode = iprange.location.zipcode
             report.target_state_region = iprange.location.state_region
@@ -412,7 +423,8 @@ class WebsiteReport(UserReport):
         # get info about target ip
         loggedAgent = agent.getLoginInfo()
         report.agent_ip = loggedAgent.current_ip
-        report.agent_location_id = loggedAgent.location_id
+        report.agent_location_id = loggedAgent.location_id if loggedAgent.location_id != '' else None
+        print "Agent location id: %s" % report.agent_location_id
         report.agent_location_name = loggedAgent.location_name
         report.agent_country_name = loggedAgent.country_name
         report.agent_country_code = loggedAgent.country_code

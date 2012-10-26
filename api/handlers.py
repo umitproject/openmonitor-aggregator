@@ -89,7 +89,7 @@ class RegisterAgentHandler(BaseHandler):
             publicKeyHash = m.digest()
             
             try:
-                response.agentID = agent.id
+                response.agentID = str(agent.id).rstrip('L')
                 response.publicKeyHash = crypto.encodeRSAPrivateKey(publicKeyHash,
                                                                     aggregatorKey)
             except Exception, e:
@@ -99,9 +99,9 @@ class RegisterAgentHandler(BaseHandler):
             response_str = response.SerializeToString()
             return response_str
         except Exception, err:
-            raise
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             print err
+            raise
 
 
 class LoginHandler(BaseHandler):
@@ -137,7 +137,7 @@ class LoginHandler(BaseHandler):
     
             # create the response
             response = messages_pb2.LoginStep1()
-            response.processID = loginProcess.processID
+            response.processID = str(loginProcess.processID).rstrip('L')
             response.cipheredChallenge = cipheredChallenge
             response.challenge = loginProcess.challenge
     
@@ -220,6 +220,7 @@ class GetPeerListHandler(BaseHandler):
     @message_handler(request_message, response_message)
     def create(self, request, received_msg, aes_key, agent,
                software_version, test_version, response):
+
         if received_msg.HasField('count'):
             totalPeers = received_msg.count
         else:
@@ -228,7 +229,7 @@ class GetPeerListHandler(BaseHandler):
         peers = agent.getPeers(totalPeers)
         for peer in peers:
             knownPeer = response.knownPeers.add()
-            knownPeer.agentID = peer.agent_id
+            knownPeer.agentID = str(peer.agent_id).rstrip('L')
             knownPeer.token = peer.token
             knownPeer.publicKey.mod = peer.publicKeyMod
             knownPeer.publicKey.exp = peer.publicKeyExp
@@ -313,7 +314,7 @@ class GetNetlistHandler(BaseHandler):
             
             for agent in net.logged_agents:
                 ag = network.nodes.add()
-                ag.agentID = agent.id
+                ag.agentID = str(agent.id).rstrip('L')
                 ag.agentIP = agent.current_ip
                 ag.agentPort = agent.port
                 ag.token = agent.token

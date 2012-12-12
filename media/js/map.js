@@ -1,9 +1,9 @@
 var map;
 var mapCluster;
-var eventLvl1 = media_url("images/alert1.png");
-var eventLvl2 = media_url("images/alert2.png");
-var eventLvl3 = media_url("images/alert3.png");
-var newevent  = media_url("images/newevent.gif");
+var eventLvl1 = media_urls("images/alert1.png");
+var eventLvl2 = media_urls("images/alert2.png");
+var eventLvl3 = media_urls("images/alert3.png");
+var newevent  = media_urls("images/newevent.gif");
 var newEventTime = 2000
 
 var MAP_EVENT_URLS = new Array();

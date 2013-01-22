@@ -1,3 +1,5 @@
+import logging
+
 from .settings import DEV_MEDIA_URL, MEDIA_DEV_MODE
 # Only load other dependencies if they're needed
 if MEDIA_DEV_MODE:
@@ -40,7 +42,7 @@ class MediaMiddleware(object):
 
         try:
             backend = _backend_mapping[filename]
-        except KeyError:
+        except KeyError, err:
             raise Http404('The mediagenerator could not find the media file "%s"'
                           % filename)
         content, mimetype = backend.get_dev_output(filename)

@@ -203,10 +203,32 @@ class Event(models.Model):
 
 class EventLocationAggregation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    last_detection_utc = models.DateTimeField(auto_now=True)
+    
     location_country_code = models.CharField(max_length=2)
     events = ListField(py_type=str)
     count = models.IntegerField(default=1)
+
+
+    # Event Replic 
+    # For scalability reasons, we decided to replicate this data
+    target_type = models.PositiveSmallIntegerField()
+    event_type = models.PositiveSmallIntegerField()
+    first_detection_utc = models.DateTimeField()
+    last_detection_utc = models.DateTimeField(auto_now=True)
+    target = models.TextField()
+    status_code = models.IntegerField(null=True, blank=True)
+    
+    location_ids = ListField(py_type=int)
+    location_names = ListField()
+    location_country_names = ListField()
+    location_country_codes = ListField()
+    lats = ListField(py_type=decimal.Decimal)
+    lons = ListField(py_type=decimal.Decimal)
+    isps = ListField()
+    
+    # List of each containing report's of trace
+    latest_traces = ListField(py_type=str, max_size=100)
+
 
     @staticmethod
     def add_event(event):
@@ -223,11 +245,79 @@ class EventLocationAggregation(models.Model):
                 agg.location_country_code = country_code
                 add = True
 
+
+            # Update parameters of last event (to replica/cache)
+            agg.target_type = event.target_type
+            agg.event_type = event.event_type
+            agg.first_detection_utc = event.first_detection_utc
+            agg.last_detection_utc = event.last_detection_utc
+            agg.target = event.target
+            agg.status_code = event.status_code
+            
+            agg.location_ids = event.location_ids
+            agg.location_names = event.location_names
+            agg.location_country_names = event.location_country_names
+            agg.location_country_codes = event.location_country_codes
+            agg.lats = event.lats
+            agg.lons = event.lons
+            agg.isps = event.isps
+            
+            agg.latest_traces = event.latest_traces
+
             if add:
                 agg.events.append(event.id)
                 agg.save()
 
             # TODO: delete LOCATION_CACHE
+
+
+    @staticmethod
+    def get_active_events_as_json():
+        events = EventLocationAggregation.get_active_events()
+        events_dict = []
+        for event in events:
+            events_dict.append(event.get_dict())
+        initialEvents = json.dumps(events_dict, use_decimal=True)
+        return initialEvents
+
+    @staticmethod
+    def get_active_events():
+        #events = cache.get(EVENT_LIST_CACHE_KEY, False)
+        #if not events:
+        events = EventLocationAggregation.objects.order_by("last_detection_utc")
+        #    cache.set(EVENT_LIST_CACHE_KEY, events, EVENT_CACHE_TIME)
+        return events
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_detection_utc = models.DateTimeField(auto_now=True)
+    location_country_code = models.CharField(max_length=2)
+    events = ListField(py_type=str)
+    count = models.IntegerField(default=1)
+
+    def get_dict(self):
+            event = {
+              'targetType': self.get_target_type(),
+              'target': self.target,
+              'type': self.get_event_type(),
+              'firstdetection': self.first_detection_utc.ctime(),
+              'lastdetection': self.last_detection_utc.ctime(),
+              'active': self.active,
+              'locations': [dict((('location_id', locset[0]),
+                              ('location_name', locset[1]),
+                              ('location_country_name', locset[2]),
+                              ('location_country_code', locset[3]),
+                              ('lat', locset[4]),
+                              ('lon', locset[5]),
+                              ('isp', locset[6]))) for locset in zip(self.location_ids,
+                                                                     self.location_names,
+                                                                     self.location_country_names,
+                                                                     self.location_country_codes,
+                                                                     self.lats,
+                                                                     self.lons,
+                                                                     self.isps)]
+            }
+            
+            return event
 
     def get_events(self):
         events = []

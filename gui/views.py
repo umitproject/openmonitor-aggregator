@@ -39,14 +39,14 @@ from gui.forms import SuggestServiceForm, SuggestWebsiteForm, WebsiteEventForm, 
 from gui.decorators import staff_member_required
 from geoip.models import Location
 from suggestions.models import WebsiteSuggestion, ServiceSuggestion
-from events.models import Event, TargetType, EventType
+from events.models import Event, EventLocationAggregation, TargetType, EventType
 from reports.models import WebsiteReport
 from notificationsystem.system import NotificationSystem
 from filetransfers.api import serve_file
 
 
 # Our current limit is 25. Let's play around with this and we'll figure if it is enough
-SHOW_EVENT_LIMIT = 25
+SHOW_EVENT_LIMIT = 100
 
 # View cache is set to 10 minutes now. We'll slowly decrease this with time to test
 VIEW_CACHE_TIME = 60 * 10
@@ -57,7 +57,7 @@ def home(request):
 
 
 def map(request):
-    initialEvents = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
+    initialEvents = EventLocationAggregation.get_active_events_as_json()
     return render_to_response('notificationsystem/map.html',
                               {'initial_events': initialEvents},
                               context_instance=RequestContext(request))

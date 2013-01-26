@@ -217,6 +217,7 @@ class EventLocationAggregation(models.Model):
     last_detection_utc = models.DateTimeField(auto_now=True)
     target = models.TextField()
     status_code = models.IntegerField(null=True, blank=True)
+    active = models.BooleanField(default=True) # indicate if the event is still happening
     
     location_ids = ListField(py_type=int)
     location_names = ListField()
@@ -228,6 +229,12 @@ class EventLocationAggregation(models.Model):
     
     # List of each containing report's of trace
     latest_traces = ListField(py_type=str, max_size=100)
+    
+    def get_target_type(self):
+        return TargetType.get_target_type(self.target_type)
+
+    def get_event_type(self):
+        return EventType.get_event_type(self.event_type)
 
 
     @staticmethod

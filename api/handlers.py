@@ -71,9 +71,7 @@ class RegisterAgentHandler(BaseHandler):
             from agents.CryptoLib import crypto, CryptoLib, aggregatorKey, aes_decrypt
 
         try:
-            # get agent ip
-            agent_ip = request.META['REMOTE_ADDR']
-    
+            agent_ip = register_obj.ip
             # create agent
             publicKeyMod = register_obj.agentPublicKey.mod
             publicKeyExp = register_obj.agentPublicKey.exp

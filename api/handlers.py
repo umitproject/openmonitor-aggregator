@@ -127,7 +127,9 @@ class LoginHandler(BaseHandler):
         agent = Agent.get_agent(loginAgent.agentID)
 
         # get agent ip
-        agentIp = request.META['REMOTE_ADDR']
+        #agentIp = request.META['REMOTE_ADDR']
+        agentIp = loginAgent.ip
+
 
         # initiate login process
         loginProcess = agent.initLogin(agentIp, loginAgent.port, crypto_v1=request.POST.get('crypto_v1', False))

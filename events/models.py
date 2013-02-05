@@ -188,11 +188,13 @@ class Event(models.Model):
 
         res = super(Event, self).save(*args, **kwargs)
 
-        if new:
-            EventLocationAggregation.add_event(self)
-        else:
+        #if not new:
+        #    EventLocationAggregation.add_event(self)
+        #else:
+        #    cache.delete(EVENT_CACHE_KEY % self.id)
+        if not new:
             cache.delete(EVENT_CACHE_KEY % self.id)
-
+        EventLocationAggregation.add_event(self)
         cache.delete(EVENT_LIST_CACHE_KEY)
 
         return res
@@ -285,6 +287,7 @@ class EventLocationAggregation(models.Model):
         for event in events:
             events_dict.append(event.get_dict())
         initialEvents = json.dumps(events_dict, use_decimal=True)
+        print initialEvents
         return initialEvents
 
     @staticmethod

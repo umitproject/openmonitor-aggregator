@@ -95,6 +95,7 @@ class Event(models.Model):
 
     @property
     def locations(self):
+        print "LOCATIONS"
         locations = []
         for location_id in self.location_ids:
             location = cache.get(LOCATION_CACHE_KEY % location_id, False)
@@ -270,6 +271,7 @@ class EventLocationAggregation(models.Model):
             agg.lats = event.lats
             agg.lons = event.lons
             agg.isps = event.isps
+            agg.active = True
             
             agg.latest_traces = event.latest_traces
 
@@ -312,6 +314,7 @@ class EventLocationAggregation(models.Model):
               'firstdetection': self.first_detection_utc.ctime(),
               'lastdetection': self.last_detection_utc.ctime(),
               'active': self.active,
+              'list_events': list(self.events),
               'locations': [dict((('location_id', locset[0]),
                               ('location_name', locset[1]),
                               ('location_country_name', locset[2]),
@@ -332,10 +335,10 @@ class EventLocationAggregation(models.Model):
     def get_events(self):
         events = []
         for event_id in self.events:
-            event = cache.get(EVENT_CACHE_KEY % event_id, False)
-            if not event:
-                event = Event.objects.get(id=event_id)
-                cache.set(EVENT_CACHE_KEY % event_id, SINGLE_EVENT_CACHE_TIME)
+            #event = cache.get(EVENT_CACHE_KEY % event_id, False)
+            #if not event:
+            event = EventLocationAggregation.objects.get(id=event_id)
+            #cache.set(EVENT_CACHE_KEY % event_id, SINGLE_EVENT_CACHE_TIME)
             events.append(event)
         return events
 

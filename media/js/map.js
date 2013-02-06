@@ -10,6 +10,7 @@ var MAP_EVENT_URLS = new Array();
 
 function initializeMap(map_id)
 {
+    //console.info("test")
     if (map_id==null) {
         map_id = "map_canvas" // Default parameter
     }
@@ -119,7 +120,11 @@ function updateInitialMapEvents(m)
         var event = events[i];
         if (MAP_EVENT_URLS.indexOf(event['url']) == -1){
             MAP_EVENT_URLS.push(event['url']);
-            addEventToMap(event,false);
+            for(var j=(event['list_events'].length-1); j>-1; j--)
+            {
+                addEventToMap(event,false);
+            }        
+
         }
         else {
             break;

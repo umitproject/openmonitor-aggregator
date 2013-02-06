@@ -34,7 +34,7 @@ from dbextra.fields import ListField
 from dbextra.decorators import cache_model_method
 from geoip.models import Location, IPRange
 
-REPORT_PERIOD = datetime.timedelta(days=1)
+REPORT_PERIOD = datetime.timedelta(days=2)
 
 class Trace(object):
     def __init__(self, hop, ip, timings, location_id=None, location_name=None,
@@ -233,6 +233,7 @@ class Report(models.Model):
                 report.response_time = (report.response_time + user_report.response_time)/2
             elif not report.response_time and user_report.response_time:
                 report.response_time = user_report.response_time
+            DecisionSystem.updateReport(user_report)
 
         report.save()
         return Report

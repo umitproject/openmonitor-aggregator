@@ -308,6 +308,7 @@ class EventLocationAggregation(models.Model):
 
     def get_dict(self):
             event = {
+              'url': "/events/" + str(self.id),
               'targetType': self.get_target_type(),
               'target': self.target,
               'type': self.get_event_type(),

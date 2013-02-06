@@ -124,9 +124,9 @@ class DecisionSystem:
         logging.info("Report received in decision system")
 
         event = Event.objects.filter(
-                        location_ids=user_report.agent_location_id,
-                        last_detection_utc__gte=user_report.created_at-REPORT_PERIOD,
-                        last_detection_utc__lte=user_report.created_at+REPORT_PERIOD
+                        location_ids=report.agent_location_id,
+                        last_detection_utc__gte=report.created_at-REPORT_PERIOD,
+                        last_detection_utc__lte=report.created_at+REPORT_PERIOD
         )
 
         event.first_detection_utc = datetime.datetime.now()

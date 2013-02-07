@@ -123,12 +123,17 @@ class DecisionSystem:
     def updateReport(report):
         logging.info("Report received in decision system")
 
+        print "updateReport: getEvents"
+
         event = Event.objects.filter(
-                        location_ids=report.agent_location_id,
+                        location_ids__contains=report.agent_location_id,
                         last_detection_utc__gte=report.created_at-REPORT_PERIOD,
                         last_detection_utc__lte=report.created_at+REPORT_PERIOD
         )
-
+        if not event:
+            return
+        event = event[0]
+        print "updateReport: get event " + event
         event.first_detection_utc = datetime.datetime.now()
         event.last_detection_utc  = datetime.datetime.now()
 

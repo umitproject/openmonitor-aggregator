@@ -315,7 +315,7 @@ class EventLocationAggregation(models.Model):
               'firstdetection': self.first_detection_utc.ctime(),
               'lastdetection': self.last_detection_utc.ctime(),
               'active': self.active,
-              'list_events': list(self.events),
+              'list_events': list(set(self.events)),
               'locations': [dict((('location_id', locset[0]),
                               ('location_name', locset[1]),
                               ('location_country_name', locset[2]),

@@ -137,7 +137,11 @@ FIXTURE_DIRS = (AGG_DIR,)
 # corresponding output. Helps a lot with print-debugging.
 #TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
 
-ADMIN_MEDIA_PREFIX = '/media/admin/'
+ADMIN_MEDIA_ROOT = os.path.join(AGG_DIR, 'static/')
+ADMIN_MEDIA_PREFIX = 'http://localhost:9000/static/'
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
+
 #TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 #Remove comment in the following line for v2 design
 TEMPLATE_DIRS = (join(AGG_DIR, 'templates', 'v2'),)
@@ -199,7 +203,7 @@ NOTIFICATION_SENDER = "notification@openmonitor.org"
 NOTIFICATION_TO = "notification@openmonitor.org"
 NOTIFICATION_REPLY_TO = "notification@openmonitor.org"
 
-GLOBAL_MEDIA_DIRS = (join(AGG_DIR, 'media'),)
+GLOBAL_MEDIA_DIRS = (join(AGG_DIR, 'media'), join(AGG_DIR, 'static'))
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 LOGGING_OUTPUT_ENABLED = True

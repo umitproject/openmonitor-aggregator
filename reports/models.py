@@ -33,6 +33,8 @@ from icm_utils.json import ICMJSONEncoder
 from dbextra.fields import ListField
 from dbextra.decorators import cache_model_method
 from geoip.models import Location, IPRange
+from reports.tasks import save_report_task
+
 
 REPORT_PERIOD = datetime.timedelta(days=2)
 
@@ -182,61 +184,7 @@ class Report(models.Model):
     
     @staticmethod
     def create_or_count(user_report):
-        from decision.decisionSystem import DecisionSystem
-
-        report = Report.objects.filter(
-                        test_id=user_report.test_id,
-                        agent_location_id=user_report.agent_location_id,
-                        created_at__gte=user_report.created_at-REPORT_PERIOD,
-                        created_at__lte=user_report.created_at+REPORT_PERIOD
-        )
-        if not report:
-            report = Report()
-            report.test_id = user_report.test_id
-            report.time = user_report.time
-            report.time_zone = user_report.time_zone
-            report.response_time = user_report.response_time
-            nodes = user_report.nodes
-            report.nodes.append(nodes)
-            report.target = user_report.target
-            report.hops = user_report.hops
-            report.packet_size = user_report.packet_size
-            trace = user_report.trace
-            report.trace = user_report.trace
-            report.agent_ip = user_report.agent_ip
-            report.agent_location_id = user_report.agent_location_id
-            report.agent_location_name = user_report.agent_location_name
-            report.agent_country_name = user_report.agent_country_name
-            report.agent_country_code = user_report.agent_country_code
-            report.agent_state_region = user_report.agent_state_region
-            report.agent_city = user_report.agent_city
-            report.agent_zipcode = user_report.agent_zipcode
-            report.agent_lat = user_report.agent_lat
-            report.agent_lon = user_report.agent_lon
-            report.target_location_id = user_report.target_location_id
-            report.target_location_name = user_report.target_location_name
-            report.target_country_name = user_report.target_country_name
-            report.target_country_code = user_report.target_country_code
-            report.target_state_region = user_report.target_state_region
-            report.target_city = user_report.target_city
-            report.target_zipcode = user_report.target_zipcode
-            report.target_lat = user_report.target_lat
-            report.target_lon = user_report.target_lon
-            report.count = 1
-            report.user_reports_ids.append(user_report.id)
-            DecisionSystem.newReport(user_report)
-        else:
-            report = report[0]
-            report.count += 1
-            report.user_reports_ids.append(user_report.id)
-            if report.response_time and user_report.response_time:
-                report.response_time = (report.response_time + user_report.response_time)/2
-            elif not report.response_time and user_report.response_time:
-                report.response_time = user_report.response_time
-            DecisionSystem.updateReport(user_report)
-
-        report.save()
-        return Report
+        return save_report_task.delay(user_report.id)
 
 
 class UserReport(models.Model):

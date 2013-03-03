@@ -26,11 +26,7 @@ import datetime
 import logging
 
 from django.conf import settings
-
 from djcelery import celery
-
-from notificationsystem.models import EmailNotification
-from decision.decisionSystem import DecisionSystem
 
 
 @celery.task()
@@ -39,6 +35,7 @@ def save_report_task(user_report_id):
     DecisionSystem.
     """
     from reports.models import UserReport, REPORT_PERIOD
+    from decision.decisionSystem import DecisionSystem
 
     logging.info("Processing user report %s" % user_report_id)
     user_report = UserReport.get(id=user_report_id)

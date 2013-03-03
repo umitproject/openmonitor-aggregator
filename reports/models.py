@@ -33,7 +33,6 @@ from icm_utils.json import ICMJSONEncoder
 from dbextra.fields import ListField
 from dbextra.decorators import cache_model_method
 from geoip.models import Location, IPRange
-from reports.tasks import save_report_task
 
 
 REPORT_PERIOD = datetime.timedelta(days=2)
@@ -184,6 +183,7 @@ class Report(models.Model):
     
     @staticmethod
     def create_or_count(user_report):
+        from reports.tasks import save_report_task
         return save_report_task.delay(user_report.id)
 
 

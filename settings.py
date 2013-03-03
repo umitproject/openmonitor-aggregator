@@ -277,4 +277,11 @@ AJAX_LOOKUP_CHANNELS = {
 }
 
 #####################
-#CELERY OPTIONS
+# CELERY OPTIONS
+BROKER_URL = 'redis://localhost:6379/0'
+CELERY_DISABLE_RATE_LIMITS = True
+CELERY_RESULT_BACKEND = 'database'
+CELERY_RESULT_DBURI = "mysql://root@localhost/openmonitor"
+CELERY_ALWAYS_EAGER = False
+CELERY_REDIRECT_STDOUTS_LEVEL = "DEBUG"
+BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour.

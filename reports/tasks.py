@@ -26,10 +26,11 @@ import datetime
 import logging
 
 from django.conf import settings
-from djcelery import celery
+#from djcelery import celery
+from celery.task import task
 
 
-@celery.task()
+@task()
 def save_report_task(user_report_id):
     """Grabs the received report and have it saved and processed by the
     DecisionSystem.

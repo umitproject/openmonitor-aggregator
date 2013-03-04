@@ -29,6 +29,7 @@ from django.db import models
 from django.utils import simplejson as json
 from django.core.files import File
 from icm_utils.json import ICMJSONEncoder
+from model_utils.managers import InheritanceManager
 
 from dbextra.fields import ListField
 from dbextra.decorators import cache_model_method
@@ -173,7 +174,7 @@ class Report(models.Model):
     @cache_model_method('report_', 300, 'id')
     @property
     def user_reports(self):
-        return UserReport.objects.filter(id__in=self.user_reports_ids)
+        return UserReport.objects.filter(id__in=self.user_reports_ids).select_subclasses()
     
     @cache_model_method('report_', 300, 'location_id')    
     @property
@@ -188,6 +189,8 @@ class Report(models.Model):
 
 
 class UserReport(models.Model):
+    objects = InheritanceManager()
+
     created_at = models.DateTimeField(auto_now_add=True)
     #report_id = CassandraKeyField()
     agent_id = models.IntegerField(null=True, blank=True, default=None)

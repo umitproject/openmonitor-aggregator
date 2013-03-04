@@ -39,7 +39,7 @@ def save_report_task(user_report_id):
     from decision.decisionSystem import DecisionSystem
 
     logging.info("Processing user report %s" % user_report_id)
-    user_report = UserReport.objects.get(id=user_report_id)
+    user_report = UserReport.objects.get_subclass(id=user_report_id)
 
     report = Report.objects.filter(
         test_id=user_report.test_id,

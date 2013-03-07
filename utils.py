@@ -28,7 +28,6 @@ urlfetch = None
 
 import urllib2 as urlfetch
 
-EmailMessage = None
 
 def send_mail(sender, to, cc='', bcc='', reply_to='', subject='',
               body='', html='', attachments=[], headers={}):

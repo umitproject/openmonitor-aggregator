@@ -185,7 +185,7 @@ class Report(models.Model):
     @staticmethod
     def create_or_count(user_report):
         from reports.tasks import save_report_task
-        return save_report_task.delay(user_report.id)
+        return save_report_task.delay(user_report.id, user_report.report_type)
 
 
 class UserReport(models.Model):
@@ -220,7 +220,6 @@ class UserReport(models.Model):
     target_lat = models.DecimalField(decimal_places=20, max_digits=23, null=True)
     target_lon = models.DecimalField(decimal_places=20, max_digits=23, null=True)
 
-    
     #############################
     # Trace Nodes
     # Is a list of Trace objects
@@ -241,6 +240,14 @@ class UserReport(models.Model):
     
     class Meta:
         abstract = True
+
+    @property
+    def report_type(self):
+        if self.__class__ == WebsiteReport:
+            return "website"
+        elif self.__class__ == ServiceReport:
+            return "service"
+        return str(self.__class__)
 
     @cache_model_method('user_report_', 300, 'location_id')    
     @property

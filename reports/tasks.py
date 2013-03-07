@@ -31,15 +31,19 @@ from celery.task import task
 
 
 @task()
-def save_report_task(user_report_id):
+def save_report_task(user_report_id, report_type):
     """Grabs the received report and have it saved and processed by the
     DecisionSystem.
     """
     from reports.models import UserReport, REPORT_PERIOD
     from decision.decisionSystem import DecisionSystem
 
-    logging.info("Processing user report %s" % user_report_id)
-    user_report = UserReport.objects.get_subclass(id=user_report_id)
+    logging.info("Processing user report %s (%s)" % (user_report_id, report_type))
+    user_report = None
+    if report_type == "website":
+        user_report = WebsiteReport.objects.get(id=user_report_id)
+    elif report_type == "service":
+        user_report = ServiceReport.objects.get(id=user_report_id)
 
     report = Report.objects.filter(
         test_id=user_report.test_id,

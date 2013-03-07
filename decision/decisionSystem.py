@@ -133,7 +133,7 @@ class DecisionSystem:
         if not event:
             return
         event = event[0]
-        print "updateReport: get event " + event
+        print "updateReport: get event %s" % str(event)
         event.first_detection_utc = datetime.datetime.now()
         event.last_detection_utc  = datetime.datetime.now()
 

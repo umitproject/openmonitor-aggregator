@@ -22,6 +22,7 @@
 
 from django.conf import settings
 from django.utils import simplejson as json
+from django.core.mail import EmailMessage, EmailMultiAlternative
 
 urlfetch = None
 
@@ -29,26 +30,28 @@ import urllib2 as urlfetch
 
 EmailMessage = None
 
-def send_mail(sender, to, cc='', bcc='', reply_to='', subject='', body='', html='', attachments=[], headers={}):
-    #if settings.GAE:
-    #    return _gae_send_mail(sender, to, cc, bcc, reply_to, subject, body, html, attachments, headers)
-    pass
+def send_mail(sender, to, cc='', bcc='', reply_to='', subject='',
+              body='', html='', attachments=[], headers={}):
+    """Attachments list is in the following format:
+    [["filename.png", file_data, "image/png"], ...]
+    """
+    message = EmailMessage()
+    if html:
+        message = EmailMultiAlternative()
+        message.attach_alternative(html)
 
-def _gae_send_mail(sender, to, cc=None, bcc=None, reply_to=None, subject='', body='', html='', attachments=[], headers={}):
-    email = EmailMessage()
-    email.sender = sender
-    email.to = to
-    email.subject = subject
-    email.body = body
-    if cc: email.cc = cc
-    if bcc: email.bcc = bcc
-    if reply_to: email.reply_to = reply_to
-    if html: email.html = html
-    if attachments: email.attachments = attachments
-    if headers: email.headers = headers
+    message.subject = subject
+    message.body = body
+    message.from_email = sender
+    message.to = to if type(to) == type([]) else [to]
+    message.cc = cc if type(cc) == type([]) else [cc]
+    message.bcc = bcc if type(bcc) == type([]) else [bcc]
+    for attachment in attachments:
+        message.attach(*attachment)
+    message.headers = headers
+
+    message.send()
     
-    return email.send()
-
 
 def fetch(url):
     result = urlfetch.urlopen(url)

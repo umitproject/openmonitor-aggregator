@@ -57,4 +57,4 @@ def send_notifications_task(notification_id=None):
         notification.sent_at = datetime.datetime.now()
         notification.save()
 
-    return HttpResponse("OK")
+    return "OK"

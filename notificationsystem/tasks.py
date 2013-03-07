@@ -30,6 +30,7 @@ from django.conf import settings
 from celery.task import task
 
 from notificationsystem.models import EmailNotification
+from utils import send_mail
 
 
 @task()

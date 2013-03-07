@@ -37,7 +37,7 @@ def send_mail(sender, to, cc='', bcc='', reply_to='', subject='',
     message = EmailMessage()
     if html:
         message = EmailMultiAlternatives()
-        message.attach_alternative(html)
+        message.attach_alternative(html, "text/html")
 
     message.subject = subject
     message.body = body

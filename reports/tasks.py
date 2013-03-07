@@ -35,7 +35,7 @@ def save_report_task(user_report_id, report_type):
     """Grabs the received report and have it saved and processed by the
     DecisionSystem.
     """
-    from reports.models import UserReport, REPORT_PERIOD
+    from reports.models import WebsiteReport, ServiceReport, REPORT_PERIOD
     from decision.decisionSystem import DecisionSystem
 
     logging.info("Processing user report %s (%s)" % (user_report_id, report_type))

@@ -22,7 +22,7 @@
 
 from django.conf import settings
 from django.utils import simplejson as json
-from django.core.mail import EmailMessage, EmailMultiAlternative
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 
 urlfetch = None
 

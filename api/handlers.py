@@ -138,8 +138,8 @@ class LoginHandler(BaseHandler):
         agent = Agent.get_agent(loginAgent.agentID)
 
         # get agent ip
-        #agentIp = request.META['REMOTE_ADDR']
-        agentIp = loginAgent.ip
+        agentIp = request.META['REMOTE_ADDR']
+        #agentIp = loginAgent.ip
 
 
         # initiate login process

@@ -180,7 +180,7 @@ class Login2Handler(BaseHandler):
         agent = Agent.finishLogin(loginAgent.processID,
                                   loginAgent.cipheredChallenge,
                                   crypto_v1=request.POST.get('crypto_v1',False),
-                                  request.META['REMOTE_ADDR'])
+                                  ip=request.META['REMOTE_ADDR'])
 
         if agent is not None:
             # get software version information

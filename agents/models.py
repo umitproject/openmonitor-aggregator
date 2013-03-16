@@ -323,7 +323,7 @@ class Agent(models.Model):
         return loginProcess
     
     @staticmethod
-    def finishLogin(loginProcessID, cipheredChallenge, crypto_v1=False):
+    def finishLogin(loginProcessID, cipheredChallenge, crypto_v1=False, ip=None):
         from geoip.models import IPRange
         # get login process
         loginProcess = LoginProcess.objects.get(processID=loginProcessID)
@@ -339,7 +339,7 @@ class Agent(models.Model):
             loggedAgent = LoggedAgent()
             loggedAgent.agent_id = agent.id
             loggedAgent.agentInfo = agent
-            loggedAgent.current_ip = loginProcess.ip
+            loggedAgent.current_ip = ip if ip is not None else loginProcess.ip
             loggedAgent.port = loginProcess.port
             loggedAgent.superPeer = agent.superPeer
             loggedAgent.publicKeyMod = agent.publicKeyMod

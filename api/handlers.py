@@ -72,9 +72,14 @@ class RegisterAgentHandler(BaseHandler):
 
         try:
             # get agent ip
-            #agent_ip = request.META['REMOTE_ADDR']
+            # TODO: The following is not the preferred method, because it
+            # may end up masking the original ip if the report was routed
+            # to the aggregator through a super peer. For now, this will do
+            # but we need to find a better approach to identifying the right
+            # ip address.
+            agent_ip = request.META['REMOTE_ADDR']
 
-            agent_ip = register_obj.ip
+            #agent_ip = register_obj.ip
             # create agent
             publicKeyMod = register_obj.agentPublicKey.mod
             publicKeyExp = register_obj.agentPublicKey.exp

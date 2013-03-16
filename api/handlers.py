@@ -79,6 +79,12 @@ class RegisterAgentHandler(BaseHandler):
             # ip address.
             agent_ip = request.META['REMOTE_ADDR']
 
+            # TODO: One of the ways to fix the issue above is to check first
+            # whether the object.ip is set. If it is set, it means that
+            # the super peers is routing the report and have set that field
+            # to indicate the original ip of the reporting peer. For now,
+            # we're not sure the agent will only set that if he is routing
+            # a report so we can't use until that is fixed.
             #agent_ip = register_obj.ip
             # create agent
             publicKeyMod = register_obj.agentPublicKey.mod

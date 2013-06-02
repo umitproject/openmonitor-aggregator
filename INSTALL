@@ -25,7 +25,9 @@ For system:
 INSTALL
 ---------
 Steps to follow:
-
+ * Pull the necessary submodules using the following 	commands
+ 	- git submodule init
+ 	- git submodule update
  * Create a MySQL database "openmonitor" respecting the credentials
    in settings.py.
  * Create a Cassandra key space named "openmonitor".
@@ -34,3 +36,9 @@ Steps to follow:
  * To enable tasks, start RabbitMQ server and do "python manage.py celeryd"
    to start messaging for tasks (OPTIONAL).
  * Start applciation with "python manage.py runserver".
+
+FAQ :
+ * When running "python manage.py syncdb" I get a stacktrace with the exception : "ImportError: No module named Signature". 
+ 	-	It means the version of pycrypto installed on your machine is not the right version. Run the following commands : "sudo apt-get install python-dev" to get Python development files (including Python.h) and then run the command "sudo pip install -I pycrypto==2.6.0"
+ 	- After this, you must be able to run syncdb command.
+ 	

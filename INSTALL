@@ -39,6 +39,6 @@ Steps to follow:
 
 FAQ :
  * When running "python manage.py syncdb" I get a stacktrace with the exception : "ImportError: No module named Signature". 
- 	-	It means the version of pycrypto installed on your machine is not the right version. Run the following commands : "sudo apt-get install python-dev" to get Python development files (including Python.h) and then run the command "sudo pip install -I pycrypto==2.6.0"
+ 	- It means the version of pycrypto installed on your machine is not the right version. Run the following commands : "sudo apt-get install python-dev" to get Python development files (including Python.h) and then run the command "sudo pip install -I pycrypto==2.6.0"
  	- After this, you must be able to run syncdb command.
  	

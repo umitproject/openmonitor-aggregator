@@ -1,9 +1,11 @@
 var map;
 var mapCluster;
-var eventLvl1 = media_urls("images/alert1.png");
-var eventLvl2 = media_urls("images/alert2.png");
-var eventLvl3 = media_urls("images/alert3.png");
-var newevent  = media_urls("images/newevent.gif");
+
+var eventLvl1 = media_url("images/alert1.png");
+var eventLvl2 = media_url("images/alert2.png");
+var eventLvl3 = media_url("images/alert3.png");
+var newevent  = media_url("images/newevent.gif");
+
 var newEventTime = 2000
 
 var MAP_EVENT_URLS = new Array();
@@ -92,7 +94,7 @@ function placeNewEvent(type, event, latitude, longitude, alertEvent)
 
 }
 
-function addEventToMap(event, appear)
+function addEventToMap(event, count, appear)
 {
 	var event_summary_div = createEventSummaryDiv(event);
 	
@@ -104,8 +106,8 @@ function addEventToMap(event, appear)
     	var extra_info = '<strong>Reported From: </strong>' + location_name;
     	new_event_summary_div.children().filter(".extra").html(extra_info);
     	var event_summary_div_html = "<div style='margin-left:10px'>" +new_event_summary_div.html() + "</div>";
-        placeNewEvent(event.type, event_summary_div_html, event.locations[i].lat, event.locations[i].lon, appear)
-        //console.info(event.type, event.locations[i].lat, event.locations[i].lon)
+        placeNewEvent(event.type, event_summary_div_html, event.locations[i].lat, event.locations[i].lon, appear);
+        console.info(event.type, event.locations[i].lat, event.locations[i].lon);
     }
 
     //mapCluster.resetViewport()
@@ -115,21 +117,20 @@ function addEventToMap(event, appear)
 function updateInitialMapEvents(m)
 {
     events = JSON.parse(m.data);
+    console.info("Events: ", events.length);
     for(var i=(events.length-1); i>-1; i--)
     {
         var event = events[i];
+        console.info("Parsing event: " + event['url']);
         if (MAP_EVENT_URLS.indexOf(event['url']) == -1){
             MAP_EVENT_URLS.push(event['url']);
-            for(var j=(event['list_events'].length-1); j>-1; j--)
-            {
-                addEventToMap(event,false);
-            }        
-
+            addEventToMap(event, event['count_events'], true);
         }
         else {
             break;
         }
     }
+    mapCluster.resetViewport();
 }
 
 function resize_map(width, height) {

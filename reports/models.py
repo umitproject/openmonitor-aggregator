@@ -329,9 +329,9 @@ class WebsiteReport(UserReport):
                 report.media_ids.append(media_obj.id)
                 print "Adding media id: %s" % media_obj.id
                 
-                ##################################################################
-                # TODO: Need to adapt the html code to link to these media files #
-                ##################################################################
+                ################################################################
+                #TODO:Need to adapt the html code to link to these media files #
+                ################################################################
 
         report.user_id = agent.user.id
         print "User id: '%s'" % agent.user.id

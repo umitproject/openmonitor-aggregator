@@ -68,6 +68,35 @@ class TargetType:
         else:
             return "Unknown"
 
+def get_locations(event, aggregated=False):
+    locations = []
+    for locset in zip(event.location_ids,
+                      event.location_names,
+                      event.location_country_names,
+                      event.location_country_codes,
+                      event.lats,
+                      event.lons,
+                      event.isps):
+
+        not_aggregated = True
+        if aggregated:
+            for eloc in locations:
+                if eloc['location_id'] == locset[0]:
+                    eloc['count'] += 1
+                    not_aggregated = False
+                    break
+
+        if not_aggregated:
+            locations.append(dict((('location_id', locset[0]),
+                                   ('location_name', locset[1]),
+                                   ('location_country_name', locset[2]),
+                                   ('location_country_code', locset[3]),
+                                   ('lat', locset[4]),
+                                   ('lon', locset[5]),
+                                   ('isp', locset[6]),
+                                   ('count', 1))))
+
+    return locations
 
 class Event(models.Model):
     target_type = models.PositiveSmallIntegerField()
@@ -128,6 +157,15 @@ class Event(models.Model):
         return initialEvents
 
     @staticmethod
+    def get_active_aggregated_events_as_json(limit=20):
+        events = Event.get_active_events(limit)
+        events_dict = []
+        for event in events:
+            events_dict.append(event.get_aggregated_dict())
+        initialEvents = json.dumps(events_dict, use_decimal=True)
+        return initialEvents
+
+    @staticmethod
     def get_active_events_region(regions, limit=20):
         result = []
         for country_code in regions:
@@ -142,7 +180,7 @@ class Event(models.Model):
     def get_event_type(self):
         return EventType.get_event_type(self.event_type)
 
-    def get_dict(self):
+    def _get_dict_core(self):
         event = {
           'url': "/events/" + str(self.id),
           'targetType': self.get_target_type(),
@@ -151,22 +189,21 @@ class Event(models.Model):
           'firstdetection': self.first_detection_utc.ctime(),
           'lastdetection': self.last_detection_utc.ctime(),
           'active': self.active,
-          'locations': [dict((('location_id', locset[0]),
-                          ('location_name', locset[1]),
-                          ('location_country_name', locset[2]),
-                          ('location_country_code', locset[3]),
-                          ('lat', locset[4]),
-                          ('lon', locset[5]),
-                          ('isp', locset[6]))) for locset in zip(self.location_ids,
-                                                                 self.location_names,
-                                                                 self.location_country_names,
-                                                                 self.location_country_codes,
-                                                                 self.lats,
-                                                                 self.lons,
-                                                                 self.isps)]
         }
         
         return event
+
+    def get_dict(self):
+        event = self._get_dict_core()
+        event['locations'] = get_locations(self, aggregated=False)
+        
+        return event
+
+    def get_aggregated_dict(self):
+        event = self._get_dict_core()
+        event['locations'] = get_locations(self, aggregated=True)
+        return event
+
 
     def get_full_dict(self):
         event = self.get_dict()
@@ -283,11 +320,11 @@ class EventLocationAggregation(models.Model):
 
 
     @staticmethod
-    def get_active_events_as_json():
+    def get_active_aggregated_events_as_json():
         events = EventLocationAggregation.get_active_events()
         events_dict = []
         for event in events:
-            events_dict.append(event.get_dict())
+            events_dict.append(event.get_aggregated_dict())
         initialEvents = json.dumps(events_dict, use_decimal=True)
         print initialEvents
         return initialEvents
@@ -306,32 +343,32 @@ class EventLocationAggregation(models.Model):
     events = ListField(py_type=str)
     count = models.IntegerField(default=1)
 
+    def _get_dict_core(self):
+        event = {
+          'url': "/events/" + str(self.id),
+          'targetType': self.get_target_type(),
+          'target': self.target,
+          'type': self.get_event_type(),
+          'firstdetection': self.first_detection_utc.ctime(),
+          'lastdetection': self.last_detection_utc.ctime(),
+          'active': self.active,
+        }
+        
+        return event
+
     def get_dict(self):
-            event = {
-              'url': "/events/" + str(self.id),
-              'targetType': self.get_target_type(),
-              'target': self.target,
-              'type': self.get_event_type(),
-              'firstdetection': self.first_detection_utc.ctime(),
-              'lastdetection': self.last_detection_utc.ctime(),
-              'active': self.active,
-              'list_events': list(set(self.events)),
-              'locations': [dict((('location_id', locset[0]),
-                              ('location_name', locset[1]),
-                              ('location_country_name', locset[2]),
-                              ('location_country_code', locset[3]),
-                              ('lat', locset[4]),
-                              ('lon', locset[5]),
-                              ('isp', locset[6]))) for locset in zip(self.location_ids,
-                                                                     self.location_names,
-                                                                     self.location_country_names,
-                                                                     self.location_country_codes,
-                                                                     self.lats,
-                                                                     self.lons,
-                                                                     self.isps)]
-            }
-            
-            return event
+        event = self._get_dict_core()
+        event['list_events'] = list(set(self.events))
+        event['locations'] = get_locations(self, aggregated=False)
+        
+        return event
+
+    def get_aggregated_dict(self):
+        event = self._get_dict_core()
+        event['count_events'] = len(set(self.events))
+        event['locations'] = get_locations(self, aggregated=True)
+
+        return event
 
     def get_events(self):
         events = []

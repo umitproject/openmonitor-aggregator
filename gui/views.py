@@ -57,7 +57,7 @@ def home(request):
 
 
 def map(request):
-    initialEvents = EventLocationAggregation.get_active_events_as_json()
+    initialEvents = EventLocationAggregation.get_active_aggregated_events_as_json()
     #initialEvents = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
     print initialEvents
     return render_to_response('notificationsystem/map.html',
@@ -66,7 +66,7 @@ def map(request):
 
 
 def realtimebox(request):
-    initialEvents = EventLocationAggregation.get_active_events_as_json()
+    initialEvents = EventLocationAggregation.get_active_aggregated_events_as_json()
     #initialEvents = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
     print initialEvents
     return render_to_response('notificationsystem/realtimebox.html',
@@ -77,7 +77,7 @@ def realtimebox(request):
 def poll_active_events(request):
     """Returns json response of new events to AJAX caller.
     """
-    events = EventLocationAggregation.get_active_events_as_json()
+    events = EventLocationAggregation.get_active_aggregated_events_as_json()
     #events = Event.get_active_events_as_json(SHOW_EVENT_LIMIT)
     return HttpResponse(events)
 
